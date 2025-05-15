@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PersistentSessionsProtocol Documentation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 3rem;
+        }
+        .card {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-title {
+            color: #0066cc;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>PersistentSessionsProtocol</h1>
+        <p class="lead">A unified approach to browser session persistence across frameworks</p>
+        <p>
+            <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="btn btn-primary">GitHub Repository</a>
+            <a href="protocol/" class="btn btn-outline-secondary">Protocol Specification</a>
+            <a href="examples/" class="btn btn-outline-secondary">Examples</a>
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Introduction</h2>
+        <p>
+            The PersistentSessionsProtocol (PSP) creates a standardized approach for browser automation tools to save, share,
+            and restore session data across different frameworks and machines. This protocol bridges the critical gap in browser
+            automation by providing a framework-agnostic method for persisting state, significantly reducing authentication friction
+            and improving testing reliability.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Key Features</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Cross-Framework Compatibility</h5>
+                        <p class="card-text">Works with Playwright, Selenium, Skyvern, Stagehand, and other major automation tools.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Complete State Capture</h5>
+                        <p class="card-text">Preserves cookies, localStorage, sessionStorage, and authentication tokens.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Flexible Storage Options</h5>
+                        <p class="card-text">Support for local filesystem, Redis, database, and cloud storage backends.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Secure by Design</h5>
+                        <p class="card-text">Encryption for sensitive session data with configurable security levels.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Session Recording & Replay</h5>
+                        <p class="card-text">Capture and reproduce user interactions across environments.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">REST and WebSocket APIs</h5>
+                        <p class="card-text">For server-based session management and real-time updates.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Quick Start</h2>
+        <h4>Installation</h4>
+        <pre><code>npm install @psp/core @psp/playwright</code></pre>
+
+        <h4>Usage with Playwright</h4>
+        <pre><code>import { chromium } from 'playwright';
+import { PlaywrightAdapter } from '@psp/playwright';
+
+async function example() {
+  // Initialize Playwright
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  
+  // Create PSP adapter and session
+  const adapter = new PlaywrightAdapter();
+  const session = await adapter.createSession(page, {
+    name: 'my-auth-session',
+    storage: 'local'
+  });
+  
+  // Navigate and log in
+  await page.goto('https://example.com/login');
+  await page.fill('input[name="username"]', 'user');
+  await page.fill('input[name="password"]', 'pass');
+  await page.click('button[type="submit"]');
+  
+  // Wait for login to complete
+  await page.waitForNavigation();
+  
+  // Capture the authenticated session
+  await session.capture();
+  console.log(`Session saved with ID: ${session.getId()}`);
+  
+  // Later, restore the session in a new browser
+  const newBrowser = await chromium.launch();
+  const newContext = await newBrowser.newContext();
+  const newPage = await newContext.newPage();
+  
+  // Load the saved session
+  const savedSession = await adapter.loadSession(session.getId());
+  await savedSession.restore(newPage);
+  
+  // Now the new page has the authenticated session
+  await newPage.goto('https://example.com/dashboard');
+  // Already logged in!
+}</code></pre>
+    </div>
+
+    <div class="section">
+        <h2>Documentation</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Protocol Specification</h5>
+                        <p class="card-text">Detailed documentation of the protocol architecture and data model.</p>
+                        <a href="protocol/" class="btn btn-primary">View Protocol Docs</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Example Implementations</h5>
+                        <p class="card-text">Code examples showing how to use PSP with various frameworks.</p>
+                        <a href="examples/" class="btn btn-primary">View Examples</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>PersistentSessionsProtocol © 2023 | <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol">GitHub</a></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
