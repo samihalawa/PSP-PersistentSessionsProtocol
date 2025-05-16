@@ -3,6 +3,39 @@
  */
 
 /**
+ * Options for adapter initialization
+ */
+export interface AdapterOptions {
+  /**
+   * Adapter type name
+   */
+  type: string;
+  
+  /**
+   * Storage provider to use
+   */
+  storageProvider?: any;
+  
+  /**
+   * Features to enable
+   */
+  features?: {
+    cookies?: boolean;
+    localStorage?: boolean;
+    sessionStorage?: boolean;
+    history?: boolean;
+    network?: boolean;
+    dom?: boolean;
+    indexedDB?: boolean;
+  };
+  
+  /**
+   * Any other options
+   */
+  [key: string]: any;
+}
+
+/**
  * The main session state object containing all browser session data
  */
 export interface BrowserSessionState {

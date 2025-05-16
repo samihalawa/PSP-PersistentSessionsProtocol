@@ -3,51 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PersistentSessionsProtocol Documentation</title>
+    <title>PersistentSessionsProtocol - Browser Session Management Across Frameworks</title>
+    <meta name="description" content="PSP standardizes browser session persistence across frameworks like Playwright, Selenium, Puppeteer, and more. Save, share, and restore authenticated sessions.">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #5a9bd5;
+            --accent-color: #f0a202;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--text-color);
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
+        
         .header {
-            background-color: #f8f9fa;
+            background-color: var(--light-bg);
             padding: 2rem;
-            border-radius: 5px;
+            border-radius: 10px;
             margin-bottom: 2rem;
             text-align: center;
         }
+        
+        .header h1 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header .version-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+            position: relative;
+            top: -5px;
+        }
+        
         .section {
             margin-bottom: 3rem;
         }
+        
         .card {
             margin-bottom: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            height: 100%;
         }
+        
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
         }
+        
         .card-title {
-            color: #0066cc;
+            color: var(--primary-color);
+            font-weight: 600;
         }
+        
+        .card-header {
+            background-color: rgba(0, 102, 204, 0.05);
+            font-weight: 600;
+        }
+        
         code {
             background-color: #f5f5f5;
             padding: 0.2em 0.4em;
             border-radius: 3px;
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
         }
+        
         pre {
             background-color: #f5f5f5;
             padding: 1rem;
             border-radius: 5px;
             overflow-x: auto;
         }
+        
         .footer {
             text-align: center;
             margin-top: 4rem;
@@ -55,79 +99,306 @@
             border-top: 1px solid #eee;
             color: #666;
         }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #005bb5;
+            border-color: #005bb5;
+        }
+        
+        .btn-outline-secondary {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 102, 204, 0.1);
+            border-radius: 50%;
+            margin-bottom: 0.75rem;
+        }
+        
+        .icon-box i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+        
+        .install-command {
+            background-color: #222;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1.5rem 0;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+        
+        .install-command code {
+            background-color: transparent;
+            color: #33ff33;
+        }
+        
+        .framework-logos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .framework-logo {
+            text-align: center;
+            width: 100px;
+        }
+        
+        .framework-logo img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+        }
+        
+        .framework-logo span {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-item {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .screenshot-container {
+            max-width: 100%;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+            margin: 2rem 0;
+        }
+        
+        .screenshot-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .usage-tabs .nav-link {
+            color: var(--text-color);
+        }
+        
+        .usage-tabs .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .github-stars {
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        
+        .npm-badge {
+            display: inline-block;
+            margin-top: 1rem;
+            margin-left: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .framework-logos {
+                gap: 1rem;
+            }
+            
+            .framework-logo {
+                width: 80px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>PersistentSessionsProtocol</h1>
+        <h1>PersistentSessionsProtocol <span class="version-badge">v0.1.0</span></h1>
         <p class="lead">A unified approach to browser session persistence across frameworks</p>
         <p>
-            <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="btn btn-primary">GitHub Repository</a>
-            <a href="protocol/" class="btn btn-outline-secondary">Protocol Specification</a>
+            <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="btn btn-primary">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+            <a href="protocol/" class="btn btn-outline-secondary">Protocol Spec</a>
+            <a href="guide/getting-started.html" class="btn btn-outline-secondary">Getting Started</a>
             <a href="examples/" class="btn btn-outline-secondary">Examples</a>
         </p>
+        <div>
+            <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="github-stars">
+                <img alt="GitHub stars" src="https://img.shields.io/github/stars/samihalawa/PSP-PersistentSessionsProtocol?style=social">
+            </a>
+            <a href="https://www.npmjs.com/package/@psp/core" class="npm-badge">
+                <img alt="npm" src="https://img.shields.io/npm/v/@psp/core">
+            </a>
+        </div>
     </div>
 
     <div class="section">
-        <h2>Introduction</h2>
+        <h2>One Solution for Session Persistence</h2>
         <p>
-            The PersistentSessionsProtocol (PSP) creates a standardized approach for browser automation tools to save, share,
-            and restore session data across different frameworks and machines. This protocol bridges the critical gap in browser
-            automation by providing a framework-agnostic method for persisting state, significantly reducing authentication friction
-            and improving testing reliability.
+            The <strong>PersistentSessionsProtocol (PSP)</strong> creates a standardized approach for browser automation tools 
+            to save, share, and restore session data across different frameworks and machines. This protocol bridges the 
+            critical gap in browser automation by providing a framework-agnostic method for persisting state, significantly 
+            reducing authentication friction and improving testing reliability.
         </p>
+        
+        <div class="install-command">
+            <code>npm install @psp/core @psp/playwright</code>
+        </div>
+        
+        <div class="framework-logos">
+            <div class="framework-logo">
+                <img src="https://playwright.dev/img/playwright-logo.svg" alt="Playwright">
+                <span>Playwright</span>
+            </div>
+            <div class="framework-logo">
+                <img src="https://selenium.dev/images/selenium_logo_square_green.png" alt="Selenium">
+                <span>Selenium</span>
+            </div>
+            <div class="framework-logo">
+                <img src="https://pptr.dev/img/favicon.ico" alt="Puppeteer">
+                <span>Puppeteer</span>
+            </div>
+            <div class="framework-logo">
+                <img src="https://cloud.google.com/_static/cloud/images/social-icon-google-cloud-1200-630.png" alt="Browser Use">
+                <span>Browser Use</span>
+            </div>
+            <div class="framework-logo">
+                <img src="https://avatars.githubusercontent.com/u/14985020?s=200&v=4" alt="Cloudflare">
+                <span>Cloudflare</span>
+            </div>
+            <div class="framework-logo">
+                <img src="https://github.githubassets.com/favicons/favicon.svg" alt="Computer Use">
+                <span>Computer Use</span>
+            </div>
+        </div>
     </div>
 
     <div class="section">
         <h2>Key Features</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Cross-Framework Compatibility</h5>
-                        <p class="card-text">Works with Playwright, Selenium, Skyvern, Stagehand, and other major automation tools.</p>
-                    </div>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-exchange-alt"></i>
                 </div>
+                <h5>Cross-Framework Compatibility</h5>
+                <p>Works with Playwright, Selenium, Puppeteer, Skyvern, Stagehand, and other major automation tools.</p>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Complete State Capture</h5>
-                        <p class="card-text">Preserves cookies, localStorage, sessionStorage, and authentication tokens.</p>
-                    </div>
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-cookie"></i>
                 </div>
+                <h5>Complete State Capture</h5>
+                <p>Preserves cookies, localStorage, sessionStorage, and authentication tokens.</p>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Flexible Storage Options</h5>
-                        <p class="card-text">Support for local filesystem, Redis, database, and cloud storage backends.</p>
-                    </div>
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-database"></i>
                 </div>
+                <h5>Flexible Storage Options</h5>
+                <p>Support for local filesystem, Redis, database, and cloud storage backends.</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h5>Secure by Design</h5>
+                <p>Encryption for sensitive session data with configurable security levels.</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h5>Session Recording & Replay</h5>
+                <p>Capture and reproduce user interactions across environments.</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-server"></i>
+                </div>
+                <h5>REST and WebSocket APIs</h5>
+                <p>For server-based session management and real-time updates.</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h5>AI Agent Integration</h5>
+                <p>Optimized for use with AI agents and browser automation.</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-box">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <h5>High Performance</h5>
+                <p>Efficient session capture and restoration with minimal overhead.</p>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Secure by Design</h5>
-                        <p class="card-text">Encryption for sensitive session data with configurable security levels.</p>
-                    </div>
-                </div>
+    </div>
+
+    <div class="section">
+        <h2>Modern UI Dashboard</h2>
+        <p>
+            PSP includes a responsive dashboard for managing sessions across different frameworks, providing
+            real-time updates and detailed analytics.
+        </p>
+        
+        <div class="screenshot-container">
+            <img src="../packages/ui/screenshots/dashboard.png" alt="PSP Dashboard" class="img-fluid">
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h4>Dashboard Features</h4>
+                <ul>
+                    <li>Create, view, edit, and delete browser sessions</li>
+                    <li>Real-time updates of session changes via WebSockets</li>
+                    <li>Session recording and playback capabilities</li>
+                    <li>Cross-framework session management</li>
+                    <li>Light and dark modes for comfortable viewing</li>
+                    <li>Responsive design for desktop and mobile devices</li>
+                </ul>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="card">
+                    <div class="card-header">Getting Started with the Dashboard</div>
                     <div class="card-body">
-                        <h5 class="card-title">Session Recording & Replay</h5>
-                        <p class="card-text">Capture and reproduce user interactions across environments.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">REST and WebSocket APIs</h5>
-                        <p class="card-text">For server-based session management and real-time updates.</p>
+                        <pre><code>cd packages/ui
+npm install
+npm start</code></pre>
+                        <p>For development with mock data:</p>
+                        <pre><code>REACT_APP_USE_MOCK_API=true npm start</code></pre>
                     </div>
                 </div>
             </div>
@@ -136,21 +407,102 @@
 
     <div class="section">
         <h2>Quick Start</h2>
-        <h4>Installation</h4>
-        <pre><code>npm install @psp/core @psp/playwright</code></pre>
-
-        <h4>Usage with Playwright</h4>
-        <pre><code>import { chromium } from 'playwright';
+        <div class="card">
+            <div class="card-body">
+                <ul class="nav nav-tabs usage-tabs" id="usageTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="playwright-tab" data-bs-toggle="tab" data-bs-target="#playwright" type="button" role="tab" aria-controls="playwright" aria-selected="true">Playwright</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="selenium-tab" data-bs-toggle="tab" data-bs-target="#selenium" type="button" role="tab" aria-controls="selenium" aria-selected="false">Selenium</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="puppeteer-tab" data-bs-toggle="tab" data-bs-target="#puppeteer" type="button" role="tab" aria-controls="puppeteer" aria-selected="false">Puppeteer</button>
+                    </li>
+                </ul>
+                <div class="tab-content mt-3" id="usageTabContent">
+                    <div class="tab-pane fade show active" id="playwright" role="tabpanel" aria-labelledby="playwright-tab">
+                        <pre><code>import { chromium } from 'playwright';
 import { PlaywrightAdapter } from '@psp/playwright';
 
+// Initialize Playwright
+const browser = await chromium.launch();
+const context = await browser.newContext();
+const page = await context.newPage();
+
+// Create PSP adapter and session
+const adapter = new PlaywrightAdapter();
+const session = await adapter.createSession(page, {
+  name: 'my-auth-session',
+  storage: 'local'
+});
+
+// Navigate and log in
+await page.goto('https://example.com/login');
+await page.fill('input[name="username"]', 'user');
+await page.fill('input[name="password"]', 'pass');
+await page.click('button[type="submit"]');
+
+// Wait for login to complete
+await page.waitForNavigation();
+
+// Capture the authenticated session
+await session.capture();
+console.log(`Session saved with ID: ${session.getId()}`);
+
+// Later, restore the session in a new browser
+const newBrowser = await chromium.launch();
+const newContext = await newBrowser.newContext();
+const newPage = await newContext.newPage();
+
+// Load the saved session
+const savedSession = await adapter.loadSession(session.getId());
+await savedSession.restore(newPage);
+
+// Now the new page has the authenticated session
+await newPage.goto('https://example.com/dashboard');
+// Already logged in!</code></pre>
+                    </div>
+                    <div class="tab-pane fade" id="selenium" role="tabpanel" aria-labelledby="selenium-tab">
+                        <pre><code># Create a PSP session with Selenium
+from psp.client import SeleniumAdapter
+from selenium import webdriver
+
+# Initialize driver
+driver = webdriver.Chrome()
+
+# Create adapter and session
+adapter = SeleniumAdapter()
+session = adapter.create_session(driver, 
+  name="my-authentication-session",
+  storage="cloud"  # or 'local', 'redis', etc.
+)
+
+# Log in to your application
+driver.get("https://example.com/login")
+driver.find_element_by_name("username").send_keys("user")
+driver.find_element_by_name("password").send_keys("pass")
+driver.find_element_by_xpath("//button[@type='submit']").click()
+
+# Capture the authenticated session
+session.capture()
+
+# Later, restore the session
+new_driver = webdriver.Chrome()
+session.restore(new_driver)
+# Now new_driver has the same authenticated session</code></pre>
+                    </div>
+                    <div class="tab-pane fade" id="puppeteer" role="tabpanel" aria-labelledby="puppeteer-tab">
+                        <pre><code>const puppeteer = require('puppeteer');
+const { PuppeteerAdapter } = require('@psp/puppeteer');
+
 async function example() {
-  // Initialize Playwright
-  const browser = await chromium.launch();
-  const context = await browser.newContext();
-  const page = await context.newPage();
+  // Initialize Puppeteer
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
   
   // Create PSP adapter and session
-  const adapter = new PlaywrightAdapter();
+  const adapter = new PuppeteerAdapter();
   const session = await adapter.createSession(page, {
     name: 'my-auth-session',
     storage: 'local'
@@ -158,8 +510,8 @@ async function example() {
   
   // Navigate and log in
   await page.goto('https://example.com/login');
-  await page.fill('input[name="username"]', 'user');
-  await page.fill('input[name="password"]', 'pass');
+  await page.type('input[name="username"]', 'user');
+  await page.type('input[name="password"]', 'pass');
   await page.click('button[type="submit"]');
   
   // Wait for login to complete
@@ -170,9 +522,8 @@ async function example() {
   console.log(`Session saved with ID: ${session.getId()}`);
   
   // Later, restore the session in a new browser
-  const newBrowser = await chromium.launch();
-  const newContext = await newBrowser.newContext();
-  const newPage = await newContext.newPage();
+  const newBrowser = await puppeteer.launch();
+  const newPage = await newBrowser.newPage();
   
   // Load the saved session
   const savedSession = await adapter.loadSession(session.getId());
@@ -182,34 +533,205 @@ async function example() {
   await newPage.goto('https://example.com/dashboard');
   // Already logged in!
 }</code></pre>
-    </div>
-
-    <div class="section">
-        <h2>Documentation</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Protocol Specification</h5>
-                        <p class="card-text">Detailed documentation of the protocol architecture and data model.</p>
-                        <a href="protocol/" class="btn btn-primary">View Protocol Docs</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Example Implementations</h5>
-                        <p class="card-text">Code examples showing how to use PSP with various frameworks.</p>
-                        <a href="examples/" class="btn btn-primary">View Examples</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="section">
+        <h2>Documentation</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Getting Started</h5>
+                        <p class="card-text">
+                            Complete guide to installing PSP and implementing your first session capture and restore.
+                        </p>
+                        <a href="guide/getting-started.html" class="btn btn-primary mt-auto">View Guide</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Protocol Specification</h5>
+                        <p class="card-text">
+                            Detailed documentation of the protocol architecture and data model.
+                        </p>
+                        <a href="protocol/" class="btn btn-primary mt-auto">View Protocol Docs</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Example Implementations</h5>
+                        <p class="card-text">
+                            Code examples showing how to use PSP with various frameworks.
+                        </p>
+                        <a href="examples/" class="btn btn-primary mt-auto">View Examples</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Use Cases</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">Bypassing Authentication in Automated Tests</div>
+                    <div class="card-body">
+                        <p>
+                            Use PSP to log in once, then reuse the same authenticated session for all your 
+                            subsequent tests. This dramatically speeds up test suites by eliminating the need
+                            to go through authentication flows for each test.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">Cross-Framework Session Sharing</div>
+                    <div class="card-body">
+                        <p>
+                            Capture a session with Playwright and restore it in Selenium or Puppeteer. This
+                            allows teams using different automation frameworks to share sessions without
+                            duplicating work.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">AI Agent Browser Memory</div>
+                    <div class="card-body">
+                        <p>
+                            Let AI agents maintain state between different browser automation sessions,
+                            providing continuity when building complex workflows that span multiple
+                            interactions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">Handling Multi-Step Workflows</div>
+                    <div class="card-body">
+                        <p>
+                            For complex user journeys that involve many steps, save checkpoints along the
+                            way so you can quickly restore to any point in the process for debugging
+                            or continued development.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Supported Frameworks</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Web Automation</h5>
+                        <ul>
+                            <li><strong>Playwright</strong> - <code>@psp/playwright</code></li>
+                            <li><strong>Selenium</strong> - <code>@psp/selenium</code></li>
+                            <li><strong>Puppeteer</strong> - <code>@psp/puppeteer</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">AI & ML Tools</h5>
+                        <ul>
+                            <li><strong>Browser-Use</strong> - <code>@psp/browser-use</code></li>
+                            <li><strong>Computer-Use</strong> - <code>@psp/computer-use</code></li>
+                            <li><strong>Skyvern</strong> - <code>psp-skyvern</code></li>
+                            <li><strong>Stagehand</strong> - <code>@psp/stagehand</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Cloud Environments</h5>
+                        <ul>
+                            <li><strong>Cloudflare Workers</strong> - <code>@psp/cloudflare</code></li>
+                            <li><strong>Lambda Environments</strong> - <code>@psp/lambda</code> (Coming Soon)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Storage Options</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Local Storage</div>
+                    <div class="card-body">
+                        <p>
+                            PSP supports local storage options for development and testing:
+                        </p>
+                        <ul>
+                            <li><strong>Filesystem</strong> - Built into <code>@psp/core</code></li>
+                            <li><strong>In-Memory</strong> - For ephemeral sessions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Remote Storage</div>
+                    <div class="card-body">
+                        <p>
+                            For team environments and production use, PSP supports:
+                        </p>
+                        <ul>
+                            <li><strong>Redis</strong> - For high-performance cache</li>
+                            <li><strong>Cloud Storage</strong> - AWS S3, Google Cloud Storage, Azure Blob</li>
+                            <li><strong>Database</strong> - MongoDB, PostgreSQL (via adapters)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Architecture</h2>
+        <div class="card">
+            <div class="card-body">
+                <p>
+                    PSP employs a layered architecture with four main components:
+                </p>
+                <ol>
+                    <li><strong>Session Capture Layer</strong> - Extracts state using browser-specific adapters</li>
+                    <li><strong>Serialization Layer</strong> - Handles data encoding and transmission</li>
+                    <li><strong>Storage Layer</strong> - Manages persistent storage of session data</li>
+                    <li><strong>Replay Layer</strong> - Restores sessions across different environments</li>
+                </ol>
+                <p>
+                    This design ensures flexibility while maintaining compatibility across different frameworks.
+                    For more details, see the <a href="protocol/">Protocol Specification</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="footer">
-        <p>PersistentSessionsProtocol © 2023 | <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol">GitHub</a></p>
+        <p>PersistentSessionsProtocol © 2023-2024 | <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol">GitHub</a></p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>

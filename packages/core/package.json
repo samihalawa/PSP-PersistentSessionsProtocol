@@ -1,19 +1,26 @@
 {
   "name": "@psp/core",
   "version": "0.1.0",
-  "description": "Core library for the PersistentSessionsProtocol",
+  "description": "Core library for the PersistentSessionsProtocol - a unified approach for browser session persistence across frameworks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "browser",
     "session",
     "persistence",
-    "automation"
+    "automation",
+    "playwright",
+    "selenium",
+    "puppeteer",
+    "testing",
+    "cookies",
+    "storage"
   ],
   "author": "PSP Contributors",
   "license": "MIT",
@@ -21,6 +28,17 @@
     "dist",
     "README.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samihalawa/PSP-PersistentSessionsProtocol.git"
+  },
+  "homepage": "https://samihalawa.github.io/PSP-PersistentSessionsProtocol/",
+  "bugs": {
+    "url": "https://github.com/samihalawa/PSP-PersistentSessionsProtocol/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.2",
     "@types/node": "^20.2.5",
