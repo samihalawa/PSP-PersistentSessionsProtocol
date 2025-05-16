@@ -1,0 +1,29 @@
+{
+  "name": "psp-playwright-demo",
+  "version": "1.0.0",
+  "description": "Demo showing PSP functionality with Playwright",
+  "main": "session-demo.js",
+  "scripts": {
+    "capture": "node session-demo.js capture",
+    "restore": "node session-demo.js restore",
+    "list": "node session-demo.js list",
+    "verify": "node verify-session.js",
+    "demo": "node session-demo.js"
+  },
+  "keywords": [
+    "browser",
+    "session",
+    "persistence",
+    "automation",
+    "playwright",
+    "psp"
+  ],
+  "author": "PSP Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.52.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

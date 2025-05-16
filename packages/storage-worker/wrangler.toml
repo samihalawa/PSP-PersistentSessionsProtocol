@@ -1,0 +1,63 @@
+name = "psp-worker"
+main = "src/index.ts"
+compatibility_date = "2023-10-30"
+usage_model = "bundled"
+
+# Environment variables
+[vars]
+# Optional: Set your API keys here (comma-separated for multiple keys)
+# DO NOT hardcode keys in wrangler.toml for production
+# Use wrangler secret put API_KEYS instead
+# API_KEYS = "key1,key2"
+
+# Set max session size before using R2 (default: 128KB)
+MAX_KV_SIZE_KB = "128"
+
+# Enable CORS by default
+ENABLE_CORS = "true"
+
+# Session expiration (seconds) - leave as 0 for no default expiration
+DEFAULT_EXPIRATION = "0"
+
+# Production environment
+[env.production]
+# Add KV namespace for session storage
+[[env.production.kv_namespaces]]
+binding = "PSP_SESSIONS"
+id = "your-production-kv-id" # Replace with your KV namespace ID
+
+# Optional: Add R2 bucket for large session storage
+# [[env.production.r2_buckets]]
+# binding = "PSP_SESSIONS_BUCKET"
+# bucket_name = "psp-sessions"
+
+# Optional: Add Durable Object for transactional storage
+# [[env.production.durable_objects.bindings]]
+# name = "PSP_SESSIONS_DO"
+# class_name = "SessionObject"
+
+# Optional: Schedule cleanup of expired sessions
+[env.production.triggers]
+crons = ["0 0 * * *"] # Every day at midnight UTC
+
+# Development environment (preview)
+[env.development]
+# Add KV namespace for development testing
+[[env.development.kv_namespaces]]
+binding = "PSP_SESSIONS"
+id = "your-preview-kv-id" # Replace with your dev KV namespace ID
+
+# Optional: Add R2 bucket for development
+# [[env.development.r2_buckets]]
+# binding = "PSP_SESSIONS_BUCKET"
+# bucket_name = "psp-sessions-dev"
+
+# Migrations for Durable Objects (only needed when using DOs)
+# [[migrations]]
+# tag = "v1"
+# new_classes = ["SessionObject"]
+
+# Local development setup
+[dev]
+port = 8787
+local_protocol = "http"

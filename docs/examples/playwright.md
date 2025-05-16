@@ -2,6 +2,8 @@
 
 This page provides examples of using PSP with Playwright for common scenarios.
 
+> **Note:** For a working demonstration of PSP concepts, check out the [Playwright Demo](/examples/playwright/) which includes runnable examples of session capture and restoration across multiple browsers.
+
 ## Basic Authentication Example
 
 This example shows how to capture a logged-in session and reuse it later to skip the login process.

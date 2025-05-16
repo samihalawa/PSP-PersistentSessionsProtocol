@@ -1,188 +1,265 @@
 # PersistentSessionsProtocol (PSP)
 
-A unified protocol for browser session persistence across automation frameworks.
+A unified framework for browser session persistence across automation tools.
+
+![PSP Banner](docs/images/psp-banner.png)
+
+[![GitHub license](https://img.shields.io/github/license/samihalawa/PSP-PersistentSessionsProtocol)](https://github.com/samihalawa/PSP-PersistentSessionsProtocol/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@psp/core.svg)](https://www.npmjs.com/package/@psp/core)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/samihalawa/PSP-PersistentSessionsProtocol/blob/main/CONTRIBUTING.md)
 
 ## Overview
 
-The PersistentSessionsProtocol (PSP) creates a standardized approach for browser automation tools to save, share, and restore session data across different frameworks and machines. This protocol bridges the critical gap in browser automation by providing a framework-agnostic method for persisting state, significantly reducing authentication friction and improving testing reliability.
+The Persistent Sessions Protocol (PSP) is a standardized approach for capturing, storing, and restoring browser sessions across different automation frameworks and environments. It solves the persistent challenge of maintaining authentication and application state in browser automation, significantly reducing friction and improving reliability.
+
+## Why PSP?
+
+PSP addresses common challenges in browser automation:
+
+- **Authentication Fatigue**: Eliminate repetitive logins in test scripts
+- **Cross-Environment Testing**: Maintain state between different test environments
+- **Debugging Complexity**: Capture problematic application states for easier reproduction
+- **Framework Lock-in**: Switch freely between automation tools while preserving sessions
+- **CI/CD Reliability**: Pre-populate test environments with authenticated sessions
 
 ## Key Features
 
-- **Cross-Framework Compatibility** - Works with Playwright, Selenium, Puppeteer, Skyvern, Browser-Use, Computer-Use, Stagehand, Cloudflare Workers, and other major automation tools
-- **Complete State Capture** - Preserves cookies, localStorage, sessionStorage, and authentication tokens
-- **Flexible Storage Options** - Support for local filesystem, Redis, database, and cloud storage backends (AWS S3, Google Cloud Storage, Azure Blob Storage)
-- **Secure by Design** - Encryption for sensitive session data with configurable security levels
-- **Session Recording & Replay** - Capture and reproduce user interactions across environments
-- **REST and WebSocket APIs** - For server-based session management and real-time updates
-- **AI Agent Integration** - Optimized for use with AI agents and browser automation
+- **Cross-Framework Compatibility**: Works with Playwright, Selenium, Puppeteer, and other major automation tools
+- **Complete State Capture**: Preserves cookies, localStorage, sessionStorage, and authentication tokens
+- **Multiple Storage Options**: Support for local filesystem, S3-compatible storage, Cloudflare, and Supabase
+- **Security**: Configurable encryption and access controls for sensitive session data
+- **Simple API**: Intuitive interface for capturing and restoring sessions
+- **Serverless Ready**: Deploy as Cloudflare Workers for global session availability
 
-## Current Status
+## Installation
 
-This project is currently under active development. The protocol specification is available in the [docs/protocol](docs/protocol) directory.
+Install the core package and framework-specific adapter:
 
-## Getting Started
+```bash
+# For Playwright users
+npm install @psp/core @psp/playwright
 
-Check out the [documentation](docs/README.md) for more information on how to use PSP in your projects.
+# For Selenium users
+npm install @psp/core @psp/selenium
+```
 
-### Quick Start Examples
+## Quick Start
 
-#### Playwright
+### Playwright Example
 
 ```javascript
-// Create a PSP session with Playwright
-const { PlaywrightAdapter } = require('@psp/client-js');
+// Capture and restore a browser session with Playwright
 const { chromium } = require('playwright');
+const { createPSPClient } = require('@psp/playwright');
 
-// Initialize browser and context
-const browser = await chromium.launch();
-const context = await browser.newContext();
-const page = await context.newPage();
+async function demo() {
+  // Initialize PSP with local storage
+  const psp = createPSPClient({
+    storage: { type: 'local', path: './sessions' }
+  });
 
-// Create adapter and session
-const adapter = new PlaywrightAdapter();
-const session = await adapter.createSession(page, {
-  name: 'my-authentication-session',
-  storage: 'cloud' // or 'local', 'redis', etc.
+  // === CAPTURE PHASE ===
+  const browser1 = await chromium.launch({ headless: false });
+  const page1 = await browser1.newPage();
+
+  // Navigate and log in
+  await page1.goto('https://example.com/login');
+  await page1.fill('#username', 'test@example.com');
+  await page1.fill('#password', 'password123');
+  await page1.click('#login-button');
+  await page1.waitForURL('https://example.com/dashboard');
+
+  // Capture the authenticated session
+  const sessionId = await psp.captureSession(page1, {
+    name: 'Example Login',
+    description: 'Authenticated dashboard session'
+  });
+  console.log(`Session saved with ID: ${sessionId}`);
+  await browser1.close();
+
+  // === RESTORE PHASE (could be in a different process or machine) ===
+  const browser2 = await chromium.launch({ headless: false });
+  const page2 = await browser2.newPage();
+
+  // Restore the session (skips login)
+  await psp.restoreSession(page2, sessionId);
+
+  // Session is restored, we're already logged in!
+  await page2.goto('https://example.com/dashboard/profile');
+  console.log('Session restored successfully!');
+}
+
+demo();
+```
+
+### Selenium Example
+
+```javascript
+const { Builder } = require('selenium-webdriver');
+const { createPSPClient } = require('@psp/selenium');
+
+async function demo() {
+  // Initialize PSP with cloud storage
+  const psp = createPSPClient({
+    storage: {
+      type: 'cloudflare',
+      endpoint: 'https://your-worker.workers.dev',
+      apiKey: 'your-api-key'
+    }
+  });
+
+  // === CAPTURE PHASE ===
+  const driver1 = await new Builder().forBrowser('chrome').build();
+
+  // Log in to application
+  await driver1.get('https://example.com/login');
+  await driver1.findElement({ id: 'username' }).sendKeys('test@example.com');
+  await driver1.findElement({ id: 'password' }).sendKeys('password123');
+  await driver1.findElement({ id: 'login-button' }).click();
+
+  // Capture the authenticated session
+  const sessionId = await psp.captureSession(driver1);
+  console.log(`Session saved with ID: ${sessionId}`);
+  await driver1.quit();
+
+  // === RESTORE PHASE ===
+  const driver2 = await new Builder().forBrowser('chrome').build();
+
+  // Restore the session (skips login)
+  await psp.restoreSession(driver2, sessionId);
+
+  // Navigate directly to authenticated page
+  await driver2.get('https://example.com/dashboard');
+  console.log('Session restored successfully!');
+}
+
+demo();
+```
+
+## Components
+
+PSP consists of several modular components:
+
+### Core Library
+
+The [`@psp/core`](packages/core) package contains the core functionality:
+- Session data format specification
+- Storage provider interfaces
+- Serialization/deserialization utilities
+- Common utilities and helpers
+
+### Framework Adapters
+
+Framework-specific adapters that implement the PSP protocol:
+
+- **Playwright** - [`@psp/playwright`](packages/adapters/playwright)
+- **Selenium** - [`@psp/selenium`](packages/adapters/selenium)
+
+### Storage Options
+
+PSP supports multiple storage backends:
+
+- **Local Storage**: Store sessions on the local filesystem
+- **Cloudflare**: Deploy serverless API for global session access
+- **S3-Compatible**: Use AWS S3 or any S3-compatible service
+- **Supabase**: Storage with authentication and database capabilities
+
+### Simple UI
+
+A lightweight web interface for managing sessions:
+
+![PSP Simple UI](packages/simple-ui/screenshot.png)
+
+Features:
+- View, create, and manage sessions
+- Import/export session data
+- Authentication with Supabase
+- Responsive design for all devices
+- Easy self-hosting
+
+To use the Simple UI:
+
+```bash
+# Clone the repository
+git clone https://github.com/samihalawa/PSP-PersistentSessionsProtocol.git
+
+# Go to the Simple UI directory
+cd PSP-PersistentSessionsProtocol/packages/simple-ui
+
+# Configure the UI (edit config.js)
+# Then serve with any static web server
+npx serve
+```
+
+## Storage Backends
+
+Configure PSP to store sessions where you need them:
+
+### Local Storage
+
+Best for development and testing:
+
+```javascript
+const psp = createPSPClient({
+  storage: {
+    type: 'local',
+    path: './sessions'
+  }
 });
-
-// Log in to your application
-await page.goto('https://example.com/login');
-await page.fill('input[name="username"]', 'user');
-await page.fill('input[name="password"]', 'pass');
-await page.click('button[type="submit"]');
-
-// Capture the authenticated session
-await session.capture();
-
-// Later, restore the session
-const newContext = await browser.newContext();
-const newPage = await newContext.newPage();
-await session.restore(newPage);
-// Now newPage has the same authenticated session
 ```
 
-#### Selenium
+### Cloudflare Workers
 
-```python
-# Create a PSP session with Selenium
-from psp.client import SeleniumAdapter
-from selenium import webdriver
+For global access and serverless deployment:
 
-# Initialize driver
-driver = webdriver.Chrome()
-
-# Create adapter and session
-adapter = SeleniumAdapter()
-session = adapter.create_session(driver, 
-  name="my-authentication-session",
-  storage="cloud"  # or 'local', 'redis', etc.
-)
-
-# Log in to your application
-driver.get("https://example.com/login")
-driver.find_element_by_name("username").send_keys("user")
-driver.find_element_by_name("password").send_keys("pass")
-driver.find_element_by_xpath("//button[@type='submit']").click()
-
-# Capture the authenticated session
-session.capture()
-
-# Later, restore the session
-new_driver = webdriver.Chrome()
-session.restore(new_driver)
-# Now new_driver has the same authenticated session
+```javascript
+const psp = createPSPClient({
+  storage: {
+    type: 'cloudflare',
+    endpoint: 'https://your-worker.workers.dev',
+    apiKey: 'your-api-key'
+  }
+});
 ```
 
-## Supported Frameworks
+### S3-Compatible Storage
 
-PSP provides adapters for many popular browser automation frameworks:
+For persistent cloud storage:
 
-- **Playwright** - [@psp/playwright](packages/playwright)
-- **Selenium** - [@psp/selenium](packages/selenium)
-- **Puppeteer** - [@psp/puppeteer](packages/puppeteer)
-- **Browser-Use** - [@psp/browser-use](packages/browser-use)
-- **Computer-Use** - [@psp/computer-use](packages/computer-use)
-- **Skyvern** - [psp-skyvern](packages/skyvern)
-- **Stagehand** - [@psp/stagehand](packages/stagehand)
-- **Cloudflare Workers** - [@psp/cloudflare](packages/cloudflare)
-
-For detailed examples of each adapter, see our [examples page](docs/examples/index.html).
-
-## UI Dashboard
-
-PSP includes a modern, responsive UI dashboard for managing sessions across different frameworks:
-
-![PSP Dashboard](packages/ui/screenshots/dashboard.png)
-
-### Dashboard Features
-
-- Create, view, edit, and delete browser sessions
-- Real-time updates of session changes via WebSockets
-- Session recording and playback capabilities
-- Cross-framework session management
-- Light and dark modes for comfortable viewing
-- Responsive design for desktop and mobile devices
-- Detailed session metrics and analytics
-- Role-based access control for team environments
-
-### UI Screenshots
-
-#### Sessions Management
-![Sessions List](packages/ui/screenshots/sessions.png)
-
-#### Session Details
-![Session Details](packages/ui/screenshots/session-details.png)
-
-#### Session Recording
-![Session Recorder](packages/ui/screenshots/recorder.png)
-
-#### Session History
-![Session History](packages/ui/screenshots/history.png)
-
-#### Settings Page
-![Settings](packages/ui/screenshots/settings.png)
-
-#### Dark Mode Support
-![Dark Mode](packages/ui/screenshots/dashboard-dark.png)
-
-### Getting Started with the Dashboard
-
-To start the dashboard:
-
-```bash
-cd packages/ui
-npm install
-npm start
+```javascript
+const psp = createPSPClient({
+  storage: {
+    type: 's3',
+    region: 'us-east-1',
+    bucket: 'psp-sessions',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  }
+});
 ```
 
-For development with mock data:
+### Supabase
 
-```bash
-cd packages/ui
-REACT_APP_USE_MOCK_API=true npm start
+For storage with authentication:
+
+```javascript
+const psp = createPSPClient({
+  storage: {
+    type: 'supabase',
+    url: 'https://your-project.supabase.co',
+    apiKey: process.env.SUPABASE_KEY,
+    bucket: 'sessions'
+  }
+});
 ```
 
-For more information, see the [UI README](packages/ui/README.md).
+## Documentation
 
-## Storage Providers
-
-PSP supports multiple storage backends for session data:
-
-- **Local Filesystem** - Built into [@psp/core](packages/core)
-- **Redis** - Built into [@psp/core](packages/core) (server package)
-- **Cloud Storage**:
-  - AWS S3
-  - Google Cloud Storage
-  - Azure Blob Storage
-
-## Architecture
-
-PSP employs a layered architecture:
-
-1. **Session Capture Layer** - Extracts state using browser-specific adapters
-2. **Serialization Layer** - Handles data encoding and transmission
-3. **Storage Layer** - Manages persistent storage of session data
-4. **Replay Layer** - Restores sessions across different environments
+For complete documentation, visit:
+- [Getting Started Guide](docs/guide/getting-started.md)
+- [API Reference](docs/api-reference.md)
+- [Storage Configuration](docs/deployment-guide.md)
+- [Framework-Specific Examples](docs/examples)
 
 ## Contributing
 
