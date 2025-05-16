@@ -8,12 +8,13 @@ The PersistentSessionsProtocol (PSP) creates a standardized approach for browser
 
 ## Key Features
 
-- **Cross-Framework Compatibility** - Works with Playwright, Selenium, Skyvern, Stagehand, and other major automation tools
+- **Cross-Framework Compatibility** - Works with Playwright, Selenium, Puppeteer, Skyvern, Browser-Use, Computer-Use, Stagehand, Cloudflare Workers, and other major automation tools
 - **Complete State Capture** - Preserves cookies, localStorage, sessionStorage, and authentication tokens
-- **Flexible Storage Options** - Support for local filesystem, Redis, database, and cloud storage backends
+- **Flexible Storage Options** - Support for local filesystem, Redis, database, and cloud storage backends (AWS S3, Google Cloud Storage, Azure Blob Storage)
 - **Secure by Design** - Encryption for sensitive session data with configurable security levels
 - **Session Recording & Replay** - Capture and reproduce user interactions across environments
 - **REST and WebSocket APIs** - For server-based session management and real-time updates
+- **AI Agent Integration** - Optimized for use with AI agents and browser automation
 
 ## Current Status
 
@@ -91,6 +92,88 @@ new_driver = webdriver.Chrome()
 session.restore(new_driver)
 # Now new_driver has the same authenticated session
 ```
+
+## Supported Frameworks
+
+PSP provides adapters for many popular browser automation frameworks:
+
+- **Playwright** - [@psp/playwright](packages/playwright)
+- **Selenium** - [@psp/selenium](packages/selenium)
+- **Puppeteer** - [@psp/puppeteer](packages/puppeteer)
+- **Browser-Use** - [@psp/browser-use](packages/browser-use)
+- **Computer-Use** - [@psp/computer-use](packages/computer-use)
+- **Skyvern** - [psp-skyvern](packages/skyvern)
+- **Stagehand** - [@psp/stagehand](packages/stagehand)
+- **Cloudflare Workers** - [@psp/cloudflare](packages/cloudflare)
+
+For detailed examples of each adapter, see our [examples page](docs/examples/index.html).
+
+## UI Dashboard
+
+PSP includes a modern, responsive UI dashboard for managing sessions across different frameworks:
+
+![PSP Dashboard](packages/ui/screenshots/dashboard.png)
+
+### Dashboard Features
+
+- Create, view, edit, and delete browser sessions
+- Real-time updates of session changes via WebSockets
+- Session recording and playback capabilities
+- Cross-framework session management
+- Light and dark modes for comfortable viewing
+- Responsive design for desktop and mobile devices
+- Detailed session metrics and analytics
+- Role-based access control for team environments
+
+### UI Screenshots
+
+#### Sessions Management
+![Sessions List](packages/ui/screenshots/sessions.png)
+
+#### Session Details
+![Session Details](packages/ui/screenshots/session-details.png)
+
+#### Session Recording
+![Session Recorder](packages/ui/screenshots/recorder.png)
+
+#### Session History
+![Session History](packages/ui/screenshots/history.png)
+
+#### Settings Page
+![Settings](packages/ui/screenshots/settings.png)
+
+#### Dark Mode Support
+![Dark Mode](packages/ui/screenshots/dashboard-dark.png)
+
+### Getting Started with the Dashboard
+
+To start the dashboard:
+
+```bash
+cd packages/ui
+npm install
+npm start
+```
+
+For development with mock data:
+
+```bash
+cd packages/ui
+REACT_APP_USE_MOCK_API=true npm start
+```
+
+For more information, see the [UI README](packages/ui/README.md).
+
+## Storage Providers
+
+PSP supports multiple storage backends for session data:
+
+- **Local Filesystem** - Built into [@psp/core](packages/core)
+- **Redis** - Built into [@psp/core](packages/core) (server package)
+- **Cloud Storage**:
+  - AWS S3
+  - Google Cloud Storage
+  - Azure Blob Storage
 
 ## Architecture
 

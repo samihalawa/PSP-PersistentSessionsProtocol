@@ -64,6 +64,19 @@
             color: white;
             font-weight: bold;
         }
+        .table-of-contents {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+        }
+        .table-of-contents ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .table-of-contents ul ul {
+            padding-left: 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -72,10 +85,24 @@
         <p class="lead">Implementation examples for different frameworks</p>
         <nav class="nav">
             <a class="nav-link" href="../">Home</a>
-            <a class="nav-link" href="#playwright">Playwright</a>
-            <a class="nav-link" href="#selenium">Selenium</a>
-            <a class="nav-link" href="#custom">Custom Implementation</a>
+            <a class="nav-link" href="#toc">Table of Contents</a>
         </nav>
+    </div>
+
+    <div class="table-of-contents" id="toc">
+        <h3>Table of Contents</h3>
+        <ul>
+            <li><a href="#playwright">Playwright Examples</a></li>
+            <li><a href="#selenium">Selenium Examples</a></li>
+            <li><a href="#browser-use">Browser-Use Examples</a></li>
+            <li><a href="#computer-use">Computer-Use Examples</a></li>
+            <li><a href="#skyvern">Skyvern Examples</a></li>
+            <li><a href="#ui-dashboard">UI Dashboard</a></li>
+            <li><a href="#cloudflare">Cloudflare Workers Examples</a></li>
+            <li><a href="#stagehand">Stagehand Examples</a></li>
+            <li><a href="#puppeteer">Puppeteer Examples</a></li>
+            <li><a href="#custom">Custom Implementation Examples</a></li>
+        </ul>
     </div>
 
     <div class="section" id="playwright">
@@ -239,6 +266,49 @@ async function playbackUserActions(sessionId) {
 // });</code></pre>
             </div>
         </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Remote Storage with Playwright
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP with Redis storage for distributed access:</p>
+                <pre><code class="language-javascript">import { chromium } from 'playwright';
+import { PlaywrightAdapter } from '@psp/playwright';
+import { RedisStorageProvider } from '@psp/core/storage/redis';
+
+async function remoteStorageExample() {
+  // Create Redis storage provider
+  const storageProvider = new RedisStorageProvider({
+    redisUrl: 'redis://localhost:6379',
+    namespace: 'my-app-sessions'
+  });
+
+  // Launch browser
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  
+  // Create adapter with Redis storage
+  const adapter = new PlaywrightAdapter({
+    storageProvider
+  });
+  
+  // Create a session
+  const session = await adapter.createSession(page, {
+    name: 'shared-session',
+    description: 'Session stored in Redis'
+  });
+  
+  // Use the session...
+  await page.goto('https://example.com');
+  await session.capture();
+  
+  // This session can now be accessed from any machine with access to the Redis server
+  console.log(`Created session with ID ${session.getId()} in Redis`);
+}</code></pre>
+            </div>
+        </div>
     </div>
 
     <div class="section" id="selenium">
@@ -319,10 +389,973 @@ async function loadAuthSession() {
 // loadAuthSession();</code></pre>
             </div>
         </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Selenium with Python
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP with Selenium in Python:</p>
+                <pre><code class="language-python">from selenium import webdriver
+from selenium.webdriver.common.by import By
+from psp.selenium import SeleniumAdapter
+
+def save_auth_session():
+    # Initialize driver
+    driver = webdriver.Chrome()
+    
+    # Create adapter and session
+    adapter = SeleniumAdapter()
+    session = adapter.create_session(driver, 
+        name="github-login",
+        description="GitHub authenticated session"
+    )
+    
+    # Navigate to GitHub login
+    driver.get("https://github.com/login")
+    
+    # Fill in the login form
+    driver.find_element(By.ID, "login_field").send_keys("your-username")
+    driver.find_element(By.ID, "password").send_keys("your-password")
+    driver.find_element(By.NAME, "commit").click()
+    
+    # Wait for navigation to complete
+    WebDriverWait(driver, 10).until(
+        lambda d: "login" not in d.current_url and "github.com" in d.current_url
+    )
+    
+    # Capture the authenticated session
+    session.capture()
+    
+    # Save the session ID for later use
+    session_id = session.get_id()
+    with open("github-session.txt", "w") as f:
+        f.write(session_id)
+    
+    print(f"Session saved with ID: {session_id}")
+    
+    driver.quit()
+
+def load_auth_session():
+    # Load the session ID
+    with open("github-session.txt", "r") as f:
+        session_id = f.read().strip()
+    
+    # Initialize a new driver
+    driver = webdriver.Chrome()
+    
+    # Create adapter
+    adapter = SeleniumAdapter()
+    
+    # Load the saved session
+    session = adapter.load_session(session_id)
+    
+    # Restore the session to the new driver
+    session.restore(driver)
+    
+    # Navigate to a page that requires authentication
+    driver.get("https://github.com/settings/profile")
+    
+    # The page should load without requiring login
+    print("Session restored successfully!")
+
+# Run the example
+# save_auth_session()
+# or
+# load_auth_session()</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="browser-use">
+        <h2>Browser-Use Examples</h2>
+        
+        <div class="example-card card">
+            <div class="card-header">
+                Basic Usage with Browser-Use
+            </div>
+            <div class="card-body">
+                <p class="card-text">Integrate PSP with Browser-Use:</p>
+                <pre><code class="language-javascript">import { Browser } from '@browser-use/browser';
+import { BrowserUseAdapter } from '@psp/browser-use';
+
+async function browserUseExample() {
+  // Initialize Browser-Use
+  const browser = await Browser.launch({
+    headless: false
+  });
+  
+  // Create PSP adapter
+  const adapter = new BrowserUseAdapter();
+  
+  // Create a session
+  const session = await adapter.createSession(browser, {
+    name: 'browser-use-session',
+    description: 'Browser-Use authenticated session'
+  });
+  
+  // Navigate to a login page
+  await browser.goto('https://example.com/login');
+  
+  // Fill form and submit
+  await browser.type('#username', 'user@example.com');
+  await browser.type('#password', 'password123');
+  await browser.click('button[type="submit"]');
+  
+  // Wait for successful login
+  await browser.waitForNavigation();
+  
+  // Capture the session
+  await session.capture();
+  
+  // Export the session ID
+  const sessionId = session.getId();
+  console.log(`Session saved with ID: ${sessionId}`);
+  
+  // Later, in another process or machine
+  
+  // Create a new browser instance
+  const newBrowser = await Browser.launch();
+  
+  // Load the saved session
+  const savedSession = await adapter.loadSession(sessionId);
+  
+  // Restore the session
+  await savedSession.restore(newBrowser);
+  
+  // Navigate to a protected page - no login required
+  await newBrowser.goto('https://example.com/dashboard');
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                AI Agent Integration with Browser-Use
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP to maintain state for AI agents:</p>
+                <pre><code class="language-javascript">import { Browser } from '@browser-use/browser';
+import { BrowserUseAdapter } from '@psp/browser-use';
+import { AIAgent } from '@browser-use/ai-agent';
+
+async function aiAgentExample() {
+  // Initialize Browser-Use
+  const browser = await Browser.launch();
+  
+  // Create PSP adapter
+  const adapter = new BrowserUseAdapter();
+  
+  // Check if we have a saved session
+  const sessionId = process.env.SAVED_SESSION_ID;
+  
+  if (sessionId) {
+    // Load an existing session
+    const session = await adapter.loadSession(sessionId);
+    
+    // Restore the session state
+    await session.restore(browser);
+    
+    console.log('Restored previous session');
+  }
+  
+  // Create an AI agent to perform tasks
+  const agent = new AIAgent({
+    browser,
+    apiKey: process.env.AI_API_KEY
+  });
+  
+  // Perform the AI task
+  await agent.perform('Search for recent news about climate change and save the first 3 articles');
+  
+  // Capture the session state after the AI has performed its tasks
+  const session = await adapter.createSession(browser, {
+    name: 'ai-agent-session',
+    description: 'Session after AI performed tasks'
+  });
+  
+  await session.capture();
+  
+  // Save session ID for future use
+  console.log(`Session saved with ID: ${session.getId()}`);
+  
+  await browser.close();
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="computer-use">
+        <h2>Computer-Use Examples</h2>
+        
+        <div class="example-card card">
+            <div class="card-header">
+                Basic Usage with Computer-Use
+            </div>
+            <div class="card-body">
+                <p class="card-text">Integrate PSP with Computer-Use:</p>
+                <pre><code class="language-javascript">import { Computer } from '@computer-use/computer';
+import { ComputerUseAdapter } from '@psp/computer-use';
+
+async function computerUseExample() {
+  // Create Computer instance
+  const computer = await Computer.launch();
+  
+  // Create PSP adapter
+  const adapter = new ComputerUseAdapter();
+  
+  // Create a session
+  const session = await adapter.createSession(computer, {
+    name: 'computer-use-session',
+    description: 'Computer-Use authenticated session',
+    storage: 'redis',
+    storageOptions: {
+      redisUrl: process.env.REDIS_URL
+    }
+  });
+  
+  // Open browser
+  const browser = await computer.openBrowser();
+  
+  // Navigate to a login page
+  await browser.goto('https://example.com/login');
+  
+  // Fill form and submit
+  await browser.type('#username', 'user@example.com');
+  await browser.type('#password', 'password123');
+  await browser.click('button[type="submit"]');
+  
+  // Wait for successful login
+  await browser.waitForNavigation();
+  
+  // Capture the session
+  await session.capture();
+  
+  // Export the session ID
+  const sessionId = session.getId();
+  console.log(`Session saved with ID: ${sessionId}`);
+  
+  // Later, in another process or machine
+  
+  // Create a new computer instance
+  const newComputer = await Computer.launch();
+  
+  // Load the saved session
+  const savedSession = await adapter.loadSession(sessionId);
+  
+  // Restore the session
+  await savedSession.restore(newComputer);
+  
+  // Open browser - session will be automatically applied
+  const newBrowser = await newComputer.openBrowser();
+  
+  // Navigate to a protected page - no login required
+  await newBrowser.goto('https://example.com/dashboard');
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Full Computer Integration
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP for full computer state (including files):</p>
+                <pre><code class="language-javascript">import { Computer } from '@computer-use/computer';
+import { ComputerUseAdapter } from '@psp/computer-use';
+import { CloudStorageProvider } from '@psp/core/storage/cloud';
+
+async function fullComputerSessionExample() {
+  // Set up cloud storage
+  const storageProvider = new CloudStorageProvider({
+    provider: 'aws',
+    region: 'us-west-2',
+    bucket: 'my-psp-sessions',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY,
+      secretAccessKey: process.env.AWS_SECRET_KEY
+    }
+  });
+  
+  // Create Computer instance
+  const computer = await Computer.launch({
+    persistFilesystem: true
+  });
+  
+  // Create PSP adapter with advanced options
+  const adapter = new ComputerUseAdapter({
+    storageProvider,
+    captureOptions: {
+      includeFiles: true,
+      includeSystemState: true
+    }
+  });
+  
+  // Create a session
+  const session = await adapter.createSession(computer, {
+    name: 'full-computer-session',
+    description: 'Complete computer state including files'
+  });
+  
+  // Perform various computer operations
+  const browser = await computer.openBrowser();
+  await browser.goto('https://example.com/download');
+  
+  // Download a file
+  await browser.click('#download-button');
+  
+  // Use the filesystem API
+  const fs = await computer.filesystem();
+  await fs.writeFile('/tmp/notes.txt', 'Important information');
+  
+  // Capture full state including downloaded files
+  await session.capture();
+  
+  // Later, restore the entire environment
+  const newComputer = await Computer.launch();
+  
+  // Load and restore the session
+  const savedSession = await adapter.loadSession(session.getId());
+  await savedSession.restore(newComputer);
+  
+  // The new computer now has the same browser state AND file system content
+  const newFs = await newComputer.filesystem();
+  const fileContent = await newFs.readFile('/tmp/notes.txt');
+  console.log('Restored file content:', fileContent);
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="skyvern">
+        <h2>Skyvern Examples</h2>
+        
+        <div class="example-card card">
+            <div class="card-header">
+                Skyvern Integration
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP with Skyvern for vision-based automation:</p>
+                <pre><code class="language-python">from skyvern import SkyvernBrowser
+from psp.skyvern import SkyvernAdapter
+import asyncio
+
+async def skyvern_example():
+    # Initialize Skyvern
+    browser = SkyvernBrowser()
+    
+    # Create PSP adapter
+    adapter = SkyvernAdapter()
+    
+    # Create a session
+    session = await adapter.create_session(browser, 
+        name="skyvern-session",
+        description="Skyvern authenticated session"
+    )
+    
+    # Navigate to a login page
+    await browser.goto("https://example.com/login")
+    
+    # Use Skyvern's vision-based interaction
+    await browser.click_on_text("Username")
+    await browser.type("user@example.com")
+    
+    await browser.click_on_text("Password")
+    await browser.type("password123")
+    
+    await browser.click_on_text("Sign In")
+    
+    # Wait for login to complete
+    await browser.wait_for_navigation()
+    
+    # Capture the session
+    await session.capture()
+    
+    # Export the session ID
+    session_id = session.get_id()
+    print(f"Session saved with ID: {session_id}")
+    
+    # Later, in another process or machine
+    
+    # Create a new browser instance
+    new_browser = SkyvernBrowser()
+    
+    # Load the saved session
+    saved_session = await adapter.load_session(session_id)
+    
+    # Restore the session
+    await saved_session.restore(new_browser)
+    
+    # Navigate to a protected page - no login required
+    await new_browser.goto("https://example.com/dashboard")
+    
+    # Skyvern can now interact with the authenticated page
+    dashboard_elements = await new_browser.get_page_elements()
+    print(f"Found {len(dashboard_elements)} elements on dashboard")
+
+# Run the example
+asyncio.run(skyvern_example())</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Visual State Capture with Skyvern
+            </div>
+            <div class="card-body">
+                <p class="card-text">Capture visual state with screenshot comparison:</p>
+                <pre><code class="language-python">from skyvern import SkyvernBrowser
+from psp.skyvern import SkyvernAdapter
+import asyncio
+
+async def visual_state_example():
+    # Initialize Skyvern
+    browser = SkyvernBrowser()
+    
+    # Create PSP adapter with visual state options
+    adapter = SkyvernAdapter(
+        visual_comparison=True,
+        screenshot_on_capture=True
+    )
+    
+    # Create a session
+    session = await adapter.create_session(browser, 
+        name="visual-session",
+        description="Session with visual state capture"
+    )
+    
+    # Navigate and login
+    await browser.goto("https://example.com/login")
+    await browser.fill_by_label("Username", "user@example.com")
+    await browser.fill_by_label("Password", "password123")
+    await browser.click_button("Sign In")
+    
+    # Capture the session with screenshots
+    await session.capture()
+    
+    # Later, restore session
+    new_browser = SkyvernBrowser()
+    saved_session = await adapter.load_session(session.get_id())
+    
+    # Restore session with visual verification
+    await saved_session.restore(new_browser, 
+        verify_visual_state=True,
+        visual_similarity_threshold=0.9
+    )
+    
+    # If the visual state doesn't match, restoration will fail
+    print("Visual state successfully verified and restored")
+
+asyncio.run(visual_state_example())</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="ui-dashboard">
+        <h2>UI Dashboard</h2>
+
+        <p>
+            PSP includes a modern, responsive UI dashboard for managing sessions across different frameworks.
+            The dashboard provides an intuitive interface for creating, viewing, and managing browser sessions.
+        </p>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Dashboard Overview
+            </div>
+            <div class="card-body text-center">
+                <img src="../../packages/ui/screenshots/dashboard.png" alt="PSP Dashboard" class="img-fluid rounded" style="max-width: 100%; margin-bottom: 15px;">
+                <p class="card-text">The main dashboard showing session metrics and activity</p>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Sessions Management
+            </div>
+            <div class="card-body text-center">
+                <img src="../../packages/ui/screenshots/sessions.png" alt="Sessions List" class="img-fluid rounded" style="max-width: 100%; margin-bottom: 15px;">
+                <p class="card-text">Browse, search, and manage all your browser sessions</p>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Session Details
+            </div>
+            <div class="card-body text-center">
+                <img src="../../packages/ui/screenshots/session-details.png" alt="Session Details" class="img-fluid rounded" style="max-width: 100%; margin-bottom: 15px;">
+                <p class="card-text">View detailed information about a specific session</p>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Session Recording
+            </div>
+            <div class="card-body text-center">
+                <img src="../../packages/ui/screenshots/recorder.png" alt="Session Recorder" class="img-fluid rounded" style="max-width: 100%; margin-bottom: 15px;">
+                <p class="card-text">Record browser sessions for later playback</p>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Dark Mode Support
+            </div>
+            <div class="card-body text-center">
+                <img src="../../packages/ui/screenshots/dashboard-dark.png" alt="Dark Mode" class="img-fluid rounded" style="max-width: 100%; margin-bottom: 15px;">
+                <p class="card-text">The dashboard supports both light and dark themes</p>
+            </div>
+        </div>
+
+        <p>
+            The UI dashboard is built with React, TypeScript, and Material UI to provide a modern, responsive user experience.
+            To start using the dashboard, see the <a href="../../packages/ui/README.md">UI README</a> for installation and configuration instructions.
+        </p>
+    </div>
+
+    <div class="section" id="cloudflare">
+        <h2>Cloudflare Workers Examples</h2>
+        
+        <div class="example-card card">
+            <div class="card-header">
+                Cloudflare Browser Rendering with PSP
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP with Cloudflare's Browser Rendering:</p>
+                <pre><code class="language-javascript">import { Renderer } from '@cloudflare/browser-rendering';
+import { CloudflareAdapter } from '@psp/cloudflare';
+
+export default {
+  async fetch(request, env, ctx) {
+    // Check if we have a session ID in the request
+    const url = new URL(request.url);
+    const sessionId = url.searchParams.get('sessionId');
+    
+    // Initialize the browser renderer
+    const renderer = new Renderer();
+    
+    // Create PSP adapter
+    const adapter = new CloudflareAdapter({
+      storageProvider: {
+        type: 'cloudflare-kv',
+        namespace: env.PSP_SESSIONS
+      }
+    });
+    
+    // If we have a session ID, try to restore it
+    if (sessionId) {
+      try {
+        const session = await adapter.loadSession(sessionId);
+        await session.restore(renderer);
+        
+        console.log('Session restored successfully');
+      } catch (error) {
+        console.error('Failed to restore session:', error);
+        // Continue with a new session
+      }
+    }
+    
+    // Navigate to the target page
+    const targetUrl = url.searchParams.get('url') || 'https://example.com';
+    await renderer.goto(targetUrl);
+    
+    // Interact with the page
+    if (!sessionId) {
+      // If this is a new session, perform login
+      await renderer.goto('https://example.com/login');
+      await renderer.fill('#username', 'user@example.com');
+      await renderer.fill('#password', 'password123');
+      await renderer.click('button[type="submit"]');
+      await renderer.waitForNavigation();
+      
+      // Create and capture the session
+      const session = await adapter.createSession(renderer, {
+        name: 'cloudflare-session',
+        description: 'Cloudflare Browser authenticated session'
+      });
+      
+      await session.capture();
+      
+      // Return the session ID in the response
+      return new Response(JSON.stringify({
+        sessionId: session.getId(),
+        message: 'Session created successfully'
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Take a screenshot of the authenticated page
+    const screenshot = await renderer.screenshot();
+    
+    // Return the screenshot
+    return new Response(screenshot, {
+      headers: { 'Content-Type': 'image/png' }
+    });
+  }
+};</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Serverless Session Management
+            </div>
+            <div class="card-body">
+                <p class="card-text">Implement PSP in a serverless environment:</p>
+                <pre><code class="language-javascript">import { Renderer } from '@cloudflare/browser-rendering';
+import { CloudflareAdapter } from '@psp/cloudflare';
+
+export default {
+  async scheduled(event, env, ctx) {
+    // This function runs on a schedule to update sessions
+    
+    // Initialize the browser renderer
+    const renderer = new Renderer();
+    
+    // Create PSP adapter
+    const adapter = new CloudflareAdapter({
+      storageProvider: {
+        type: 'cloudflare-kv',
+        namespace: env.PSP_SESSIONS
+      }
+    });
+    
+    // List all sessions
+    const sessions = await adapter.listSessions();
+    
+    // Find sessions that need refreshing
+    const expiringSessions = sessions.filter(metadata => {
+      // Find sessions that expire in the next hour
+      const expiresIn = (metadata.expireAt || 0) - Date.now();
+      return expiresIn > 0 && expiresIn < 3600000; // less than 1 hour
+    });
+    
+    console.log(`Found ${expiringSessions.length} sessions that need refreshing`);
+    
+    // Process each session
+    for (const metadata of expiringSessions) {
+      try {
+        // Load the session
+        const session = await adapter.loadSession(metadata.id);
+        
+        // Restore the session
+        await session.restore(renderer);
+        
+        // Perform a simple action to refresh tokens
+        await renderer.goto('https://example.com/dashboard');
+        
+        // Capture the refreshed state
+        await session.capture();
+        
+        console.log(`Refreshed session: ${metadata.id}`);
+      } catch (error) {
+        console.error(`Failed to refresh session ${metadata.id}:`, error);
+      }
+    }
+    
+    return new Response('Session refresh complete');
+  }
+};</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="stagehand">
+        <h2>Stagehand Examples</h2>
+        
+        <div class="example-card card">
+            <div class="card-header">
+                Basic Integration with Stagehand
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP with Stagehand for reliable automation:</p>
+                <pre><code class="language-javascript">import { Stagehand } from '@stagehand/core';
+import { StagehandAdapter } from '@psp/stagehand';
+
+async function stagehandExample() {
+  // Initialize Stagehand
+  const stagehand = await Stagehand.create();
+  
+  // Create PSP adapter
+  const adapter = new StagehandAdapter();
+  
+  // Create a session
+  const session = await adapter.createSession(stagehand, {
+    name: 'stagehand-session',
+    description: 'Stagehand authenticated session'
+  });
+  
+  // Navigate to a website
+  await stagehand.goto('https://example.com/login');
+  
+  // Fill form and submit using Stagehand's reliable element selection
+  await stagehand.withinForm('Login', async form => {
+    await form.fillField('Username', 'user@example.com');
+    await form.fillField('Password', 'password123');
+    await form.submit();
+  });
+  
+  // Wait for navigation
+  await stagehand.waitFor({ pageLoad: true });
+  
+  // Capture the authenticated session
+  await session.capture();
+  
+  console.log(`Session saved with ID: ${session.getId()}`);
+  
+  // Later, restore the session
+  const newStagehand = await Stagehand.create();
+  
+  // Load the saved session
+  const savedSession = await adapter.loadSession(session.getId());
+  
+  // Restore the session to the new browser
+  await savedSession.restore(newStagehand);
+  
+  // Navigate to a protected page - already authenticated
+  await newStagehand.goto('https://example.com/dashboard');
+  
+  // Verify we're logged in
+  const username = await newStagehand.text('username-display');
+  console.log(`Logged in as: ${username}`);
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Multi-stage Workflows with Stagehand
+            </div>
+            <div class="card-body">
+                <p class="card-text">Implement complex workflows with session persistence:</p>
+                <pre><code class="language-javascript">import { Stagehand } from '@stagehand/core';
+import { StagehandAdapter } from '@psp/stagehand';
+
+async function multistageWorkflow() {
+  // Check if we have a session ID from a previous stage
+  const previousSessionId = process.env.WORKFLOW_SESSION_ID;
+  
+  // Initialize Stagehand
+  const stagehand = await Stagehand.create();
+  
+  // Create PSP adapter
+  const adapter = new StagehandAdapter();
+  
+  let session;
+  
+  // If we have a previous session, restore it
+  if (previousSessionId) {
+    session = await adapter.loadSession(previousSessionId);
+    await session.restore(stagehand);
+    console.log(`Restored session from previous stage`);
+  } else {
+    // Create a new session
+    session = await adapter.createSession(stagehand, {
+      name: 'workflow-session',
+      description: 'Multi-stage workflow session'
+    });
+    
+    // Stage 1: Login
+    await stagehand.goto('https://example.com/login');
+    await stagehand.fillField('Username', 'user@example.com');
+    await stagehand.fillField('Password', 'password123');
+    await stagehand.click('Sign In');
+    await stagehand.waitFor({ pageLoad: true });
+    
+    // Capture after login
+    await session.capture();
+    console.log(`Completed Stage 1: Login`);
+  }
+  
+  // Identify the current stage from the URL
+  const currentUrl = await stagehand.getCurrentUrl();
+  
+  if (currentUrl.includes('/dashboard')) {
+    // Stage 2: Fill form
+    await stagehand.click('New Item');
+    await stagehand.fillField('Item Name', 'New Product');
+    await stagehand.fillField('Description', 'This is a new product');
+    await stagehand.selectOption('Category', 'Electronics');
+    await stagehand.click('Next');
+    await stagehand.waitFor({ pageLoad: true });
+    
+    // Capture after form completion
+    await session.capture();
+    console.log(`Completed Stage 2: Fill form`);
+  } else if (currentUrl.includes('/item/details')) {
+    // Stage 3: Review and submit
+    await stagehand.click('Confirm Details');
+    await stagehand.withinDialog(async dialog => {
+      await dialog.click('Submit');
+    });
+    await stagehand.waitFor({ pageLoad: true });
+    
+    // Verify success message
+    const successMessage = await stagehand.text('status-message');
+    console.log(`Success: ${successMessage}`);
+    
+    // Final capture
+    await session.capture();
+    console.log(`Completed Stage 3: Review and submit`);
+  } else {
+    console.log(`Unknown stage with URL: ${currentUrl}`);
+  }
+  
+  // Save session ID for potential next stage
+  console.log(`WORKFLOW_SESSION_ID=${session.getId()}`);
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="puppeteer">
+        <h2>Puppeteer Examples</h2>
+        
+        <div class="example-card card">
+            <div class="card-header">
+                Basic Authentication with Puppeteer
+            </div>
+            <div class="card-body">
+                <p class="card-text">Use PSP with Puppeteer:</p>
+                <pre><code class="language-javascript">const puppeteer = require('puppeteer');
+const { PuppeteerAdapter } = require('@psp/puppeteer');
+
+async function puppeteerExample() {
+  // Launch browser
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  
+  // Create PSP adapter
+  const adapter = new PuppeteerAdapter();
+  
+  // Create a session
+  const session = await adapter.createSession(page, {
+    name: 'puppeteer-session',
+    description: 'Puppeteer authenticated session'
+  });
+  
+  // Navigate to a login page
+  await page.goto('https://example.com/login');
+  
+  // Fill form and login
+  await page.type('#username', 'user@example.com');
+  await page.type('#password', 'password123');
+  await page.click('button[type="submit"]');
+  
+  // Wait for navigation
+  await page.waitForNavigation();
+  
+  // Capture the session
+  await session.capture();
+  
+  console.log(`Session saved with ID: ${session.getId()}`);
+  
+  // Close the browser
+  await browser.close();
+  
+  // Later, in a new browser instance
+  const newBrowser = await puppeteer.launch();
+  const newPage = await newBrowser.newPage();
+  
+  // Load the saved session
+  const savedSession = await adapter.loadSession(session.getId());
+  
+  // Restore the session
+  await savedSession.restore(newPage);
+  
+  // Navigate to a protected page - already authenticated
+  await newPage.goto('https://example.com/dashboard');
+  
+  // Take a screenshot to verify
+  await newPage.screenshot({ path: 'authenticated.png' });
+  
+  await newBrowser.close();
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Using CDP with Puppeteer and PSP
+            </div>
+            <div class="card-body">
+                <p class="card-text">Leverage Chrome DevTools Protocol for advanced session handling:</p>
+                <pre><code class="language-javascript">const puppeteer = require('puppeteer');
+const { PuppeteerAdapter } = require('@psp/puppeteer');
+
+async function cdpExample() {
+  // Launch browser
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  
+  // Get CDP client
+  const cdpClient = await page.target().createCDPSession();
+  
+  // Create PSP adapter with CDP support
+  const adapter = new PuppeteerAdapter({
+    useCDP: true,
+    cdpClient
+  });
+  
+  // Create a session
+  const session = await adapter.createSession(page, {
+    name: 'cdp-session',
+    description: 'Session with CDP support'
+  });
+  
+  // Use CDP to enable more capabilities
+  await cdpClient.send('Network.enable');
+  await cdpClient.send('Network.setCacheDisabled', { cacheDisabled: true });
+  
+  // Set up request interception for tokens
+  await cdpClient.on('Network.responseReceived', async (params) => {
+    if (params.response.url.includes('/api/auth')) {
+      const responseBody = await cdpClient.send('Network.getResponseBody', {
+        requestId: params.requestId
+      });
+      
+      try {
+        const authData = JSON.parse(responseBody.body);
+        if (authData.token) {
+          console.log('Captured authentication token');
+          
+          // Store the token in the session
+          await session.updateState({
+            authToken: authData.token
+          });
+        }
+      } catch (e) {
+        // Not JSON or no token
+      }
+    }
+  });
+  
+  // Navigate to login
+  await page.goto('https://example.com/login');
+  await page.type('#username', 'user@example.com');
+  await page.type('#password', 'password123');
+  await page.click('button[type="submit"]');
+  
+  // Wait for auth token response
+  await page.waitForResponse(response => 
+    response.url().includes('/api/auth'));
+  
+  // Capture full session with auth token
+  await session.capture();
+  
+  console.log(`Session saved with ID: ${session.getId()}`);
+  
+  await browser.close();
+}</code></pre>
+            </div>
+        </div>
     </div>
 
     <div class="section" id="custom">
-        <h2>Custom Implementation</h2>
+        <h2>Custom Implementation Examples</h2>
         
         <div class="example-card card">
             <div class="card-header">
@@ -464,9 +1497,386 @@ export class S3StorageProvider implements StorageProvider {
   }
   
   // Helper methods to handle serialization and deserialization
-  private serializeState(state: any): any { /* ... */ }
-  private deserializeState(state: any): any { /* ... */ }
+  private serializeState(state: any): any {
+    const serialized: any = { ...state };
+    
+    // Convert Maps to objects
+    if (state.storage?.localStorage instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      const localStorage: Record<string, Record<string, string>> = {};
+      
+      for (const [origin, storage] of state.storage.localStorage.entries()) {
+        localStorage[origin] = Object.fromEntries(storage);
+      }
+      
+      serialized.storage.localStorage = localStorage;
+    }
+    
+    if (state.storage?.sessionStorage instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      const sessionStorage: Record<string, Record<string, string>> = {};
+      
+      for (const [origin, storage] of state.storage.sessionStorage.entries()) {
+        sessionStorage[origin] = Object.fromEntries(storage);
+      }
+      
+      serialized.storage.sessionStorage = sessionStorage;
+    }
+    
+    return serialized;
+  }
+  
+  private deserializeState(state: any): any {
+    const deserialized: any = { ...state };
+    
+    // Convert objects back to Maps
+    if (state.storage?.localStorage && typeof state.storage.localStorage === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      const localStorage = new Map<string, Map<string, string>>();
+      
+      for (const [origin, storage] of Object.entries(state.storage.localStorage)) {
+        localStorage.set(origin, new Map(Object.entries(storage as Record<string, string>)));
+      }
+      
+      deserialized.storage.localStorage = localStorage;
+    }
+    
+    if (state.storage?.sessionStorage && typeof state.storage.sessionStorage === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      const sessionStorage = new Map<string, Map<string, string>>();
+      
+      for (const [origin, storage] of Object.entries(state.storage.sessionStorage)) {
+        sessionStorage.set(origin, new Map(Object.entries(storage as Record<string, string>)));
+      }
+      
+      deserialized.storage.sessionStorage = sessionStorage;
+    }
+    
+    return deserialized;
+  }
 }</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                Custom Framework Adapter
+            </div>
+            <div class="card-body">
+                <p class="card-text">Create an adapter for a custom automation framework:</p>
+                <pre><code class="language-typescript">import { Adapter, BrowserSessionState, Event, RecordingOptions, PlaybackOptions } from '@psp/core';
+
+// Example adapter for a custom framework
+export class CustomFrameworkAdapter extends Adapter {
+  private browser: any; // Your custom browser API
+  
+  constructor(options: any = {}) {
+    super({
+      ...options,
+      type: 'custom-framework'
+    });
+  }
+  
+  async connect(browser: any): Promise<void> {
+    this.browser = browser;
+    await super.connect(browser);
+  }
+  
+  async captureState(): Promise<BrowserSessionState> {
+    if (!this.browser) {
+      throw new Error('Not connected to a browser');
+    }
+    
+    // Get current URL and title
+    const url = await this.browser.getCurrentUrl();
+    const title = await this.browser.getTitle();
+    const origin = new URL(url).origin;
+    
+    // Get cookies
+    const cookies = await this.browser.getCookies();
+    
+    // Get localStorage and sessionStorage
+    const storage = await this.browser.executeScript(`
+      const localStorage = {};
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        localStorage[key] = window.localStorage.getItem(key);
+      }
+      
+      const sessionStorage = {};
+      for (let i = 0; i < window.sessionStorage.length; i++) {
+        const key = window.sessionStorage.key(i);
+        sessionStorage[key] = window.sessionStorage.getItem(key);
+      }
+      
+      return { localStorage, sessionStorage };
+    `);
+    
+    // Build the full state object
+    return {
+      version: '1.0.0',
+      timestamp: Date.now(),
+      origin,
+      storage: {
+        cookies: cookies.map(this.mapCookie),
+        localStorage: this.convertToMap(storage.localStorage, origin),
+        sessionStorage: this.convertToMap(storage.sessionStorage, origin)
+      },
+      history: {
+        currentUrl: url,
+        entries: [
+          {
+            url,
+            title,
+            timestamp: Date.now()
+          }
+        ],
+        currentIndex: 0
+      }
+    };
+  }
+  
+  async applyState(state: BrowserSessionState): Promise<void> {
+    if (!this.browser) {
+      throw new Error('Not connected to a browser');
+    }
+    
+    // Navigate to the URL
+    if (state.history?.currentUrl) {
+      await this.browser.navigate(state.history.currentUrl);
+    }
+    
+    // Apply cookies
+    for (const cookie of state.storage.cookies) {
+      await this.browser.setCookie(this.reverseCookieMap(cookie));
+    }
+    
+    // Apply localStorage and sessionStorage
+    const origin = new URL(await this.browser.getCurrentUrl()).origin;
+    const localStorage = state.storage.localStorage.get(origin);
+    const sessionStorage = state.storage.sessionStorage.get(origin);
+    
+    await this.browser.executeScript(`
+      // Apply localStorage
+      const localStorage = ${JSON.stringify(Object.fromEntries(localStorage || []))};
+      window.localStorage.clear();
+      for (const [key, value] of Object.entries(localStorage)) {
+        window.localStorage.setItem(key, value);
+      }
+      
+      // Apply sessionStorage
+      const sessionStorage = ${JSON.stringify(Object.fromEntries(sessionStorage || []))};
+      window.sessionStorage.clear();
+      for (const [key, value] of Object.entries(sessionStorage)) {
+        window.sessionStorage.setItem(key, value);
+      }
+    `);
+    
+    // Refresh to apply all state
+    await this.browser.refresh();
+  }
+  
+  async startRecording(options?: RecordingOptions): Promise<void> {
+    if (!this.browser) {
+      throw new Error('Not connected to a browser');
+    }
+    
+    // Initialize recording
+    await this.browser.executeScript(`
+      window._pspEvents = [];
+      window._pspStartTime = Date.now();
+      
+      // Set up event listeners
+      document.addEventListener('click', e => {
+        window._pspEvents.push({
+          type: 'click',
+          timestamp: Date.now() - window._pspStartTime,
+          target: e.target.tagName + (e.target.id ? '#' + e.target.id : ''),
+          data: {
+            x: e.clientX,
+            y: e.clientY
+          }
+        });
+      });
+      
+      // Additional event listeners
+    `);
+  }
+  
+  async stopRecording(): Promise<Event[]> {
+    if (!this.browser) {
+      throw new Error('Not connected to a browser');
+    }
+    
+    // Retrieve recorded events
+    const events = await this.browser.executeScript(`
+      const events = window._pspEvents;
+      window._pspEvents = [];
+      return events;
+    `);
+    
+    return events;
+  }
+  
+  async playRecording(events: Event[], options?: PlaybackOptions): Promise<void> {
+    if (!this.browser) {
+      throw new Error('Not connected to a browser');
+    }
+    
+    // Play back each event
+    for (const event of events) {
+      switch (event.type) {
+        case 'click':
+          await this.browser.click(event.target);
+          break;
+          
+        // Handle other event types
+          
+        default:
+          console.warn(`Unsupported event type: ${event.type}`);
+      }
+      
+      // Add delay between events
+      if (options?.speed) {
+        await new Promise(resolve => setTimeout(resolve, 100 / (options.speed || 1)));
+      }
+    }
+  }
+  
+  // Helper methods
+  private mapCookie(cookie: any): any {
+    return {
+      name: cookie.name,
+      value: cookie.value,
+      domain: cookie.domain || '',
+      path: cookie.path || '/',
+      expires: cookie.expires ? new Date(cookie.expires).getTime() : null,
+      httpOnly: cookie.httpOnly || false,
+      secure: cookie.secure || false,
+      sameSite: 'Lax' // Default
+    };
+  }
+  
+  private reverseCookieMap(cookie: any): any {
+    return {
+      name: cookie.name,
+      value: cookie.value,
+      domain: cookie.domain,
+      path: cookie.path,
+      expires: cookie.expires ? new Date(cookie.expires) : undefined,
+      httpOnly: cookie.httpOnly,
+      secure: cookie.secure
+    };
+  }
+  
+  private convertToMap(obj: Record<string, string>, origin: string): Map<string, Map<string, string>> {
+    const map = new Map<string, Map<string, string>>();
+    map.set(origin, new Map(Object.entries(obj)));
+    return map;
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="example-card card">
+            <div class="card-header">
+                End-to-End Testing Example
+            </div>
+            <div class="card-body">
+                <p class="card-text">Integrate PSP into your testing framework:</p>
+                <pre><code class="language-javascript">// Example with Jest and Playwright
+import { test, expect } from '@jest/globals';
+import { chromium } from 'playwright';
+import { PlaywrightAdapter } from '@psp/playwright';
+
+// Setup and teardown
+let browser;
+let context;
+let page;
+let adapter;
+let authSession;
+
+beforeAll(async () => {
+  // Launch browser once for all tests
+  browser = await chromium.launch();
+  
+  // Create adapter
+  adapter = new PlaywrightAdapter();
+  
+  // Initialize authentication session
+  context = await browser.newContext();
+  page = await context.newPage();
+  
+  // Create a session
+  const session = await adapter.createSession(page, {
+    name: 'auth-session-for-tests',
+    description: 'Authenticated session for tests'
+  });
+  
+  // Log in
+  await page.goto('https://example.com/login');
+  await page.fill('#username', 'test-user');
+  await page.fill('#password', 'test-password');
+  await page.click('button[type="submit"]');
+  await page.waitForURL('https://example.com/dashboard');
+  
+  // Capture the authenticated session
+  await session.capture();
+  
+  // Store for future tests
+  authSession = session;
+  
+  // Close the login context
+  await context.close();
+});
+
+afterAll(async () => {
+  await browser.close();
+});
+
+// Helper function to create an authenticated page
+async function getAuthenticatedPage() {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  
+  // Restore the auth session
+  await authSession.restore(page);
+  
+  return { context, page };
+}
+
+// Tests
+test('User can access profile page', async () => {
+  const { page, context } = await getAuthenticatedPage();
+  
+  // Navigate directly to profile (already authenticated)
+  await page.goto('https://example.com/profile');
+  
+  // Verify we're authenticated and can see the profile
+  const username = await page.textContent('.username');
+  expect(username).toBe('test-user');
+  
+  await context.close();
+});
+
+test('User can update settings', async () => {
+  const { page, context } = await getAuthenticatedPage();
+  
+  // Navigate to settings
+  await page.goto('https://example.com/settings');
+  
+  // Toggle a setting
+  await page.click('#notifications-toggle');
+  
+  // Save changes
+  await page.click('#save-button');
+  
+  // Verify success message
+  const message = await page.textContent('.success-message');
+  expect(message).toContain('Settings saved');
+  
+  await context.close();
+});</code></pre>
             </div>
         </div>
     </div>

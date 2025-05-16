@@ -1,0 +1,65 @@
+
+<svg width="1280" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="1280" height="64" fill="#1976d2"/>
+  <text x="24" y="40" font-family="Arial" font-size="24" font-weight="bold" fill="white">PSP Dashboard - Dashboard</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="64" width="240" height="736" fill="#ffffff"/>
+  <rect x="0" y="64" width="240" height="736" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+  
+  <!-- Navigation Items -->
+  <rect x="12" y="100" width="216" height="40" rx="4" fill="#e3f2fd"/>
+  <text x="56" y="125" font-family="Arial" font-size="16" fill="#333333">Dashboard</text>
+  
+  <rect x="12" y="150" width="216" height="40" rx="4" fill="transparent"/>
+  <text x="56" y="175" font-family="Arial" font-size="16" fill="#333333">Sessions</text>
+  
+  <rect x="12" y="200" width="216" height="40" rx="4" fill="transparent"/>
+  <text x="56" y="225" font-family="Arial" font-size="16" fill="#333333">Recorder</text>
+  
+  <rect x="12" y="250" width="216" height="40" rx="4" fill="transparent"/>
+  <text x="56" y="275" font-family="Arial" font-size="16" fill="#333333">History</text>
+  
+  <rect x="12" y="300" width="216" height="40" rx="4" fill="transparent"/>
+  <text x="56" y="325" font-family="Arial" font-size="16" fill="#333333">Settings</text>
+  
+  <!-- Content Area -->
+  <rect x="260" y="84" width="1000" height="60" rx="4" fill="#ffffff"/>
+  <text x="280" y="124" font-family="Arial" font-size="24" fill="#333333">Dashboard</text>
+  
+  <!-- Page Content - Different for each page -->
+  
+        <!-- Stats Cards -->
+        <rect x="260" y="160" width="300" height="120" rx="4" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+        <text x="280" y="190" font-family="Arial" font-size="18" fill="#333333">Active Sessions</text>
+        <text x="280" y="240" font-family="Arial" font-size="32" fill="#1976d2">24</text>
+        
+        <rect x="580" y="160" width="300" height="120" rx="4" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+        <text x="600" y="190" font-family="Arial" font-size="18" fill="#333333">Total Recordings</text>
+        <text x="600" y="240" font-family="Arial" font-size="32" fill="#1976d2">142</text>
+        
+        <rect x="900" y="160" width="300" height="120" rx="4" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+        <text x="920" y="190" font-family="Arial" font-size="18" fill="#333333">Storage Used</text>
+        <text x="920" y="240" font-family="Arial" font-size="32" fill="#1976d2">2.4 GB</text>
+        
+        <!-- Chart -->
+        <rect x="260" y="300" width="940" height="400" rx="4" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+        <text x="280" y="330" font-family="Arial" font-size="18" fill="#333333">Sessions Activity</text>
+        
+        <!-- Chart Elements -->
+        <rect x="280" y="360" width="900" height="320" fill="#ffffff"/>
+        <path d="M280,680 L1180,680" stroke="#e0e0e0" stroke-width="1"/>
+        <path d="M280,360 L280,680" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- Chart Data -->
+        <path d="M280,600 C400,580 500,500 600,540 C700,580 800,480 900,460 C1000,440 1100,420 1180,380" stroke="#1976d2" stroke-width="3" fill="none"/>
+      
+  
+  <!-- Footer -->
+  <rect x="0" y="760" width="1280" height="40" fill="#f5f5f5"/>
+  <text x="640" y="785" font-family="Arial" font-size="14" fill="#757575" text-anchor="middle">PSP v0.1.0 | Persistent Sessions Protocol</text>
+</svg>
+  
