@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "timestamp": 1747418568960,
+  "origin": "https://example.com",
+  "storage": {
+    "cookies": [],
+    "localStorage": {
+      "timestamp": "1747418568956",
+      "demo-item-2": "value-2",
+      "demo-item-1": "value-1"
+    },
+    "sessionStorage": {}
+  },
+  "url": "https://example.com/"
+}
