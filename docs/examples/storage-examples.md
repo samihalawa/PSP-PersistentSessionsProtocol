@@ -187,7 +187,7 @@ import { createStorageProvider } from 'psp';
 // Create a local storage provider
 const localStorage = createStorageProvider({
   type: 'local',
-  basePath: '/path/to/sessions'
+  directory: '/path/to/sessions'
 });
 
 // Create an S3 storage provider
@@ -211,6 +211,28 @@ const supabaseStorage = createStorageProvider({
   type: 'supabase',
   url: 'https://your-project.supabase.co',
   apiKey: 'YOUR_SUPABASE_API_KEY'
+});
+
+// Create an orchestrator with multiple providers
+const orchestratorStorage = createStorageProvider({
+  type: 'orchestrator',
+  // Primary provider can be a provider instance or a configuration object
+  primary: {
+    type: 'local',
+    directory: '/path/to/sessions'
+  },
+  // Secondary providers for redundancy
+  secondary: [
+    {
+      type: 's3',
+      region: 'us-east-1',
+      bucket: 'session-backups'
+    }
+  ],
+  // Enable caching for performance
+  useCache: true,
+  cacheTtl: 300, // 5 minutes
+  cacheCapacity: 100
 });
 
 // Create a custom storage provider

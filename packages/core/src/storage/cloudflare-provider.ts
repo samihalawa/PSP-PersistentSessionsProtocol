@@ -1,4 +1,5 @@
-import { StorageProvider } from './provider';
+import { StorageProvider, StoredSession } from './provider';
+import { SessionMetadata, SessionFilter } from '../types';
 
 /**
  * Cloudflare Storage Provider Configuration Options
@@ -63,14 +64,21 @@ export class CloudflareStorageProvider implements StorageProvider {
   /**
    * Save session data to Cloudflare storage
    */
-  async save(id: string, data: any): Promise<void> {
+  async save(session: StoredSession): Promise<void> {
+    // Serialize state for JSON storage
+    const serializedState = this.serializeState(session.state);
+    const data = {
+      metadata: session.metadata,
+      state: serializedState
+    };
+
     switch (this.type) {
       case 'kv':
-        return this.saveToKV(id, data);
+        return this.saveToKV(session.metadata.id, data);
       case 'r2':
-        return this.saveToR2(id, data);
+        return this.saveToR2(session.metadata.id, data);
       case 'do':
-        return this.saveToDO(id, data);
+        return this.saveToDO(session.metadata.id, data);
       default:
         throw new Error(`Unsupported storage type: ${this.type}`);
     }
@@ -79,17 +87,28 @@ export class CloudflareStorageProvider implements StorageProvider {
   /**
    * Load session data from Cloudflare storage
    */
-  async load(id: string): Promise<any> {
+  async load(id: string): Promise<StoredSession> {
+    let data;
+
     switch (this.type) {
       case 'kv':
-        return this.loadFromKV(id);
+        data = await this.loadFromKV(id);
+        break;
       case 'r2':
-        return this.loadFromR2(id);
+        data = await this.loadFromR2(id);
+        break;
       case 'do':
-        return this.loadFromDO(id);
+        data = await this.loadFromDO(id);
+        break;
       default:
         throw new Error(`Unsupported storage type: ${this.type}`);
     }
+
+    // Deserialize state from JSON storage
+    return {
+      metadata: data.metadata,
+      state: this.deserializeState(data.state)
+    };
   }
 
   /**
@@ -111,17 +130,88 @@ export class CloudflareStorageProvider implements StorageProvider {
   /**
    * List available sessions in Cloudflare storage
    */
-  async list(filter?: any): Promise<any[]> {
+  async list(filter?: SessionFilter): Promise<SessionMetadata[]> {
+    let sessions: any[] = [];
+
     switch (this.type) {
       case 'kv':
-        return this.listFromKV(filter);
+        sessions = await this.listFromKV(filter);
+        break;
       case 'r2':
-        return this.listFromR2(filter);
+        sessions = await this.listFromR2(filter);
+        break;
       case 'do':
-        return this.listFromDO(filter);
+        sessions = await this.listFromDO(filter);
+        break;
       default:
         throw new Error(`Unsupported storage type: ${this.type}`);
     }
+
+    // Convert to proper metadata objects if needed
+    let metadata = sessions.map(session => {
+      if (session.metadata) {
+        return session.metadata;
+      } else if (session.id) {
+        // Minimal metadata if only ID is available
+        return {
+          id: session.id,
+          name: `Session ${session.id}`,
+          createdAt: session.timestamp || Date.now(),
+          updatedAt: session.lastModified || Date.now()
+        };
+      }
+      return session;
+    });
+
+    // Apply filters
+    if (filter) {
+      // Filter by name (case-insensitive)
+      if (filter.name) {
+        metadata = metadata.filter(m =>
+          m.name && m.name.toLowerCase().includes(filter.name.toLowerCase())
+        );
+      }
+
+      // Filter by tags (all specified tags must be present)
+      if (filter.tags && filter.tags.length > 0) {
+        metadata = metadata.filter(m =>
+          m.tags && filter.tags.every(tag => m.tags.includes(tag))
+        );
+      }
+
+      // Apply date filters
+      if (filter.created) {
+        if (filter.created.from) {
+          metadata = metadata.filter(m => m.createdAt >= filter.created.from);
+        }
+        if (filter.created.to) {
+          metadata = metadata.filter(m => m.createdAt <= filter.created.to);
+        }
+      }
+
+      if (filter.updated) {
+        if (filter.updated.from) {
+          metadata = metadata.filter(m => m.updatedAt >= filter.updated.from);
+        }
+        if (filter.updated.to) {
+          metadata = metadata.filter(m => m.updatedAt <= filter.updated.to);
+        }
+      }
+
+      // Sort by updated time (newest first)
+      metadata.sort((a, b) => b.updatedAt - a.updatedAt);
+
+      // Apply limit and offset
+      if (filter.offset) {
+        metadata = metadata.slice(filter.offset);
+      }
+
+      if (filter.limit) {
+        metadata = metadata.slice(0, filter.limit);
+      }
+    }
+
+    return metadata;
   }
 
   /**
@@ -386,5 +476,97 @@ export class CloudflareStorageProvider implements StorageProvider {
     }
 
     return response.json();
+  }
+
+  /**
+   * Serialize state for JSON storage (convert Maps to objects)
+   */
+  private serializeState(state: any): any {
+    const serialized: any = { ...state };
+
+    // Convert localStorage Map
+    if (state.storage?.localStorage instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      const localStorage: Record<string, Record<string, string>> = {};
+
+      for (const [origin, storage] of state.storage.localStorage.entries()) {
+        localStorage[origin] = Object.fromEntries(storage);
+      }
+
+      serialized.storage.localStorage = localStorage;
+    }
+
+    // Convert sessionStorage Map
+    if (state.storage?.sessionStorage instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      const sessionStorage: Record<string, Record<string, string>> = {};
+
+      for (const [origin, storage] of state.storage.sessionStorage.entries()) {
+        sessionStorage[origin] = Object.fromEntries(storage);
+      }
+
+      serialized.storage.sessionStorage = sessionStorage;
+    }
+
+    // Convert cacheStorage Map if present
+    if (state.storage?.cacheStorage?.caches instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      serialized.storage.cacheStorage = { ...serialized.storage.cacheStorage };
+
+      const caches: Record<string, any[]> = {};
+      for (const [name, entries] of state.storage.cacheStorage.caches.entries()) {
+        caches[name] = [...entries];
+      }
+
+      serialized.storage.cacheStorage.caches = caches;
+    }
+
+    return serialized;
+  }
+
+  /**
+   * Deserialize state from JSON storage (convert objects to Maps)
+   */
+  private deserializeState(state: any): any {
+    const deserialized: any = { ...state };
+
+    // Convert localStorage object to Map
+    if (state.storage?.localStorage && typeof state.storage.localStorage === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      const localStorage = new Map<string, Map<string, string>>();
+
+      for (const [origin, storage] of Object.entries(state.storage.localStorage)) {
+        localStorage.set(origin, new Map(Object.entries(storage as Record<string, string>)));
+      }
+
+      deserialized.storage.localStorage = localStorage;
+    }
+
+    // Convert sessionStorage object to Map
+    if (state.storage?.sessionStorage && typeof state.storage.sessionStorage === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      const sessionStorage = new Map<string, Map<string, string>>();
+
+      for (const [origin, storage] of Object.entries(state.storage.sessionStorage)) {
+        sessionStorage.set(origin, new Map(Object.entries(storage as Record<string, string>)));
+      }
+
+      deserialized.storage.sessionStorage = sessionStorage;
+    }
+
+    // Convert cacheStorage object to Map
+    if (state.storage?.cacheStorage?.caches && typeof state.storage.cacheStorage.caches === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      deserialized.storage.cacheStorage = { ...deserialized.storage.cacheStorage };
+
+      const caches = new Map<string, any[]>();
+      for (const [name, entries] of Object.entries(state.storage.cacheStorage.caches)) {
+        caches.set(name, entries as any[]);
+      }
+
+      deserialized.storage.cacheStorage.caches = caches;
+    }
+
+    return deserialized;
   }
 }

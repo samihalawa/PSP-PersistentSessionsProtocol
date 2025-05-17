@@ -1,4 +1,5 @@
-import { StorageProvider } from './provider';
+import { StorageProvider, StoredSession } from './provider';
+import { SessionMetadata, SessionFilter } from '../types';
 
 /**
  * S3 Storage Provider Configuration Options
@@ -91,12 +92,19 @@ export class S3StorageProvider implements StorageProvider {
   /**
    * Save session data to S3
    */
-  async save(id: string, data: any): Promise<void> {
+  async save(session: StoredSession): Promise<void> {
     const { PutObjectCommand } = await import('@aws-sdk/client-s3');
     const s3 = await this.getS3Client();
 
-    const serializedData = JSON.stringify(data);
-    const key = `${this.prefix}${id}.json`;
+    // Serialize browser state for JSON storage (convert Maps to objects)
+    const serializedState = this.serializeState(session.state);
+
+    const serializedData = JSON.stringify({
+      metadata: session.metadata,
+      state: serializedState
+    });
+
+    const key = `${this.prefix}${session.metadata.id}.json`;
 
     const params = {
       Bucket: this.bucket,
@@ -116,7 +124,7 @@ export class S3StorageProvider implements StorageProvider {
   /**
    * Load session data from S3
    */
-  async load(id: string): Promise<any> {
+  async load(id: string): Promise<StoredSession> {
     const { GetObjectCommand, NoSuchKey } = await import('@aws-sdk/client-s3');
     const s3 = await this.getS3Client();
 
@@ -134,8 +142,15 @@ export class S3StorageProvider implements StorageProvider {
         chunks.push(chunk);
       }
       const body = Buffer.concat(chunks).toString('utf-8');
-      
-      return JSON.parse(body);
+
+      // Parse JSON
+      const data = JSON.parse(body);
+
+      // Deserialize state (convert objects back to Maps)
+      return {
+        metadata: data.metadata,
+        state: this.deserializeState(data.state)
+      };
     } catch (error) {
       if ((error as any).name === 'NoSuchKey') {
         throw new Error(`Session not found: ${id}`);
@@ -166,7 +181,7 @@ export class S3StorageProvider implements StorageProvider {
   /**
    * List available sessions from S3
    */
-  async list(filter?: any): Promise<any[]> {
+  async list(filter?: SessionFilter): Promise<SessionMetadata[]> {
     const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
     const s3 = await this.getS3Client();
 
@@ -176,7 +191,7 @@ export class S3StorageProvider implements StorageProvider {
         Prefix: this.prefix
       }));
 
-      const sessions = [];
+      const sessions: SessionMetadata[] = [];
 
       // If no objects found, return empty array
       if (!response.Contents) {
@@ -186,30 +201,81 @@ export class S3StorageProvider implements StorageProvider {
       // Process objects
       for (const object of response.Contents) {
         if (!object.Key) continue;
-        
+
         // Only process JSON files
         if (!object.Key.endsWith('.json')) continue;
-        
+
         // Extract session ID from key
         const id = object.Key.replace(this.prefix, '').replace('.json', '');
-        
-        // If we need detailed metadata, load the session
-        if (filter?.includeMetadata) {
-          try {
-            const session = await this.load(id);
-            sessions.push({
-              id,
-              metadata: session.metadata || {}
-            });
-          } catch (e) {
-            console.warn(`Error loading session ${id}:`, e);
-          }
-        } else {
-          sessions.push({ id });
+
+        // Always load session to get metadata for proper filtering
+        try {
+          const session = await this.load(id);
+          sessions.push(session.metadata);
+        } catch (e) {
+          console.warn(`Error loading session ${id}:`, e);
         }
       }
 
-      return sessions;
+      // Apply filters to the sessions
+      let filteredSessions = sessions;
+
+      if (filter) {
+        // Filter by name (case-insensitive)
+        if (filter.name) {
+          filteredSessions = filteredSessions.filter(m =>
+            m.name.toLowerCase().includes(filter.name!.toLowerCase())
+          );
+        }
+
+        // Filter by tags (all specified tags must be present)
+        if (filter.tags && filter.tags.length > 0) {
+          filteredSessions = filteredSessions.filter(m =>
+            m.tags && filter.tags!.every(tag => m.tags!.includes(tag))
+          );
+        }
+
+        // Apply date filters
+        if (filter.created) {
+          if (filter.created.from) {
+            filteredSessions = filteredSessions.filter(m =>
+              m.createdAt >= filter.created!.from!
+            );
+          }
+          if (filter.created.to) {
+            filteredSessions = filteredSessions.filter(m =>
+              m.createdAt <= filter.created!.to!
+            );
+          }
+        }
+
+        if (filter.updated) {
+          if (filter.updated.from) {
+            filteredSessions = filteredSessions.filter(m =>
+              m.updatedAt >= filter.updated!.from!
+            );
+          }
+          if (filter.updated.to) {
+            filteredSessions = filteredSessions.filter(m =>
+              m.updatedAt <= filter.updated!.to!
+            );
+          }
+        }
+
+        // Sort by updated time (newest first)
+        filteredSessions.sort((a, b) => b.updatedAt - a.updatedAt);
+
+        // Apply limit and offset
+        if (filter.offset) {
+          filteredSessions = filteredSessions.slice(filter.offset);
+        }
+
+        if (filter.limit) {
+          filteredSessions = filteredSessions.slice(0, filter.limit);
+        }
+      }
+
+      return filteredSessions;
     } catch (error) {
       throw new Error(`Failed to list sessions from S3: ${(error as Error).message}`);
     }
@@ -233,5 +299,97 @@ export class S3StorageProvider implements StorageProvider {
     } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Serialize state for JSON storage (convert Maps to objects)
+   */
+  private serializeState(state: any): any {
+    const serialized: any = { ...state };
+
+    // Convert localStorage Map
+    if (state.storage?.localStorage instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      const localStorage: Record<string, Record<string, string>> = {};
+
+      for (const [origin, storage] of state.storage.localStorage.entries()) {
+        localStorage[origin] = Object.fromEntries(storage);
+      }
+
+      serialized.storage.localStorage = localStorage;
+    }
+
+    // Convert sessionStorage Map
+    if (state.storage?.sessionStorage instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      const sessionStorage: Record<string, Record<string, string>> = {};
+
+      for (const [origin, storage] of state.storage.sessionStorage.entries()) {
+        sessionStorage[origin] = Object.fromEntries(storage);
+      }
+
+      serialized.storage.sessionStorage = sessionStorage;
+    }
+
+    // Convert cacheStorage Map if present
+    if (state.storage?.cacheStorage?.caches instanceof Map) {
+      serialized.storage = { ...serialized.storage };
+      serialized.storage.cacheStorage = { ...serialized.storage.cacheStorage };
+
+      const caches: Record<string, any[]> = {};
+      for (const [name, entries] of state.storage.cacheStorage.caches.entries()) {
+        caches[name] = [...entries];
+      }
+
+      serialized.storage.cacheStorage.caches = caches;
+    }
+
+    return serialized;
+  }
+
+  /**
+   * Deserialize state from JSON storage (convert objects to Maps)
+   */
+  private deserializeState(state: any): any {
+    const deserialized: any = { ...state };
+
+    // Convert localStorage object to Map
+    if (state.storage?.localStorage && typeof state.storage.localStorage === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      const localStorage = new Map<string, Map<string, string>>();
+
+      for (const [origin, storage] of Object.entries(state.storage.localStorage)) {
+        localStorage.set(origin, new Map(Object.entries(storage as Record<string, string>)));
+      }
+
+      deserialized.storage.localStorage = localStorage;
+    }
+
+    // Convert sessionStorage object to Map
+    if (state.storage?.sessionStorage && typeof state.storage.sessionStorage === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      const sessionStorage = new Map<string, Map<string, string>>();
+
+      for (const [origin, storage] of Object.entries(state.storage.sessionStorage)) {
+        sessionStorage.set(origin, new Map(Object.entries(storage as Record<string, string>)));
+      }
+
+      deserialized.storage.sessionStorage = sessionStorage;
+    }
+
+    // Convert cacheStorage object to Map
+    if (state.storage?.cacheStorage?.caches && typeof state.storage.cacheStorage.caches === 'object') {
+      deserialized.storage = { ...deserialized.storage };
+      deserialized.storage.cacheStorage = { ...deserialized.storage.cacheStorage };
+
+      const caches = new Map<string, any[]>();
+      for (const [name, entries] of Object.entries(state.storage.cacheStorage.caches)) {
+        caches.set(name, entries as any[]);
+      }
+
+      deserialized.storage.cacheStorage.caches = caches;
+    }
+
+    return deserialized;
   }
 }
