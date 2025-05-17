@@ -342,6 +342,25 @@
     const sessionDetailView = document.getElementById('session-detail-view');
     const createSessionView = document.getElementById('create-session-view');
     const settingsView = document.getElementById('settings-view');
+
+    // Handle demo mode if enabled
+    if (CONFIG.features.demoMode) {
+      console.log('Starting UI in demo mode with sample data');
+      // Skip authentication in demo mode
+      authContainer.classList.add('hidden');
+      mainContent.classList.remove('hidden');
+
+      // Update the navbar
+      userEmailElement.textContent = 'Demo User';
+      document.getElementById('logout-button').classList.add('hidden');
+
+      // Add a demo mode indicator
+      const navbarBrand = document.querySelector('.navbar-brand');
+      const demoBadge = document.createElement('span');
+      demoBadge.className = 'badge bg-warning ms-2';
+      demoBadge.textContent = 'DEMO';
+      navbarBrand.appendChild(demoBadge);
+    }
     const sessionsContainer = document.getElementById('sessions-container');
     const loadingSessions = document.getElementById('loading-sessions');
     const noSessions = document.getElementById('no-sessions');
@@ -558,32 +577,68 @@
     async function loadSessions() {
       loadingSessions.classList.remove('hidden');
       noSessions.classList.add('hidden');
-      
+
       try {
-        const result = await fetchApi('/sessions');
-        const sessions = result.sessions || [];
-        
+        let sessions = [];
+
+        // Handle demo mode
+        if (CONFIG.features.demoMode && window.MOCK_SESSIONS) {
+          console.log('Loading mock sessions for demo');
+          // Use demo data
+          sessions = window.MOCK_SESSIONS;
+          // Add a short delay to simulate loading
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } else {
+          // Normal API call for real data
+          const result = await fetchApi('/sessions');
+          sessions = result.sessions || [];
+        }
+
         // Clear sessions container
         const sessionCards = sessionsContainer.querySelectorAll('.session-card');
         sessionCards.forEach(card => card.remove());
-        
+
         if (sessions.length === 0) {
           loadingSessions.classList.add('hidden');
           noSessions.classList.remove('hidden');
           return;
         }
-        
+
         // Render sessions
         sessions.forEach(session => {
           const sessionCard = createSessionCard(session);
           sessionsContainer.appendChild(sessionCard);
         });
-        
+
         loadingSessions.classList.add('hidden');
       } catch (error) {
         console.error('Failed to load sessions:', error);
         loadingSessions.classList.add('hidden');
-        alert('Failed to load sessions. Check your API settings.');
+
+        // In demo mode, don't show error alert
+        if (!CONFIG.features.demoMode) {
+          alert('Failed to load sessions. Check your API settings.');
+        } else {
+          // In demo mode, show demo sessions even on error
+          loadSampleSessions();
+        }
+      }
+    }
+
+    // Helper function to load sample sessions in demo mode
+    function loadSampleSessions() {
+      if (window.MOCK_SESSIONS && CONFIG.features.demoMode) {
+        // Clear sessions container
+        const sessionCards = sessionsContainer.querySelectorAll('.session-card');
+        sessionCards.forEach(card => card.remove());
+
+        // Render sample sessions
+        window.MOCK_SESSIONS.forEach(session => {
+          const sessionCard = createSessionCard(session);
+          sessionsContainer.appendChild(sessionCard);
+        });
+
+        loadingSessions.classList.add('hidden');
       }
     }
     
@@ -648,17 +703,58 @@
     
     async function viewSessionDetails(sessionId) {
       currentSessionId = sessionId;
-      
+
       try {
-        const session = await fetchApi(`/sessions/${sessionId}`);
-        
+        let session;
+
+        // Handle demo mode
+        if (CONFIG.features.demoMode && window.MOCK_SESSIONS) {
+          console.log('Loading mock session details for demo');
+          // Find the session in the mock data
+          const mockSession = window.MOCK_SESSIONS.find(s => s.id === sessionId);
+          if (mockSession) {
+            // Create a sample session structure
+            session = {
+              id: mockSession.id,
+              metadata: mockSession.metadata,
+              data: {
+                storage: {
+                  cookies: [
+                    { name: 'session_id', value: '12345abcde', domain: mockSession.metadata.origin.replace('https://', '') },
+                    { name: 'user_id', value: 'user123', domain: mockSession.metadata.origin.replace('https://', '') }
+                  ],
+                  localStorage: {
+                    'user-preferences': '{"theme":"dark","fontSize":"medium"}',
+                    'last-visit': new Date().toISOString(),
+                    'auth-token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                  },
+                  sessionStorage: {
+                    'current-view': 'dashboard',
+                    'notifications': '3'
+                  }
+                },
+                url: `${mockSession.metadata.origin}/dashboard`,
+                origin: mockSession.metadata.origin,
+                timestamp: Date.now()
+              }
+            };
+            // Add a short delay to simulate loading
+            await new Promise(resolve => setTimeout(resolve, 300));
+          } else {
+            throw new Error('Session not found in demo data');
+          }
+        } else {
+          // Normal API call for real data
+          session = await fetchApi(`/sessions/${sessionId}`);
+        }
+
         // Populate session details
         document.getElementById('detail-session-name').textContent = session.metadata?.name || `Session ${sessionId.slice(0, 8)}`;
         document.getElementById('detail-session-id').textContent = sessionId;
         document.getElementById('detail-session-created').textContent = session.metadata?.createdAt ? new Date(session.metadata.createdAt).toLocaleString() : 'Unknown';
         document.getElementById('detail-session-origin').textContent = session.metadata?.origin || 'Unknown';
         document.getElementById('detail-session-description').textContent = session.metadata?.description || '-';
-        
+
         // Populate tags
         const tagsContainer = document.getElementById('detail-session-tags');
         tagsContainer.innerHTML = '';
@@ -672,57 +768,68 @@
         } else {
           tagsContainer.innerHTML = '<em>No tags</em>';
         }
-        
+
         // Pretty-print session data
         document.getElementById('detail-session-data').textContent = JSON.stringify(session.data, null, 2);
-        
+
+        // Get API endpoint (use default in demo mode)
+        const endpoint = CONFIG.features.demoMode ? DEFAULT_API_ENDPOINT : apiEndpoint;
+        const key = CONFIG.features.demoMode ? '***' : apiKey;
+
         // Generate code snippets
         const playwrightCode = `
 import { chromium } from 'playwright';
-import { PSPClient } from '@psp/playwright';
+import { createPSPClient } from '@psp/playwright';
 
 async function loadSession() {
+  // Initialize browser
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
-  
+
   // Initialize PSP client
-  const psp = new PSPClient({
-    endpoint: '${apiEndpoint}',
-    apiKey: '${apiKey ? '***' : ''}'
+  const psp = createPSPClient({
+    storage: {
+      type: 'cloudflare',
+      endpoint: '${endpoint}',
+      apiKey: '${key}'
+    }
   });
-  
+
   // Load the session
-  await psp.loadSession(page, '${sessionId}');
-  
+  await psp.restoreSession(page, '${sessionId}');
+
   // The page is now loaded with the session state
   console.log('Session loaded successfully!');
 }
 
 loadSession();`;
-        
+
         const seleniumCode = `
 from selenium import webdriver
-from psp.client import PSPClient
+from psp.selenium import create_psp_client
 
 # Initialize WebDriver
 driver = webdriver.Chrome()
 
 # Initialize PSP client
-psp = PSPClient(
-    endpoint='${apiEndpoint}',
-    api_key='${apiKey ? '***' : ''}'
-)
+psp = create_psp_client({
+    "storage": {
+        "type": "cloudflare",
+        "endpoint": "${endpoint}",
+        "api_key": "${key}"
+    }
+})
 
 # Load the session
-psp.load_session(driver, '${sessionId}')
+psp.restore_session(driver, "${sessionId}")
 
 # The driver is now loaded with the session state
-print('Session loaded successfully!')`;
-        
+print("Session loaded successfully!")`;
+
         document.getElementById('playwright-code').textContent = playwrightCode;
         document.getElementById('selenium-code').textContent = seleniumCode;
-        
+
         // Show the detail view
         showView('detail');
       } catch (error) {
