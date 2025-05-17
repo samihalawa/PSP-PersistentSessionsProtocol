@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP - Session Manager</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4a76a8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #3a5f89;
+        }
+        .session-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .session-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            background: white;
+        }
+        .session-card h3 {
+            margin-top: 0;
+        }
+        .session-details {
+            color: #666;
+            font-size: 14px;
+        }
+        .tag {
+            display: inline-block;
+            background: #e9f0f8;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+            color: #4a76a8;
+        }
+        .session-actions {
+            margin-top: 15px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .close {
+            float: right;
+            cursor: pointer;
+            font-size: 22px;
+        }
+        .success-message, .error-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .centered {
+            text-align: center;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4a76a8;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>PSP Session Manager</h1>
+    
+    <div class="card">
+        <h2>Session Storage Configuration</h2>
+        <div class="form-group">
+            <label for="storage-type">Storage Type:</label>
+            <select id="storage-type">
+                <option value="local">Local Storage</option>
+                <option value="s3">S3 Storage</option>
+                <option value="cloudflare">Cloudflare Storage</option>
+                <option value="supabase">Supabase Storage</option>
+                <option value="demo">Demo Mode (In-memory)</option>
+            </select>
+        </div>
+        
+        <!-- Local Storage Options -->
+        <div id="local-options" class="storage-options">
+            <div class="form-group">
+                <label for="local-directory">Directory Path:</label>
+                <input type="text" id="local-directory" value="~/.psp/sessions" />
+            </div>
+        </div>
+        
+        <!-- S3 Storage Options -->
+        <div id="s3-options" class="storage-options hidden">
+            <div class="form-group">
+                <label for="s3-region">Region:</label>
+                <input type="text" id="s3-region" placeholder="us-east-1" />
+            </div>
+            <div class="form-group">
+                <label for="s3-bucket">Bucket:</label>
+                <input type="text" id="s3-bucket" placeholder="my-sessions-bucket" />
+            </div>
+            <div class="form-group">
+                <label for="s3-endpoint">Endpoint (optional):</label>
+                <input type="text" id="s3-endpoint" placeholder="http://localhost:9000" />
+            </div>
+            <div class="form-group">
+                <label for="s3-access-key">Access Key ID:</label>
+                <input type="text" id="s3-access-key" placeholder="YOUR_ACCESS_KEY" />
+            </div>
+            <div class="form-group">
+                <label for="s3-secret-key">Secret Access Key:</label>
+                <input type="password" id="s3-secret-key" placeholder="YOUR_SECRET_KEY" />
+            </div>
+        </div>
+        
+        <!-- Cloudflare Storage Options -->
+        <div id="cloudflare-options" class="storage-options hidden">
+            <div class="form-group">
+                <label for="cf-type">Cloudflare Storage Type:</label>
+                <select id="cf-type">
+                    <option value="kv">KV Namespace</option>
+                    <option value="r2">R2 Bucket</option>
+                    <option value="do">Durable Object</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cf-account-id">Account ID:</label>
+                <input type="text" id="cf-account-id" placeholder="YOUR_ACCOUNT_ID" />
+            </div>
+            <div class="form-group">
+                <label for="cf-token">API Token:</label>
+                <input type="password" id="cf-token" placeholder="YOUR_API_TOKEN" />
+            </div>
+            <div class="form-group">
+                <label for="cf-container">Container (Namespace ID/Bucket/Class):</label>
+                <input type="text" id="cf-container" placeholder="YOUR_CONTAINER" />
+            </div>
+        </div>
+        
+        <!-- Supabase Storage Options -->
+        <div id="supabase-options" class="storage-options hidden">
+            <div class="form-group">
+                <label for="supabase-url">Project URL:</label>
+                <input type="text" id="supabase-url" placeholder="https://your-project.supabase.co" />
+            </div>
+            <div class="form-group">
+                <label for="supabase-api-key">API Key:</label>
+                <input type="password" id="supabase-api-key" placeholder="YOUR_SUPABASE_API_KEY" />
+            </div>
+            <div class="form-group">
+                <label for="supabase-bucket">Bucket:</label>
+                <input type="text" id="supabase-bucket" placeholder="sessions" />
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <button id="connect-button">Connect to Storage</button>
+            <span id="connection-status"></span>
+        </div>
+    </div>
+    
+    <div class="card hidden" id="sessions-container">
+        <h2>Your Sessions</h2>
+        <div class="session-list" id="session-list">
+            <!-- Session cards will be added here dynamically -->
+        </div>
+        <div class="centered hidden" id="loading-sessions">
+            <div class="spinner"></div>
+            <p>Loading sessions...</p>
+        </div>
+        <div class="centered hidden" id="no-sessions">
+            <p>No sessions found. Create a new session using the button below.</p>
+        </div>
+        <div class="centered">
+            <button id="create-session-button">Create New Session</button>
+            <button id="refresh-button">Refresh List</button>
+        </div>
+    </div>
+    
+    <!-- Create Session Modal -->
+    <div id="create-session-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-create-modal">&times;</span>
+            <h2>Create New Session</h2>
+            <div class="form-group">
+                <label for="session-name">Session Name:</label>
+                <input type="text" id="session-name" placeholder="My Login Session" />
+            </div>
+            <div class="form-group">
+                <label for="session-url">URL:</label>
+                <input type="text" id="session-url" placeholder="https://example.com" />
+            </div>
+            <div class="form-group">
+                <label for="session-description">Description:</label>
+                <textarea id="session-description" placeholder="Session details..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="session-tags">Tags (comma separated):</label>
+                <input type="text" id="session-tags" placeholder="login, example.com" />
+            </div>
+            <div class="form-group">
+                <button id="create-session-submit">Create Session</button>
+                <span id="create-session-status"></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Session Detail Modal -->
+    <div id="session-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-detail-modal">&times;</span>
+            <h2 id="detail-session-name">Session Details</h2>
+            <div class="success-message hidden" id="detail-success">Session operation completed successfully!</div>
+            <div class="error-message hidden" id="detail-error"></div>
+            
+            <div id="detail-metadata"></div>
+            
+            <h3>Session Data</h3>
+            <pre id="detail-data"></pre>
+            
+            <div class="session-actions">
+                <button id="load-detail-button">Load in Browser Tab</button>
+                <button id="delete-detail-button">Delete Session</button>
+                <button id="export-detail-button">Export as JSON</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>How to Use</h2>
+        <p>This Session Manager allows you to browse, create, restore, and manage browser sessions stored using the Persistent Sessions Protocol. Here's how to use it:</p>
+        <ol>
+            <li>Configure your storage provider settings in the top section.</li>
+            <li>Click "Connect to Storage" to access your stored sessions.</li>
+            <li>Browse your existing sessions or create a new one.</li>
+            <li>To restore a session, click "Load in Browser Tab" from the session details.</li>
+            <li>For programmatic use, note the session ID to use with PSP library API.</li>
+        </ol>
+        <p><strong>Note:</strong> Some features may require server-side integration for full functionality. This UI demonstrates the client capabilities of PSP.</p>
+    </div>
+
+    <!-- Demo data for testing without a server -->
+    <script>
+        const DEMO_SESSIONS = [
+            {
+                id: "demo-session-1",
+                metadata: {
+                    id: "demo-session-1",
+                    name: "GitHub Login",
+                    description: "Logged in state for GitHub",
+                    tags: ["github", "login", "demo"],
+                    createdAt: Date.now() - 10000000,
+                    updatedAt: Date.now() - 5000000
+                },
+                state: {
+                    version: "1.0.0",
+                    origin: "https://github.com",
+                    storage: {
+                        cookies: [
+                            { name: "session", value: "demo_cookie", domain: "github.com" }
+                        ],
+                        localStorage: { "github.com": { "theme": "dark", "sidebar_collapsed": "true" } },
+                        sessionStorage: {}
+                    }
+                }
+            },
+            {
+                id: "demo-session-2",
+                metadata: {
+                    id: "demo-session-2",
+                    name: "Gmail Account",
+                    description: "Personal Gmail session",
+                    tags: ["google", "email", "demo"],
+                    createdAt: Date.now() - 8000000,
+                    updatedAt: Date.now() - 1000000
+                },
+                state: {
+                    version: "1.0.0",
+                    origin: "https://mail.google.com",
+                    storage: {
+                        cookies: [
+                            { name: "SID", value: "demo_sid", domain: "google.com" }
+                        ],
+                        localStorage: {},
+                        sessionStorage: {}
+                    }
+                }
+            }
+        ];
+
+        // Mock storage provider for demo mode
+        class DemoStorageProvider {
+            constructor() {
+                this.sessions = DEMO_SESSIONS.slice();
+            }
+            
+            async save(session) {
+                const index = this.sessions.findIndex(s => s.id === session.metadata.id);
+                if (index >= 0) {
+                    this.sessions[index] = session;
+                } else {
+                    this.sessions.push(session);
+                }
+                return Promise.resolve();
+            }
+            
+            async load(id) {
+                const session = this.sessions.find(s => s.id === id);
+                if (!session) {
+                    return Promise.reject(new Error(`Session not found: ${id}`));
+                }
+                return Promise.resolve(session);
+            }
+            
+            async delete(id) {
+                const index = this.sessions.findIndex(s => s.id === id);
+                if (index >= 0) {
+                    this.sessions.splice(index, 1);
+                }
+                return Promise.resolve();
+            }
+            
+            async list() {
+                return Promise.resolve(this.sessions.map(s => s.metadata));
+            }
+            
+            async exists(id) {
+                return Promise.resolve(this.sessions.some(s => s.id === id));
+            }
+        }
+
+        // Main script to be filled in with actual PSP integration
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentStorageProvider = null;
+            let selectedSessionId = null;
+            
+            // UI Elements
+            const storageTypeSelect = document.getElementById('storage-type');
+            const connectButton = document.getElementById('connect-button');
+            const connectionStatus = document.getElementById('connection-status');
+            const sessionsContainer = document.getElementById('sessions-container');
+            const sessionList = document.getElementById('session-list');
+            const loadingSessions = document.getElementById('loading-sessions');
+            const noSessions = document.getElementById('no-sessions');
+            const createSessionButton = document.getElementById('create-session-button');
+            const refreshButton = document.getElementById('refresh-button');
+            const createSessionModal = document.getElementById('create-session-modal');
+            const closeCreateModal = document.getElementById('close-create-modal');
+            const createSessionSubmit = document.getElementById('create-session-submit');
+            const sessionDetailModal = document.getElementById('session-detail-modal');
+            const closeDetailModal = document.getElementById('close-detail-modal');
+            const loadDetailButton = document.getElementById('load-detail-button');
+            const deleteDetailButton = document.getElementById('delete-detail-button');
+            const exportDetailButton = document.getElementById('export-detail-button');
+            
+            // Toggle storage options based on selection
+            storageTypeSelect.addEventListener('change', function() {
+                document.querySelectorAll('.storage-options').forEach(el => el.classList.add('hidden'));
+                const selectedOption = storageTypeSelect.value;
+                if (selectedOption !== 'demo') {
+                    document.getElementById(`${selectedOption}-options`).classList.remove('hidden');
+                }
+            });
+            
+            // Handle connect button
+            connectButton.addEventListener('click', async function() {
+                connectionStatus.textContent = 'Connecting...';
+                
+                try {
+                    const selectedOption = storageTypeSelect.value;
+                    
+                    // In a real implementation, we would use the PSP library here
+                    // For demo purposes:
+                    if (selectedOption === 'demo') {
+                        currentStorageProvider = new DemoStorageProvider();
+                        connectionStatus.textContent = 'Connected (Demo Mode)';
+                        sessionsContainer.classList.remove('hidden');
+                        loadSessions();
+                    } else {
+                        // Pretend to connect to a real provider
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // For now, just use the demo provider
+                        currentStorageProvider = new DemoStorageProvider();
+                        connectionStatus.textContent = 'Connected (Mock Connection)';
+                        sessionsContainer.classList.remove('hidden');
+                        loadSessions();
+                    }
+                } catch (error) {
+                    connectionStatus.textContent = `Error: ${error.message}`;
+                }
+            });
+            
+            // Load sessions from the storage provider
+            async function loadSessions() {
+                if (!currentStorageProvider) return;
+                
+                sessionList.innerHTML = '';
+                loadingSessions.classList.remove('hidden');
+                noSessions.classList.add('hidden');
+                
+                try {
+                    const sessions = await currentStorageProvider.list();
+                    
+                    loadingSessions.classList.add('hidden');
+                    
+                    if (sessions.length === 0) {
+                        noSessions.classList.remove('hidden');
+                    } else {
+                        sessions.forEach(metadata => {
+                            const sessionCard = document.createElement('div');
+                            sessionCard.className = 'session-card';
+                            sessionCard.innerHTML = `
+                                <h3>${metadata.name || 'Unnamed Session'}</h3>
+                                <div class="session-details">
+                                    <p><strong>ID:</strong> ${metadata.id}</p>
+                                    <p><strong>Created:</strong> ${new Date(metadata.createdAt).toLocaleString()}</p>
+                                    <p><strong>Updated:</strong> ${new Date(metadata.updatedAt).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    ${(metadata.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                                <div class="session-actions">
+                                    <button class="view-session" data-id="${metadata.id}">View Details</button>
+                                </div>
+                            `;
+                            sessionList.appendChild(sessionCard);
+                            
+                            // Add event listener to view button
+                            sessionCard.querySelector('.view-session').addEventListener('click', () => {
+                                viewSessionDetails(metadata.id);
+                            });
+                        });
+                    }
+                } catch (error) {
+                    loadingSessions.classList.add('hidden');
+                    noSessions.classList.remove('hidden');
+                    noSessions.innerHTML = `<p>Error loading sessions: ${error.message}</p>`;
+                }
+            }
+            
+            // View session details
+            async function viewSessionDetails(id) {
+                selectedSessionId = id;
+                
+                try {
+                    document.getElementById('detail-success').classList.add('hidden');
+                    document.getElementById('detail-error').classList.add('hidden');
+                    
+                    const session = await currentStorageProvider.load(id);
+                    
+                    document.getElementById('detail-session-name').textContent = session.metadata.name || 'Session Details';
+                    
+                    // Display metadata
+                    const metadataEl = document.getElementById('detail-metadata');
+                    metadataEl.innerHTML = `
+                        <p><strong>ID:</strong> ${session.metadata.id}</p>
+                        <p><strong>Description:</strong> ${session.metadata.description || 'No description'}</p>
+                        <p><strong>Created:</strong> ${new Date(session.metadata.createdAt).toLocaleString()}</p>
+                        <p><strong>Updated:</strong> ${new Date(session.metadata.updatedAt).toLocaleString()}</p>
+                        <p><strong>Tags:</strong> ${(session.metadata.tags || []).map(tag => `<span class="tag">${tag}</span>`).join(' ')}</p>
+                    `;
+                    
+                    // Display session data (simplified)
+                    const dataEl = document.getElementById('detail-data');
+                    dataEl.textContent = JSON.stringify(session.state, null, 2);
+                    
+                    // Show the modal
+                    sessionDetailModal.style.display = 'flex';
+                } catch (error) {
+                    console.error('Error viewing session details:', error);
+                    document.getElementById('detail-error').textContent = `Error: ${error.message}`;
+                    document.getElementById('detail-error').classList.remove('hidden');
+                }
+            }
+            
+            // Handle load session button
+            loadDetailButton.addEventListener('click', async function() {
+                if (!selectedSessionId) return;
+                
+                try {
+                    const session = await currentStorageProvider.load(selectedSessionId);
+                    
+                    // In an actual implementation, this would use the PSP library to
+                    // populate a new browser tab with the session state.
+                    // For now, just a demo:
+                    
+                    const sessionWindow = window.open('', '_blank');
+                    if (sessionWindow) {
+                        sessionWindow.document.write(`
+                            <html>
+                            <head>
+                                <title>PSP Session Restoration</title>
+                                <style>
+                                    body { font-family: sans-serif; padding: 20px; }
+                                    pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+                                </style>
+                            </head>
+                            <body>
+                                <h1>Session Restoration Demo</h1>
+                                <p>In a real implementation, this would restore the browser state from the session.</p>
+                                <p>Session: <strong>${session.metadata.name}</strong> (${session.metadata.id})</p>
+                                <p>Origin: ${session.state.origin}</p>
+                                
+                                <h2>Session State:</h2>
+                                <pre>${JSON.stringify(session.state, null, 2)}</pre>
+                                
+                                <script>
+                                    // Mock restoration
+                                    console.log('Restoring session:', ${JSON.stringify(session.metadata.id)});
+                                    
+                                    // Demo: Set some localStorage items to show it's working
+                                    const storageData = ${JSON.stringify(session.state.storage.localStorage)};
+                                    for (const [origin, items] of Object.entries(storageData)) {
+                                        for (const [key, value] of Object.entries(items)) {
+                                            localStorage.setItem('psp_demo_' + key, value);
+                                        }
+                                    }
+                                    
+                                    document.body.innerHTML += '<p><strong>Demo localStorage items set:</strong></p>';
+                                    const items = [];
+                                    for (let i = 0; i < localStorage.length; i++) {
+                                        const key = localStorage.key(i);
+                                        if (key.startsWith('psp_demo_')) {
+                                            items.push(\`\${key}: \${localStorage.getItem(key)}\`);
+                                        }
+                                    }
+                                    document.body.innerHTML += '<pre>' + items.join('\\n') + '</pre>';
+                                </script>
+                            </body>
+                            </html>
+                        `);
+                        sessionWindow.document.close();
+                    }
+                    
+                    document.getElementById('detail-success').classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error loading session:', error);
+                    document.getElementById('detail-error').textContent = `Error: ${error.message}`;
+                    document.getElementById('detail-error').classList.remove('hidden');
+                }
+            });
+            
+            // Handle delete session button
+            deleteDetailButton.addEventListener('click', async function() {
+                if (!selectedSessionId) return;
+                
+                if (!confirm(`Are you sure you want to delete this session (${selectedSessionId})?`)) {
+                    return;
+                }
+                
+                try {
+                    await currentStorageProvider.delete(selectedSessionId);
+                    
+                    document.getElementById('detail-success').textContent = 'Session deleted successfully!';
+                    document.getElementById('detail-success').classList.remove('hidden');
+                    
+                    // Reload sessions after a short delay
+                    setTimeout(() => {
+                        sessionDetailModal.style.display = 'none';
+                        loadSessions();
+                    }, 1500);
+                } catch (error) {
+                    console.error('Error deleting session:', error);
+                    document.getElementById('detail-error').textContent = `Error: ${error.message}`;
+                    document.getElementById('detail-error').classList.remove('hidden');
+                }
+            });
+            
+            // Handle export session button
+            exportDetailButton.addEventListener('click', async function() {
+                if (!selectedSessionId) return;
+                
+                try {
+                    const session = await currentStorageProvider.load(selectedSessionId);
+                    
+                    // Create a download link for the JSON data
+                    const dataStr = JSON.stringify(session, null, 2);
+                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                    
+                    const exportFileName = `psp-session-${session.metadata.id}.json`;
+                    
+                    const linkElement = document.createElement('a');
+                    linkElement.setAttribute('href', dataUri);
+                    linkElement.setAttribute('download', exportFileName);
+                    linkElement.style.display = 'none';
+                    
+                    document.body.appendChild(linkElement);
+                    linkElement.click();
+                    document.body.removeChild(linkElement);
+                } catch (error) {
+                    console.error('Error exporting session:', error);
+                    document.getElementById('detail-error').textContent = `Error: ${error.message}`;
+                    document.getElementById('detail-error').classList.remove('hidden');
+                }
+            });
+            
+            // Handle create session button
+            createSessionButton.addEventListener('click', function() {
+                createSessionModal.style.display = 'flex';
+            });
+            
+            // Handle create session submit
+            createSessionSubmit.addEventListener('click', async function() {
+                const name = document.getElementById('session-name').value.trim();
+                const url = document.getElementById('session-url').value.trim();
+                const description = document.getElementById('session-description').value.trim();
+                const tagsStr = document.getElementById('session-tags').value.trim();
+                
+                if (!name || !url) {
+                    document.getElementById('create-session-status').textContent = 'Name and URL are required.';
+                    return;
+                }
+                
+                try {
+                    document.getElementById('create-session-status').textContent = 'Creating session...';
+                    
+                    // In a real implementation, this would use the PSP library
+                    // to capture a new session. For demo purposes:
+                    
+                    const now = Date.now();
+                    const sessionId = 'demo-' + now.toString(36);
+                    
+                    const newSession = {
+                        id: sessionId,
+                        metadata: {
+                            id: sessionId,
+                            name: name,
+                            description: description,
+                            tags: tagsStr ? tagsStr.split(',').map(t => t.trim()) : [],
+                            createdAt: now,
+                            updatedAt: now
+                        },
+                        state: {
+                            version: "1.0.0",
+                            origin: url,
+                            storage: {
+                                cookies: [
+                                    { name: "demo_cookie", value: "value", domain: new URL(url).hostname }
+                                ],
+                                localStorage: {},
+                                sessionStorage: {}
+                            }
+                        }
+                    };
+                    
+                    await currentStorageProvider.save(newSession);
+                    
+                    document.getElementById('create-session-status').textContent = 'Session created successfully!';
+                    
+                    // Clear form and close modal after a delay
+                    setTimeout(() => {
+                        document.getElementById('session-name').value = '';
+                        document.getElementById('session-url').value = '';
+                        document.getElementById('session-description').value = '';
+                        document.getElementById('session-tags').value = '';
+                        document.getElementById('create-session-status').textContent = '';
+                        createSessionModal.style.display = 'none';
+                        
+                        loadSessions();
+                    }, 1500);
+                } catch (error) {
+                    console.error('Error creating session:', error);
+                    document.getElementById('create-session-status').textContent = `Error: ${error.message}`;
+                }
+            });
+            
+            // Handle refresh button
+            refreshButton.addEventListener('click', function() {
+                loadSessions();
+            });
+            
+            // Close modals
+            closeCreateModal.addEventListener('click', function() {
+                createSessionModal.style.display = 'none';
+            });
+            
+            closeDetailModal.addEventListener('click', function() {
+                sessionDetailModal.style.display = 'none';
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === createSessionModal) {
+                    createSessionModal.style.display = 'none';
+                } else if (event.target === sessionDetailModal) {
+                    sessionDetailModal.style.display = 'none';
+                }
+            });
+            
+            // Initialize the UI
+            storageTypeSelect.dispatchEvent(new Event('change'));
+        });
+    </script>
+</body>
+</html>

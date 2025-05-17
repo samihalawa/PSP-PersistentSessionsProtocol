@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP Browser Profile Sync UI</title>
+    <style>
+        :root {
+            --primary-color: #4a76a8;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --border-color: #ddd;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab.active {
+            background: white;
+            border-color: var(--border-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        button, .button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover, .button:hover {
+            opacity: 0.9;
+        }
+        
+        button.secondary, .button.secondary {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .log-container {
+            height: 300px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .success {
+            color: var(--success-color);
+        }
+        
+        .warning {
+            color: var(--warning-color);
+        }
+        
+        .error {
+            color: var(--error-color);
+        }
+        
+        .profile-list, .session-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .profile-item, .session-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .profile-item:hover, .session-item:hover {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-details, .session-details {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+        
+        .browser-icon {
+            height: 16px;
+            width: 16px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        
+        .actions {
+            margin-top: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+        }
+        
+        .close:hover {
+            color: var(--error-color);
+        }
+        
+        #sessionDetails pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-online {
+            background-color: var(--success-color);
+        }
+        
+        .status-offline {
+            background-color: var(--error-color);
+        }
+    </style>
+</head>
+<body>
+    <h1>PSP Browser Profile Sync</h1>
+    <p>Extract browser sessions from local profiles and use them anywhere with Playwright</p>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="profiles">Browser Profiles</div>
+        <div class="tab" data-tab="sessions">Saved Sessions</div>
+        <div class="tab" data-tab="extraction">Session Extraction</div>
+        <div class="tab" data-tab="settings">Settings</div>
+    </div>
+    
+    <!-- Browser Profiles Tab -->
+    <div class="tab-content active" id="profiles-tab">
+        <div class="container">
+            <div class="card">
+                <h2>Chrome Profiles</h2>
+                <p>Detected Chrome browser profiles on this system</p>
+                <button id="refreshChromeProfiles">Refresh</button>
+                <div id="loadingChromeProfiles" class="hidden">Detecting Chrome profiles...</div>
+                <ul id="chromeProfilesList" class="profile-list">
+                    <li class="profile-item">
+                        <h3>Loading Chrome profiles...</h3>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2>Firefox Profiles</h2>
+                <p>Detected Firefox browser profiles on this system</p>
+                <button id="refreshFirefoxProfiles">Refresh</button>
+                <div id="loadingFirefoxProfiles" class="hidden">Detecting Firefox profiles...</div>
+                <ul id="firefoxProfilesList" class="profile-list">
+                    <li class="profile-item">
+                        <h3>Loading Firefox profiles...</h3>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Saved Sessions Tab -->
+    <div class="tab-content" id="sessions-tab">
+        <div class="card">
+            <h2>Saved Sessions</h2>
+            <p>Browse and manage your saved browser sessions</p>
+            <div class="actions">
+                <button id="refreshSessionsBtn">Refresh</button>
+                <button id="createSessionBtn" class="secondary">Create New</button>
+                <div id="loadingSessions" class="hidden">Loading sessions...</div>
+            </div>
+            <ul id="sessionsList" class="session-list">
+                <li class="session-item">
+                    <h3>Loading sessions...</h3>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Extraction Tab -->
+    <div class="tab-content" id="extraction-tab">
+        <div class="card">
+            <h2>Extract Session from Browser Profile</h2>
+            <p>Create a new session from a browser profile for a specific domain</p>
+            
+            <form id="extractionForm">
+                <div class="form-group">
+                    <label for="extractBrowser">Browser:</label>
+                    <select id="extractBrowser" required>
+                        <option value="">Select Browser</option>
+                        <option value="chrome">Chrome</option>
+                        <option value="firefox">Firefox</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="extractProfile">Profile:</label>
+                    <select id="extractProfile" required>
+                        <option value="">Select Profile</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="extractDomain">Domain:</label>
+                    <input type="text" id="extractDomain" placeholder="e.g., github.com, twitter.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="extractName">Session Name:</label>
+                    <input type="text" id="extractName" placeholder="Custom session name (optional)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="extractTags">Tags (comma separated):</label>
+                    <input type="text" id="extractTags" placeholder="e.g., work, social, important">
+                </div>
+                
+                <div class="form-group">
+                    <label for="extractDescription">Description:</label>
+                    <textarea id="extractDescription" placeholder="Optional description of this session"></textarea>
+                </div>
+                
+                <button type="submit">Extract Session</button>
+            </form>
+            
+            <div class="log-container" id="extractionLog"></div>
+        </div>
+    </div>
+    
+    <!-- Settings Tab -->
+    <div class="tab-content" id="settings-tab">
+        <div class="card">
+            <h2>Settings</h2>
+            <p>Configure browser profile sync settings</p>
+            
+            <div class="form-group">
+                <label for="storageLocation">Storage Location:</label>
+                <input type="text" id="storageLocation" placeholder="Path to store sessions">
+            </div>
+            
+            <button id="saveSettingsBtn">Save Settings</button>
+            
+            <h3>Server Status</h3>
+            <p id="serverStatus">
+                <span class="status-indicator status-offline"></span> 
+                Unknown - Checking status...
+            </p>
+            
+            <h3>About</h3>
+            <p>
+                PSP Browser Profile Sync is a tool that allows you to extract browser sessions
+                from your local profiles and use them in Playwright for automation.
+            </p>
+            <p>
+                This is part of the Persistent Sessions Protocol (PSP) project.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Session Detail Modal -->
+    <div id="sessionDetailModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" id="closeSessionDetail">&times;</span>
+            <h2 id="sessionDetailTitle">Session Details</h2>
+            <div id="sessionDetails"></div>
+            <div class="actions">
+                <button id="restoreSessionBtn">Restore in Playwright</button>
+                <button id="exportSessionBtn">Export as JSON</button>
+                <button id="deleteSessionBtn" class="secondary">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Detail Modal -->
+    <div id="profileDetailModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" id="closeProfileDetail">&times;</span>
+            <h2 id="profileDetailTitle">Profile Details</h2>
+            <div id="profileDetails"></div>
+            <div class="actions">
+                <button id="extractFromProfileBtn">Extract Session</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mock data for UI development, would be replaced with actual API calls -->
+    <script>
+        // Mock data
+        const MOCK_CHROME_PROFILES = [
+            {
+                name: "Default",
+                dir: "Default",
+                path: "/Users/user/Library/Application Support/Google/Chrome/Default",
+                browser: "chrome"
+            },
+            {
+                name: "Profile 1",
+                dir: "Profile 1",
+                path: "/Users/user/Library/Application Support/Google/Chrome/Profile 1",
+                browser: "chrome"
+            }
+        ];
+        
+        const MOCK_FIREFOX_PROFILES = [
+            {
+                name: "default",
+                dir: "abcdefgh.default",
+                path: "/Users/user/Library/Application Support/Firefox/Profiles/abcdefgh.default",
+                browser: "firefox",
+                default: true
+            },
+            {
+                name: "dev-edition-default",
+                dir: "12345678.dev-edition-default",
+                path: "/Users/user/Library/Application Support/Firefox/Profiles/12345678.dev-edition-default",
+                browser: "firefox",
+                default: false
+            }
+        ];
+        
+        const MOCK_SESSIONS = [
+            {
+                id: "session-abc123",
+                name: "GitHub - Chrome - Default",
+                description: "Session extracted from Chrome profile Default",
+                tags: ["chrome", "github.com", "browser-profile", "work"],
+                createdAt: Date.now() - 86400000, // 1 day ago
+                updatedAt: Date.now() - 86400000,
+                source: {
+                    type: "browser-profile",
+                    browser: "chrome",
+                    profile: "Default",
+                    profilePath: "/Users/user/Library/Application Support/Google/Chrome/Default"
+                },
+                state: {
+                    origin: "https://github.com",
+                    storage: {
+                        cookies: [
+                            { name: "user_session", domain: "github.com" },
+                            { name: "_gh_sess", domain: "github.com" }
+                        ],
+                        localStorage: new Map([
+                            ["https://github.com", new Map([
+                                ["color_mode", "dark"],
+                                ["_octo", "12345"]
+                            ])]
+                        ])
+                    }
+                }
+            },
+            {
+                id: "session-def456",
+                name: "Twitter - Firefox - default",
+                description: "Session extracted from Firefox profile default",
+                tags: ["firefox", "twitter.com", "browser-profile", "social"],
+                createdAt: Date.now() - 3600000, // 1 hour ago
+                updatedAt: Date.now() - 3600000,
+                source: {
+                    type: "browser-profile",
+                    browser: "firefox",
+                    profile: "default",
+                    profilePath: "/Users/user/Library/Application Support/Firefox/Profiles/abcdefgh.default"
+                },
+                state: {
+                    origin: "https://twitter.com",
+                    storage: {
+                        cookies: [
+                            { name: "auth_token", domain: "twitter.com" }
+                        ],
+                        localStorage: new Map([
+                            ["https://twitter.com", new Map([
+                                ["isMobile", "false"],
+                                ["theme", "dark"]
+                            ])]
+                        ])
+                    }
+                }
+            }
+        ];
+        
+        // State management
+        let chromeProfiles = [];
+        let firefoxProfiles = [];
+        let sessions = [];
+        let selectedSession = null;
+        let selectedProfile = null;
+        let serverOnline = false;
+        
+        // DOM references
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const sessionsList = document.getElementById('sessionsList');
+        const chromeProfilesList = document.getElementById('chromeProfilesList');
+        const firefoxProfilesList = document.getElementById('firefoxProfilesList');
+        const sessionDetailModal = document.getElementById('sessionDetailModal');
+        const profileDetailModal = document.getElementById('profileDetailModal');
+        const extractBrowser = document.getElementById('extractBrowser');
+        const extractProfile = document.getElementById('extractProfile');
+        const extractionLog = document.getElementById('extractionLog');
+        const extractionForm = document.getElementById('extractionForm');
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+            
+            // Close modals
+            document.getElementById('closeSessionDetail').addEventListener('click', () => {
+                sessionDetailModal.classList.add('hidden');
+            });
+            
+            document.getElementById('closeProfileDetail').addEventListener('click', () => {
+                profileDetailModal.classList.add('hidden');
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (event) => {
+                if (event.target === sessionDetailModal) {
+                    sessionDetailModal.classList.add('hidden');
+                }
+                if (event.target === profileDetailModal) {
+                    profileDetailModal.classList.add('hidden');
+                }
+            });
+            
+            // Refresh buttons
+            document.getElementById('refreshChromeProfiles').addEventListener('click', loadChromeProfiles);
+            document.getElementById('refreshFirefoxProfiles').addEventListener('click', loadFirefoxProfiles);
+            document.getElementById('refreshSessionsBtn').addEventListener('click', loadSessions);
+            
+            // Session actions
+            document.getElementById('restoreSessionBtn').addEventListener('click', restoreSession);
+            document.getElementById('exportSessionBtn').addEventListener('click', exportSession);
+            document.getElementById('deleteSessionBtn').addEventListener('click', deleteSession);
+            
+            // Profile actions
+            document.getElementById('extractFromProfileBtn').addEventListener('click', () => {
+                // Switch to extraction tab and pre-fill form
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                const extractionTab = document.querySelector('[data-tab="extraction"]');
+                extractionTab.classList.add('active');
+                document.getElementById('extraction-tab').classList.add('active');
+                
+                // Pre-fill form
+                extractBrowser.value = selectedProfile.browser;
+                updateProfileSelect();
+                extractProfile.value = selectedProfile.dir;
+                
+                // Close modal
+                profileDetailModal.classList.add('hidden');
+            });
+            
+            // Extraction form
+            extractBrowser.addEventListener('change', updateProfileSelect);
+            extractionForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                extractSession();
+            });
+            
+            // Settings
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            
+            // Load initial data
+            checkServerStatus();
+            loadChromeProfiles();
+            loadFirefoxProfiles();
+            loadSessions();
+            loadSettings();
+        });
+        
+        // Function to check server status
+        function checkServerStatus() {
+            // In a real implementation, this would check if the server is running
+            // For the mock, we'll just simulate a check
+            setTimeout(() => {
+                serverOnline = Math.random() > 0.5; // Randomly set status for demo
+                updateServerStatus();
+            }, 1000);
+        }
+        
+        // Update server status display
+        function updateServerStatus() {
+            const statusEl = document.getElementById('serverStatus');
+            const indicator = statusEl.querySelector('.status-indicator');
+            
+            if (serverOnline) {
+                indicator.classList.remove('status-offline');
+                indicator.classList.add('status-online');
+                statusEl.innerHTML = `
+                    <span class="status-indicator status-online"></span>
+                    Server is online and ready
+                `;
+            } else {
+                indicator.classList.remove('status-online');
+                indicator.classList.add('status-offline');
+                statusEl.innerHTML = `
+                    <span class="status-indicator status-offline"></span>
+                    Server is offline. Some features may not work.
+                `;
+            }
+        }
+        
+        // Load Chrome profiles
+        function loadChromeProfiles() {
+            const loadingEl = document.getElementById('loadingChromeProfiles');
+            loadingEl.classList.remove('hidden');
+            chromeProfilesList.innerHTML = '';
+            
+            // In a real implementation, this would make an API call to the server
+            // For the mock, we'll just use the mock data with a delay
+            setTimeout(() => {
+                chromeProfiles = MOCK_CHROME_PROFILES;
+                
+                if (chromeProfiles.length === 0) {
+                    chromeProfilesList.innerHTML = '<li class="profile-item">No Chrome profiles found</li>';
+                } else {
+                    chromeProfilesList.innerHTML = chromeProfiles.map(profile => `
+                        <li class="profile-item" data-profile-id="${profile.dir}" data-browser="chrome">
+                            <h3>
+                                <img src="https://www.google.com/chrome/static/images/chrome-logo.svg" 
+                                    alt="Chrome" class="browser-icon">
+                                ${profile.name}
+                            </h3>
+                            <div class="profile-details">
+                                <div>Directory: ${profile.dir}</div>
+                                <div>Path: ${profile.path}</div>
+                            </div>
+                            <div class="actions">
+                                <button class="view-profile-btn">View Details</button>
+                                <button class="extract-profile-btn">Extract Session</button>
+                            </div>
+                        </li>
+                    `).join('');
+                    
+                    // Add event listeners to the profile items
+                    chromeProfilesList.querySelectorAll('.view-profile-btn').forEach(btn => {
+                        btn.addEventListener('click', (event) => {
+                            const profileItem = event.target.closest('.profile-item');
+                            const profileId = profileItem.dataset.profileId;
+                            const browser = profileItem.dataset.browser;
+                            viewProfileDetails(browser, profileId);
+                        });
+                    });
+                    
+                    chromeProfilesList.querySelectorAll('.extract-profile-btn').forEach(btn => {
+                        btn.addEventListener('click', (event) => {
+                            const profileItem = event.target.closest('.profile-item');
+                            const profileId = profileItem.dataset.profileId;
+                            const browser = profileItem.dataset.browser;
+                            
+                            // Switch to extraction tab and pre-fill form
+                            tabs.forEach(t => t.classList.remove('active'));
+                            tabContents.forEach(c => c.classList.remove('active'));
+                            
+                            const extractionTab = document.querySelector('[data-tab="extraction"]');
+                            extractionTab.classList.add('active');
+                            document.getElementById('extraction-tab').classList.add('active');
+                            
+                            // Pre-fill form
+                            extractBrowser.value = browser;
+                            updateProfileSelect();
+                            extractProfile.value = profileId;
+                        });
+                    });
+                }
+                
+                loadingEl.classList.add('hidden');
+                updateProfileSelect();
+            }, 500);
+        }
+        
+        // Load Firefox profiles
+        function loadFirefoxProfiles() {
+            const loadingEl = document.getElementById('loadingFirefoxProfiles');
+            loadingEl.classList.remove('hidden');
+            firefoxProfilesList.innerHTML = '';
+            
+            // In a real implementation, this would make an API call to the server
+            // For the mock, we'll just use the mock data with a delay
+            setTimeout(() => {
+                firefoxProfiles = MOCK_FIREFOX_PROFILES;
+                
+                if (firefoxProfiles.length === 0) {
+                    firefoxProfilesList.innerHTML = '<li class="profile-item">No Firefox profiles found</li>';
+                } else {
+                    firefoxProfilesList.innerHTML = firefoxProfiles.map(profile => `
+                        <li class="profile-item" data-profile-id="${profile.dir}" data-browser="firefox">
+                            <h3>
+                                <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" 
+                                    alt="Firefox" class="browser-icon">
+                                ${profile.name} ${profile.default ? '<span class="tag">Default</span>' : ''}
+                            </h3>
+                            <div class="profile-details">
+                                <div>Directory: ${profile.dir}</div>
+                                <div>Path: ${profile.path}</div>
+                            </div>
+                            <div class="actions">
+                                <button class="view-profile-btn">View Details</button>
+                                <button class="extract-profile-btn">Extract Session</button>
+                            </div>
+                        </li>
+                    `).join('');
+                    
+                    // Add event listeners to the profile items
+                    firefoxProfilesList.querySelectorAll('.view-profile-btn').forEach(btn => {
+                        btn.addEventListener('click', (event) => {
+                            const profileItem = event.target.closest('.profile-item');
+                            const profileId = profileItem.dataset.profileId;
+                            const browser = profileItem.dataset.browser;
+                            viewProfileDetails(browser, profileId);
+                        });
+                    });
+                    
+                    firefoxProfilesList.querySelectorAll('.extract-profile-btn').forEach(btn => {
+                        btn.addEventListener('click', (event) => {
+                            const profileItem = event.target.closest('.profile-item');
+                            const profileId = profileItem.dataset.profileId;
+                            const browser = profileItem.dataset.browser;
+                            
+                            // Switch to extraction tab and pre-fill form
+                            tabs.forEach(t => t.classList.remove('active'));
+                            tabContents.forEach(c => c.classList.remove('active'));
+                            
+                            const extractionTab = document.querySelector('[data-tab="extraction"]');
+                            extractionTab.classList.add('active');
+                            document.getElementById('extraction-tab').classList.add('active');
+                            
+                            // Pre-fill form
+                            extractBrowser.value = browser;
+                            updateProfileSelect();
+                            extractProfile.value = profileId;
+                        });
+                    });
+                }
+                
+                loadingEl.classList.add('hidden');
+                updateProfileSelect();
+            }, 500);
+        }
+        
+        // Load saved sessions
+        function loadSessions() {
+            const loadingEl = document.getElementById('loadingSessions');
+            loadingEl.classList.remove('hidden');
+            sessionsList.innerHTML = '';
+            
+            // In a real implementation, this would make an API call to the server
+            // For the mock, we'll just use the mock data with a delay
+            setTimeout(() => {
+                sessions = MOCK_SESSIONS;
+                
+                if (sessions.length === 0) {
+                    sessionsList.innerHTML = '<li class="session-item">No sessions found</li>';
+                } else {
+                    sessionsList.innerHTML = sessions.map(session => `
+                        <li class="session-item" data-session-id="${session.id}">
+                            <h3>${session.name}</h3>
+                            <div class="session-details">
+                                <div>ID: ${session.id}</div>
+                                <div>Created: ${new Date(session.createdAt).toLocaleString()}</div>
+                                <div>Domain: ${session.state.origin.replace('https://', '')}</div>
+                                <div class="tags">
+                                    ${session.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button class="view-session-btn">View Details</button>
+                                <button class="restore-session-btn">Restore</button>
+                            </div>
+                        </li>
+                    `).join('');
+                    
+                    // Add event listeners to the session items
+                    sessionsList.querySelectorAll('.view-session-btn').forEach(btn => {
+                        btn.addEventListener('click', (event) => {
+                            const sessionItem = event.target.closest('.session-item');
+                            const sessionId = sessionItem.dataset.sessionId;
+                            viewSessionDetails(sessionId);
+                        });
+                    });
+                    
+                    sessionsList.querySelectorAll('.restore-session-btn').forEach(btn => {
+                        btn.addEventListener('click', (event) => {
+                            const sessionItem = event.target.closest('.session-item');
+                            const sessionId = sessionItem.dataset.sessionId;
+                            selectedSession = sessions.find(s => s.id === sessionId);
+                            restoreSession();
+                        });
+                    });
+                }
+                
+                loadingEl.classList.add('hidden');
+            }, 500);
+        }
+        
+        // View session details
+        function viewSessionDetails(sessionId) {
+            selectedSession = sessions.find(s => s.id === sessionId);
+            
+            if (!selectedSession) {
+                return;
+            }
+            
+            // Format session data for display
+            const formatStorageMap = (storageMap) => {
+                if (!(storageMap instanceof Map)) return 'Not a Map';
+                
+                const result = {};
+                for (const [origin, storage] of storageMap.entries()) {
+                    result[origin] = Object.fromEntries(storage);
+                }
+                
+                return JSON.stringify(result, null, 2);
+            };
+            
+            // Update modal content
+            document.getElementById('sessionDetailTitle').textContent = selectedSession.name;
+            
+            document.getElementById('sessionDetails').innerHTML = `
+                <div class="session-details">
+                    <p><strong>ID:</strong> ${selectedSession.id}</p>
+                    <p><strong>Description:</strong> ${selectedSession.description || 'No description'}</p>
+                    <p><strong>Created:</strong> ${new Date(selectedSession.createdAt).toLocaleString()}</p>
+                    <p><strong>Updated:</strong> ${new Date(selectedSession.updatedAt).toLocaleString()}</p>
+                    <p><strong>Origin:</strong> ${selectedSession.state.origin}</p>
+                    <p><strong>Source:</strong> ${selectedSession.source.browser} profile ${selectedSession.source.profile}</p>
+                    <p><strong>Tags:</strong> ${selectedSession.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</p>
+                    
+                    <h3>Storage</h3>
+                    <p><strong>Cookies:</strong> ${selectedSession.state.storage.cookies.length} cookies</p>
+                    <div class="cookie-list">
+                        ${selectedSession.state.storage.cookies.map(cookie => `
+                            <div class="cookie-item">
+                                <strong>${cookie.name}</strong> (${cookie.domain})
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <h3>localStorage</h3>
+                    <pre>${formatStorageMap(selectedSession.state.storage.localStorage)}</pre>
+                </div>
+            `;
+            
+            // Show modal
+            sessionDetailModal.classList.remove('hidden');
+        }
+        
+        // View profile details
+        function viewProfileDetails(browser, profileId) {
+            const profiles = browser === 'chrome' ? chromeProfiles : firefoxProfiles;
+            selectedProfile = profiles.find(p => p.dir === profileId);
+            
+            if (!selectedProfile) {
+                return;
+            }
+            
+            // Update modal content
+            document.getElementById('profileDetailTitle').textContent = `${selectedProfile.name} (${browser})`;
+            
+            const browserLogo = browser === 'chrome'
+                ? 'https://www.google.com/chrome/static/images/chrome-logo.svg'
+                : 'https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg';
+            
+            document.getElementById('profileDetails').innerHTML = `
+                <div class="profile-details">
+                    <p>
+                        <img src="${browserLogo}" alt="${browser}" class="browser-icon" style="width: 32px; height: 32px;">
+                        <strong>${selectedProfile.name}</strong>
+                        ${selectedProfile.default ? '<span class="tag">Default</span>' : ''}
+                    </p>
+                    <p><strong>Directory:</strong> ${selectedProfile.dir}</p>
+                    <p><strong>Path:</strong> ${selectedProfile.path}</p>
+                    
+                    <h3>Actions</h3>
+                    <p>You can extract a session from this profile for a specific domain.</p>
+                    <p>This will allow you to restore the browser state later in Playwright.</p>
+                </div>
+            `;
+            
+            // Show modal
+            profileDetailModal.classList.remove('hidden');
+        }
+        
+        // Update profile select based on selected browser
+        function updateProfileSelect() {
+            const browser = extractBrowser.value;
+            const profiles = browser === 'chrome' ? chromeProfiles : browser === 'firefox' ? firefoxProfiles : [];
+            
+            // Clear options
+            extractProfile.innerHTML = '<option value="">Select Profile</option>';
+            
+            // Add options
+            profiles.forEach(profile => {
+                const option = document.createElement('option');
+                option.value = profile.dir;
+                option.textContent = profile.name;
+                extractProfile.appendChild(option);
+            });
+        }
+        
+        // Extract session
+        function extractSession() {
+            const browser = extractBrowser.value;
+            const profileDir = extractProfile.value;
+            const domain = document.getElementById('extractDomain').value;
+            const name = document.getElementById('extractName').value;
+            const tags = document.getElementById('extractTags').value;
+            const description = document.getElementById('extractDescription').value;
+            
+            if (!browser || !profileDir || !domain) {
+                logToExtraction('Error: Browser, profile, and domain are required', 'error');
+                return;
+            }
+            
+            // Clear log
+            extractionLog.innerHTML = '';
+            
+            // Log starting message
+            logToExtraction(`Starting extraction from ${browser} profile "${profileDir}" for domain "${domain}"...`);
+            
+            // In a real implementation, this would make an API call to the server
+            // For the mock, we'll just simulate extraction with a delay
+            setTimeout(() => {
+                logToExtraction(`Looking for ${browser} profile...`);
+            }, 500);
+            
+            setTimeout(() => {
+                logToExtraction(`Found profile at ${browser === 'chrome' ? MOCK_CHROME_PROFILES[0].path : MOCK_FIREFOX_PROFILES[0].path}`);
+            }, 1000);
+            
+            setTimeout(() => {
+                logToExtraction(`Launching ${browser} with profile...`);
+            }, 1500);
+            
+            setTimeout(() => {
+                logToExtraction(`Navigating to https://${domain}...`);
+            }, 2500);
+            
+            setTimeout(() => {
+                logToExtraction(`Extracting cookies...`);
+            }, 3500);
+            
+            setTimeout(() => {
+                logToExtraction(`Found 5 cookies for ${domain}`);
+            }, 4000);
+            
+            setTimeout(() => {
+                logToExtraction(`Extracting localStorage...`);
+            }, 4500);
+            
+            setTimeout(() => {
+                logToExtraction(`Found 8 localStorage items for ${domain}`);
+            }, 5000);
+            
+            setTimeout(() => {
+                logToExtraction(`Creating session...`);
+            }, 5500);
+            
+            setTimeout(() => {
+                const sessionId = `session-${Date.now().toString(36)}`;
+                logToExtraction(`Session created with ID: ${sessionId}`, 'success');
+                logToExtraction(`Session saved successfully. You can now restore it in Playwright.`, 'success');
+                
+                // Add the new session to the mock data
+                const newSession = {
+                    id: sessionId,
+                    name: name || `${domain} - ${browser} - ${profileDir}`,
+                    description: description || `Session extracted from ${browser} profile ${profileDir}`,
+                    tags: tags ? tags.split(',').map(t => t.trim()) : [browser, domain, 'browser-profile'],
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    source: {
+                        type: 'browser-profile',
+                        browser: browser,
+                        profile: profileDir,
+                        profilePath: browser === 'chrome' ? MOCK_CHROME_PROFILES[0].path : MOCK_FIREFOX_PROFILES[0].path
+                    },
+                    state: {
+                        origin: `https://${domain}`,
+                        storage: {
+                            cookies: [
+                                { name: `${domain}_session`, domain: domain },
+                                { name: `${domain}_user`, domain: domain }
+                            ],
+                            localStorage: new Map([
+                                [`https://${domain}`, new Map([
+                                    ["theme", "dark"],
+                                    ["user_id", "12345"]
+                                ])]
+                            ])
+                        }
+                    }
+                };
+                
+                // Add to sessions
+                sessions.unshift(newSession);
+                
+                // Show success message
+                setTimeout(() => {
+                    alert(`Session extracted successfully with ID: ${sessionId}`);
+                }, 500);
+            }, 6000);
+        }
+        
+        // Log to extraction log
+        function logToExtraction(message, type = 'info') {
+            const logElement = document.createElement('div');
+            logElement.textContent = message;
+            
+            if (type === 'error') {
+                logElement.classList.add('error');
+            } else if (type === 'success') {
+                logElement.classList.add('success');
+            } else if (type === 'warning') {
+                logElement.classList.add('warning');
+            }
+            
+            extractionLog.appendChild(logElement);
+            extractionLog.scrollTop = extractionLog.scrollHeight;
+        }
+        
+        // Restore session in Playwright
+        function restoreSession() {
+            if (!selectedSession) {
+                alert('No session selected');
+                return;
+            }
+            
+            if (!serverOnline) {
+                alert('Server is offline. Cannot restore session.');
+                return;
+            }
+            
+            // In a real implementation, this would make an API call to the server
+            // For the mock, we'll just show a message
+            alert(`Launching Playwright with session ${selectedSession.id} for ${selectedSession.state.origin}.\n\nCheck the server console for progress.`);
+        }
+        
+        // Export session as JSON
+        function exportSession() {
+            if (!selectedSession) {
+                alert('No session selected');
+                return;
+            }
+            
+            // Convert Maps to objects for serialization
+            const exportData = JSON.parse(JSON.stringify(selectedSession, (key, value) => {
+                if (value instanceof Map) {
+                    return Object.fromEntries(value);
+                }
+                return value;
+            }));
+            
+            // Create a Blob and download link
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${selectedSession.id}.json`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+        }
+        
+        // Delete session
+        function deleteSession() {
+            if (!selectedSession) {
+                alert('No session selected');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to delete the session "${selectedSession.name}"?`)) {
+                return;
+            }
+            
+            // In a real implementation, this would make an API call to the server
+            // For the mock, we'll just remove it from the sessions array
+            const index = sessions.findIndex(s => s.id === selectedSession.id);
+            if (index !== -1) {
+                sessions.splice(index, 1);
+            }
+            
+            // Close modal
+            sessionDetailModal.classList.add('hidden');
+            
+            // Reload sessions
+            loadSessions();
+            
+            // Show success message
+            alert(`Session "${selectedSession.name}" deleted successfully`);
+            
+            // Clear selected session
+            selectedSession = null;
+        }
+        
+        // Load settings
+        function loadSettings() {
+            // In a real implementation, this would load settings from localStorage or the server
+            // For the mock, we'll just use default values
+            document.getElementById('storageLocation').value = '~/.psp/sessions';
+        }
+        
+        // Save settings
+        function saveSettings() {
+            const storageLocation = document.getElementById('storageLocation').value;
+            
+            // In a real implementation, this would save settings to localStorage or the server
+            // For the mock, we'll just show a message
+            alert(`Settings saved:\nStorage Location: ${storageLocation}`);
+        }
+    </script>
+</body>
+</html>
