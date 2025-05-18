@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css'; // Import Tailwind CSS base styles
 import App from './App';
 
 const root = ReactDOM.createRoot(

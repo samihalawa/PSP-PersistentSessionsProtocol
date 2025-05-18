@@ -52,14 +52,14 @@ export default function AppLayout(props: AppLayoutProps) {
     }
   };
 
-  const drawer = (
-    <div>
+  const drawerContent = (
+    <div className={`h-full ${theme.palette.mode === 'dark' ? 'bg-neutral-800 text-neutral-100' : 'bg-neutral-50 text-neutral-800'}`}>
       <Toolbar>
         <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
           PSP Dashboard
         </Typography>
         {isMobile && (
-          <IconButton onClick={handleDrawerToggle}>
+          <IconButton onClick={handleDrawerToggle} className={`${theme.palette.mode === 'dark' ? 'text-neutral-100' : 'text-neutral-800'}`}>
             <CloseIcon />
           </IconButton>
         )}
@@ -68,7 +68,7 @@ export default function AppLayout(props: AppLayoutProps) {
       <List>
         <ListItem disablePadding>
           <ListItemButton onClick={() => handleNavigation('/')}>
-            <ListItemIcon>
+            <ListItemIcon className={`${theme.palette.mode === 'dark' ? 'text-sky-400' : 'text-sky-600'}`}>
               <DashboardIcon />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
@@ -76,7 +76,7 @@ export default function AppLayout(props: AppLayoutProps) {
         </ListItem>
         <ListItem disablePadding>
           <ListItemButton onClick={() => handleNavigation('/sessions')}>
-            <ListItemIcon>
+            <ListItemIcon className={`${theme.palette.mode === 'dark' ? 'text-sky-400' : 'text-sky-600'}`}>
               <StorageIcon />
             </ListItemIcon>
             <ListItemText primary="Sessions" />
@@ -84,7 +84,7 @@ export default function AppLayout(props: AppLayoutProps) {
         </ListItem>
         <ListItem disablePadding>
           <ListItemButton onClick={() => handleNavigation('/recorder')}>
-            <ListItemIcon>
+            <ListItemIcon className={`${theme.palette.mode === 'dark' ? 'text-sky-400' : 'text-sky-600'}`}>
               <PlayCircleIcon />
             </ListItemIcon>
             <ListItemText primary="Recorder" />
@@ -92,7 +92,7 @@ export default function AppLayout(props: AppLayoutProps) {
         </ListItem>
         <ListItem disablePadding>
           <ListItemButton onClick={() => handleNavigation('/history')}>
-            <ListItemIcon>
+            <ListItemIcon className={`${theme.palette.mode === 'dark' ? 'text-sky-400' : 'text-sky-600'}`}>
               <HistoryIcon />
             </ListItemIcon>
             <ListItemText primary="History" />
@@ -103,7 +103,7 @@ export default function AppLayout(props: AppLayoutProps) {
       <List>
         <ListItem disablePadding>
           <ListItemButton onClick={() => handleNavigation('/settings')}>
-            <ListItemIcon>
+            <ListItemIcon className={`${theme.palette.mode === 'dark' ? 'text-sky-400' : 'text-sky-600'}`}>
               <SettingsIcon />
             </ListItemIcon>
             <ListItemText primary="Settings" />
@@ -116,7 +116,7 @@ export default function AppLayout(props: AppLayoutProps) {
   const container = window !== undefined ? () => window().document.body : undefined;
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex' }} className={`min-h-screen ${theme.palette.mode === 'dark' ? 'bg-neutral-900 text-neutral-50' : 'bg-neutral-100 text-neutral-900'}`}>
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -124,6 +124,7 @@ export default function AppLayout(props: AppLayoutProps) {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
         }}
+        elevation={1}
       >
         <Toolbar>
           <IconButton
@@ -145,32 +146,34 @@ export default function AppLayout(props: AppLayoutProps) {
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
         aria-label="navigation menu"
       >
-        {/* Mobile drawer */}
         <Drawer
           container={container}
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile
-          }}
+          ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth,
+            },
           }}
         >
-          {drawer}
+          {drawerContent}
         </Drawer>
-        {/* Desktop drawer */}
         <Drawer
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { 
+              boxSizing: 'border-box', 
+              width: drawerWidth, 
+            },
           }}
           open
         >
-          {drawer}
+          {drawerContent}
         </Drawer>
       </Box>
       <Box
@@ -179,7 +182,7 @@ export default function AppLayout(props: AppLayoutProps) {
           flexGrow: 1, 
           p: 3, 
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          marginTop: '64px' // AppBar height
+          marginTop: '64px'
         }}
       >
         <Outlet />

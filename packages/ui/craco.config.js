@@ -7,6 +7,15 @@ const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
+  // Add style section for PostCSS and Tailwind CSS
+  style: {
+    postcss: {
+      plugins: [
+        require('tailwindcss'),
+        require('autoprefixer'),
+      ],
+    },
+  },
   webpack: {
     configure: (webpackConfig, { env, paths }) => {
       // Only apply optimizations in production

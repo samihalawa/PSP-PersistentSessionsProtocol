@@ -143,34 +143,34 @@ export default function DashboardPage() {
     .slice(0, 5);
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
+    <Box className="p-4 md:p-6">
+      <Typography variant="h4" gutterBottom className="mb-6 text-2xl font-semibold">
         Dashboard
       </Typography>
       
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }} className="mb-4">
           {error}
         </Alert>
       )}
       
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }} className="flex justify-center items-center h-96">
           <CircularProgress />
         </Box>
       ) : (
         <>
           {/* Stats cards */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={3} sx={{ mb: 4 }} className="mb-8">
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
+              <Card className="shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                <CardContent className="p-5">
+                  <Typography color="textSecondary" gutterBottom className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     Total Sessions
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <StorageIcon sx={{ mr: 1 }} />
-                    <Typography variant="h4">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }} className="flex items-center">
+                    <StorageIcon sx={{ mr: 1 }} className="mr-2 text-sky-500" />
+                    <Typography variant="h4" className="text-3xl font-bold">
                       {stats.totalSessions}
                     </Typography>
                   </Box>
@@ -178,14 +178,14 @@ export default function DashboardPage() {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
+              <Card className="shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                <CardContent className="p-5">
+                  <Typography color="textSecondary" gutterBottom className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     Active Today
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <UpdateIcon sx={{ mr: 1 }} />
-                    <Typography variant="h4">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }} className="flex items-center">
+                    <UpdateIcon sx={{ mr: 1 }} className="mr-2 text-green-500" />
+                    <Typography variant="h4" className="text-3xl font-bold">
                       {stats.activeToday}
                     </Typography>
                   </Box>
@@ -193,14 +193,14 @@ export default function DashboardPage() {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
+              <Card className="shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                <CardContent className="p-5">
+                  <Typography color="textSecondary" gutterBottom className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     Average Age (days)
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <TimerIcon sx={{ mr: 1 }} />
-                    <Typography variant="h4">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }} className="flex items-center">
+                    <TimerIcon sx={{ mr: 1 }} className="mr-2 text-amber-500" />
+                    <Typography variant="h4" className="text-3xl font-bold">
                       {stats.averageAge}
                     </Typography>
                   </Box>
@@ -208,14 +208,14 @@ export default function DashboardPage() {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent>
-                  <Typography color="textSecondary" gutterBottom>
+              <Card className="shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+                <CardContent className="p-5">
+                  <Typography color="textSecondary" gutterBottom className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     Unique Tags
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <PlayCircleIcon sx={{ mr: 1 }} />
-                    <Typography variant="h4">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }} className="flex items-center">
+                    <PlayCircleIcon sx={{ mr: 1 }} className="mr-2 text-purple-500" />
+                    <Typography variant="h4" className="text-3xl font-bold">
                       {Object.keys(stats.tagsCount).length}
                     </Typography>
                   </Box>
@@ -225,18 +225,18 @@ export default function DashboardPage() {
           </Grid>
           
           {/* Charts */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={3} sx={{ mb: 4 }} className="mb-8">
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Paper sx={{ p: 2 }} className="p-4 shadow-lg rounded-lg">
+                <Typography variant="h6" gutterBottom className="text-xl font-semibold mb-3">
                   Sessions by Tag
                 </Typography>
-                <Box sx={{ height: 300 }}>
+                <Box sx={{ height: 300 }} className="h-72">
                   {Object.keys(stats.tagsCount).length > 0 ? (
-                    <Pie data={tagsChartData} />
+                    <Pie data={tagsChartData} options={{ maintainAspectRatio: false, responsive: true }} />
                   ) : (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                      <Typography color="textSecondary">
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }} className="flex justify-center items-center h-full">
+                      <Typography color="textSecondary" className="text-neutral-500 dark:text-neutral-400">
                         No tags available
                       </Typography>
                     </Box>
@@ -245,8 +245,8 @@ export default function DashboardPage() {
               </Paper>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Paper sx={{ p: 2 }} className="p-4 shadow-lg rounded-lg">
+                <Typography variant="h6" gutterBottom className="text-xl font-semibold mb-3">
                   Sessions by Framework
                 </Typography>
                 <Box sx={{ height: 300 }}>
