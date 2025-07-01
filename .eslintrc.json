@@ -1,0 +1,35 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "prettier/prettier": "warn", // Show Prettier issues as warnings
+    "@typescript-eslint/no-explicit-any": "warn", // Allow any type for now, but warn
+    "@typescript-eslint/explicit-module-boundary-types": "off" // Allow inferred return types for now
+  },
+  "env": {
+    "node": true,
+    "es2021": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    "coverage/",
+    ".vuepress/",
+    "packages/**/dist/",
+    "*.md" // Ignoring markdown files from linting for now
+  ]
+}
