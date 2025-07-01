@@ -1,0 +1,14 @@
+# Build artifacts
+dist
+coverage
+# Node modules
+node_modules
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+# VuePress
+.vuepress/.cache
+.vuepress/.temp
+# Docs
+docs/PersistentSessionProtocol-Claude--dangerously-skip-permissions-Research-500sources.md
