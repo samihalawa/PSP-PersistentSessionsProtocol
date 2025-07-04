@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "composite": true,
+    "declaration": true,
+    "paths": {
+      "@psp/core": ["../../core/src"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/adapter.ts"],
+  "references": [
+    { "path": "../../core" }
+  ]
+}

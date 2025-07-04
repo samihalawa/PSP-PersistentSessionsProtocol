@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP - PersistentSessionsProtocol v0.1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            background: #fafafa;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .sessions-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .session-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .session-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .session-item:last-child {
+            border-bottom: none;
+        }
+
+        .session-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .session-id {
+            font-size: 0.9em;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .session-date {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            color: #6c757d;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover .file-upload-label {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PSP</h1>
+        <p class="subtitle">PersistentSessionsProtocol - Session Management Made Simple</p>
+
+        <!-- Capture Section -->
+        <div class="section">
+            <h2><span class="emoji">📸</span>Capture Session</h2>
+            <div class="form-group">
+                <label for="captureName">Session Name (optional)</label>
+                <input type="text" id="captureName" placeholder="My Chrome Session">
+            </div>
+            <div class="form-group">
+                <label for="captureProfileDir">Profile Directory (optional)</label>
+                <input type="text" id="captureProfileDir" placeholder="/path/to/chrome/profile">
+            </div>
+            <button onclick="captureSession()">Capture Session</button>
+            <div id="captureResult" class="result"></div>
+        </div>
+
+        <!-- Restore Section -->
+        <div class="section">
+            <h2><span class="emoji">🔄</span>Restore Session</h2>
+            <div class="form-group">
+                <label for="restoreSessionId">Session ID</label>
+                <input type="text" id="restoreSessionId" placeholder="session-id-here">
+            </div>
+            <div class="form-group">
+                <label for="restoreProfileDir">Profile Directory (optional)</label>
+                <input type="text" id="restoreProfileDir" placeholder="/path/to/chrome/profile">
+            </div>
+            <button onclick="restoreSession()">Restore Session</button>
+            <div id="restoreResult" class="result"></div>
+        </div>
+
+        <!-- Sessions List -->
+        <div class="section">
+            <h2><span class="emoji">📋</span>Sessions List</h2>
+            <button onclick="loadSessions()">Refresh Sessions</button>
+            <div id="sessionsList" class="sessions-list">
+                <p>Click "Refresh Sessions" to load available sessions</p>
+            </div>
+        </div>
+
+        <!-- File Upload/Download -->
+        <div class="section">
+            <h2><span class="emoji">📁</span>Import/Export</h2>
+            <div class="file-upload">
+                <input type="file" id="fileUpload" accept=".json" onchange="uploadSession()">
+                <label for="fileUpload" class="file-upload-label">
+                    📤 Click to upload session JSON file
+                </label>
+            </div>
+            <button onclick="downloadSession()">📥 Download Selected Session</button>
+            <div id="fileResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedSessionId = null;
+
+        async function captureSession() {
+            const name = document.getElementById('captureName').value;
+            const profileDir = document.getElementById('captureProfileDir').value;
+            const resultDiv = document.getElementById('captureResult');
+
+            try {
+                const response = await fetch('/capture', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, profileDir })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResult(resultDiv, 'success', `✅ Session captured! ID: ${result.id}`);
+                    loadSessions(); // Refresh the list
+                } else {
+                    showResult(resultDiv, 'error', `❌ Error: ${result.error}`);
+                }
+            } catch (error) {
+                showResult(resultDiv, 'error', `❌ Network error: ${error.message}`);
+            }
+        }
+
+        async function restoreSession() {
+            const sessionId = document.getElementById('restoreSessionId').value;
+            const profileDir = document.getElementById('restoreProfileDir').value;
+            const resultDiv = document.getElementById('restoreResult');
+
+            if (!sessionId) {
+                showResult(resultDiv, 'error', '❌ Please enter a session ID');
+                return;
+            }
+
+            try {
+                const response = await fetch('/restore', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: sessionId, profileDir })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResult(resultDiv, 'success', `✅ Session restored! ${result.message}`);
+                } else {
+                    showResult(resultDiv, 'error', `❌ Error: ${result.error}`);
+                }
+            } catch (error) {
+                showResult(resultDiv, 'error', `❌ Network error: ${error.message}`);
+            }
+        }
+
+        async function loadSessions() {
+            const listDiv = document.getElementById('sessionsList');
+
+            try {
+                const response = await fetch('/sessions');
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.sessions.length === 0) {
+                        listDiv.innerHTML = '<p>No sessions found. Capture a session to get started!</p>';
+                        return;
+                    }
+
+                    listDiv.innerHTML = data.sessions.map(session => `
+                        <div class="session-item" onclick="selectSession('${session.id}')">
+                            <div class="session-name">${session.name}</div>
+                            <div class="session-id">ID: ${session.id}</div>
+                            <div class="session-date">Created: ${new Date(session.createdAt).toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    listDiv.innerHTML = '<p>Error loading sessions</p>';
+                }
+            } catch (error) {
+                listDiv.innerHTML = '<p>Network error loading sessions</p>';
+            }
+        }
+
+        function selectSession(sessionId) {
+            selectedSessionId = sessionId;
+            document.getElementById('restoreSessionId').value = sessionId;
+            
+            // Highlight selected session
+            document.querySelectorAll('.session-item').forEach(item => {
+                item.style.backgroundColor = '';
+            });
+            event.target.closest('.session-item').style.backgroundColor = '#e3f2fd';
+        }
+
+        async function downloadSession() {
+            if (!selectedSessionId) {
+                showResult(document.getElementById('fileResult'), 'error', '❌ Please select a session first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/sessions/${selectedSessionId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `psp-session-${selectedSessionId}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    showResult(document.getElementById('fileResult'), 'success', '✅ Session downloaded!');
+                } else {
+                    showResult(document.getElementById('fileResult'), 'error', `❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                showResult(document.getElementById('fileResult'), 'error', `❌ Network error: ${error.message}`);
+            }
+        }
+
+        function uploadSession() {
+            const fileInput = document.getElementById('fileUpload');
+            const file = fileInput.files[0];
+            const resultDiv = document.getElementById('fileResult');
+
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const sessionData = JSON.parse(e.target.result);
+                    showResult(resultDiv, 'success', `✅ Session file loaded: ${sessionData.metadata?.name || 'Unknown'}`);
+                    console.log('Loaded session data:', sessionData);
+                } catch (error) {
+                    showResult(resultDiv, 'error', '❌ Invalid JSON file');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showResult(element, type, message) {
+            element.className = `result ${type}`;
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load sessions on page load
+        window.addEventListener('load', loadSessions);
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "composite": true,
+    "declaration": true,
+    "paths": {
+      "@psp/core": ["../core/src"],
+      "@psp/adapter-playwright": ["../adapters/playwright/src"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/minimal-cli.ts"],
+  "references": [
+    { "path": "../core" },
+    { "path": "../adapters/playwright" }
+  ]
+}
