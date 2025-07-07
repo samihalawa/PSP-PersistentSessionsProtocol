@@ -1,0 +1,19 @@
+{
+  "id": "advanced-demo-1751881833716",
+  "createdAt": "2025-07-07T09:50:33.717Z",
+  "lastAccessed": "2025-07-07T09:50:33.718Z",
+  "stealthMode": true,
+  "aiEnabled": true,
+  "capabilities": [
+    "session_persistence",
+    "stealth_browsing",
+    "ai_automation"
+  ],
+  "options": {
+    "stealthMode": true,
+    "aiCapabilities": [
+      "dom_analysis",
+      "interaction_automation"
+    ]
+  }
+}

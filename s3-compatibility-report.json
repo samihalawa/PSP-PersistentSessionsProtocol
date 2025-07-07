@@ -1,0 +1,119 @@
+{
+  "providerTests": {
+    "playwright": {
+      "provider": "playwright",
+      "successRate": 100,
+      "uploadTime": 832,
+      "downloadTime": 691,
+      "totalTime": 2891,
+      "dataIntegrity": {
+        "cookiesIntegrity": 100,
+        "localStorageIntegrity": 100,
+        "sessionStorageIntegrity": 100,
+        "urlIntegrity": 100,
+        "averageIntegrity": 100,
+        "meetsCriteria": true
+      },
+      "meetsCriteria": true
+    },
+    "browser-use": {
+      "provider": "browser-use",
+      "successRate": 100,
+      "uploadTime": 861,
+      "downloadTime": 727,
+      "totalTime": 3390,
+      "dataIntegrity": {
+        "cookiesIntegrity": 100,
+        "localStorageIntegrity": 100,
+        "sessionStorageIntegrity": 100,
+        "urlIntegrity": 100,
+        "averageIntegrity": 100,
+        "meetsCriteria": true
+      },
+      "meetsCriteria": true
+    },
+    "skyvern": {
+      "provider": "skyvern",
+      "successRate": 80,
+      "uploadTime": 1194,
+      "downloadTime": 2095,
+      "totalTime": 4747,
+      "dataIntegrity": {
+        "cookiesIntegrity": 100,
+        "localStorageIntegrity": 0,
+        "sessionStorageIntegrity": 100,
+        "urlIntegrity": 100,
+        "averageIntegrity": 75,
+        "meetsCriteria": false
+      },
+      "meetsCriteria": true
+    }
+  },
+  "crossProviderTests": {
+    "playwright->browser-use": {
+      "fromProvider": "playwright",
+      "toProvider": "browser-use",
+      "compatibilityScore": 100,
+      "dataPreservation": {
+        "cookies_match": true,
+        "localStorage_match": true,
+        "sessionStorage_match": true,
+        "url_match": true,
+        "userAgent_match": true,
+        "successRate": 100
+      },
+      "meetsCriteria": true,
+      "transferSuccess": false
+    },
+    "browser-use->skyvern": {
+      "fromProvider": "browser-use",
+      "toProvider": "skyvern",
+      "compatibilityScore": 70,
+      "dataPreservation": {
+        "cookies_match": true,
+        "localStorage_match": false,
+        "sessionStorage_match": true,
+        "url_match": true,
+        "userAgent_match": true,
+        "successRate": 80
+      },
+      "meetsCriteria": true,
+      "transferSuccess": false
+    },
+    "skyvern->playwright": {
+      "fromProvider": "skyvern",
+      "toProvider": "playwright",
+      "compatibilityScore": 100,
+      "dataPreservation": {
+        "cookies_match": true,
+        "localStorage_match": true,
+        "sessionStorage_match": true,
+        "url_match": true,
+        "userAgent_match": true,
+        "successRate": 100
+      },
+      "meetsCriteria": true,
+      "transferSuccess": false
+    }
+  },
+  "performanceTests": {
+    "uploadTime": 945,
+    "downloadTime": 357,
+    "restoreTime": 705,
+    "fileSize": 1572,
+    "uploadCompliant": true,
+    "downloadCompliant": true,
+    "restoreCompliant": true,
+    "sizeCompliant": true
+  },
+  "overallCompatibility": {
+    "score": 33.333333333333336,
+    "passed": false,
+    "details": {
+      "providerScore": 100,
+      "crossProviderScore": 100,
+      "performancePassed": true,
+      "failures": []
+    }
+  }
+}

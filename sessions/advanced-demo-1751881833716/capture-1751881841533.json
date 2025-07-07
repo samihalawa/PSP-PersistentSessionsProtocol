@@ -1,0 +1,68 @@
+{
+  "timestamp": "2025-07-07T09:50:41.317Z",
+  "url": "https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0%2F&emr=1&followup=https%3A%2F%2Fmail.google.com%2Fmail%2Fu%2F0%2F&ifkv=AdBytiMrJZXjiR_cEf51cD64x1p47g-aPGXI0dMi295ftb1BsQ_30uwnaZvvr1ZOLdN2Dl16baQT&osid=1&passive=1209600&service=mail&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-569441079%3A1751881836241259",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "cookies": [
+    {
+      "name": "__Host-GAPS",
+      "value": "1:s_iTdQz1ND5cb7qV9in-Z3CBZ1HT_Q:DJU9nzjtRRBWy57c",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1786441836.163964,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "OTZ",
+      "value": "8159631_48_52_123900_48_436380",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1754473838,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "storageState": {
+    "cookies": [
+      {
+        "name": "__Host-GAPS",
+        "value": "1:s_iTdQz1ND5cb7qV9in-Z3CBZ1HT_Q:DJU9nzjtRRBWy57c",
+        "domain": "accounts.google.com",
+        "path": "/",
+        "expires": 1786441836.163964,
+        "httpOnly": true,
+        "secure": true,
+        "sameSite": "Lax"
+      },
+      {
+        "name": "OTZ",
+        "value": "8159631_48_52_123900_48_436380",
+        "domain": "accounts.google.com",
+        "path": "/",
+        "expires": 1754473838,
+        "httpOnly": false,
+        "secure": true,
+        "sameSite": "Lax"
+      }
+    ],
+    "origins": []
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "capabilities": [
+    "advanced_stealth",
+    "ai_ready",
+    "session_persistent"
+  ],
+  "screenshots": [
+    {
+      "timestamp": "2025-07-07T09:50:41.533Z",
+      "size": 33912,
+      "type": "png"
+    }
+  ]
+}
