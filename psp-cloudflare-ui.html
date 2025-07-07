@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP Cloudflare Session Transfer UI</title>
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .status.warning {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fed7aa;
+        }
+
+        .status.info {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 16px 0;
+            white-space: pre-wrap;
+        }
+
+        .critical-warning {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 2px solid var(--danger);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .critical-warning h4 {
+            color: var(--danger);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .health-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--surface);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .health-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .health-dot.healthy {
+            background: var(--success);
+        }
+
+        .health-dot.unhealthy {
+            background: var(--danger);
+        }
+
+        .health-dot.unknown {
+            background: var(--text-muted);
+        }
+
+        .isolation-url {
+            background: var(--background);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin: 12px 0;
+        }
+
+        .copy-btn {
+            background: var(--text-muted);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .restoration-script {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 16px 0;
+            white-space: pre-wrap;
+            border: 1px solid #374151;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-muted);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+
+        .spinner {
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 PSP Cloudflare Session Transfer</h1>
+            <p>Persistent Session Protocol - Chrome to Cloudflare Browser Isolation</p>
+        </div>
+
+        <!-- Critical Issues Warning -->
+        <div class="critical-warning">
+            <h4>⚠️ Critical Issues Detected</h4>
+            <div id="criticalIssues">
+                <p>• Chrome lock detection required before extraction</p>
+                <p>• OAuth tokens may expire during transfer (implement refresh)</p>
+                <p>• MFA sessions need extension strategies</p>
+                <p>• Workers configuration validation needed</p>
+            </div>
+        </div>
+
+        <!-- Health Status -->
+        <div class="card">
+            <h3>🏥 System Health Status</h3>
+            <div class="health-grid" id="healthStatus">
+                <div class="health-item">
+                    <div class="health-dot unknown"></div>
+                    <span>Chrome Access</span>
+                </div>
+                <div class="health-item">
+                    <div class="health-dot unknown"></div>
+                    <span>R2 Storage</span>
+                </div>
+                <div class="health-item">
+                    <div class="health-dot unknown"></div>
+                    <span>Browser Isolation</span>
+                </div>
+                <div class="health-item">
+                    <div class="health-dot unknown"></div>
+                    <span>Workers API</span>
+                </div>
+            </div>
+            <button class="btn" onclick="checkSystemHealth()">
+                <span class="icon">🔍</span>
+                Check System Health
+            </button>
+        </div>
+
+        <!-- Configuration -->
+        <div class="grid">
+            <div class="card">
+                <h3>⚙️ Chrome Configuration</h3>
+                <div class="form-group">
+                    <label for="chromePath" class="tooltip" data-tooltip="Path to Chrome user data directory">Chrome Path:</label>
+                    <input type="text" id="chromePath" placeholder="Auto-detect Chrome installation">
+                    <button class="btn" onclick="detectChrome()" style="margin-top: 8px;">
+                        <span class="icon">🔍</span>
+                        Auto-Detect
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label for="chromeProfile">Profile:</label>
+                    <select id="chromeProfile">
+                        <option value="Default">Default</option>
+                        <option value="Profile 1">Profile 1</option>
+                        <option value="Profile 2">Profile 2</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>☁️ Cloudflare Configuration</h3>
+                <div class="form-group">
+                    <label for="teamName">Team Name:</label>
+                    <input type="text" id="teamName" placeholder="your-team">
+                </div>
+                <div class="form-group">
+                    <label for="r2Bucket">R2 Bucket:</label>
+                    <input type="text" id="r2Bucket" placeholder="psp-sessions">
+                </div>
+                <div class="form-group">
+                    <label for="transferMode">Transfer Mode:</label>
+                    <select id="transferMode">
+                        <option value="isolation">Browser Isolation (Recommended)</option>
+                        <option value="workers">Workers Rendering API</option>
+                        <option value="manual">Manual Instructions</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfer Process -->
+        <div class="card">
+            <h3>🚀 Session Transfer Process</h3>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('extract')">1. Extract</button>
+                <button class="tab" onclick="switchTab('transfer')">2. Transfer</button>
+                <button class="tab" onclick="switchTab('restore')">3. Restore</button>
+            </div>
+
+            <!-- Extract Tab -->
+            <div id="extract" class="tab-content active">
+                <div class="form-group">
+                    <label for="targetUrl">Target URL:</label>
+                    <input type="url" id="targetUrl" placeholder="https://app.example.com" value="https://app.example.com">
+                </div>
+                
+                <button class="btn" onclick="startExtraction()" id="extractBtn">
+                    <span class="icon">📤</span>
+                    Extract Chrome Session
+                </button>
+
+                <div id="extractStatus"></div>
+                <div id="extractProgress" style="display: none;">
+                    <div class="progress">
+                        <div class="progress-bar" id="extractProgressBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transfer Tab -->
+            <div id="transfer" class="tab-content">
+                <div id="transferStatus"></div>
+                
+                <button class="btn" onclick="startTransfer()" id="transferBtn" disabled>
+                    <span class="icon">🔄</span>
+                    Transfer to Cloudflare
+                </button>
+
+                <div id="transferProgress" style="display: none;">
+                    <div class="progress">
+                        <div class="progress-bar" id="transferProgressBar"></div>
+                    </div>
+                </div>
+
+                <div id="isolationUrl" style="display: none;">
+                    <h4>🌐 Cloudflare Isolation URL:</h4>
+                    <div class="isolation-url" id="urlDisplay"></div>
+                    <button class="btn" onclick="openIsolationUrl()">
+                        <span class="icon">🔗</span>
+                        Open Isolation URL
+                    </button>
+                    <button class="copy-btn" onclick="copyToClipboard('urlDisplay')">Copy</button>
+                </div>
+            </div>
+
+            <!-- Restore Tab -->
+            <div id="restore" class="tab-content">
+                <div id="restoreInstructions">
+                    <h4>📋 Restoration Instructions:</h4>
+                    <ol>
+                        <li>Open the Cloudflare isolation URL above</li>
+                        <li>Press F12 to open Developer Tools</li>
+                        <li>Click on the "Console" tab</li>
+                        <li>Copy and paste the restoration script below</li>
+                        <li>Press Enter to execute the script</li>
+                        <li>Wait for the page to reload automatically</li>
+                    </ol>
+                </div>
+
+                <div id="restorationScript" style="display: none;">
+                    <h4>🔧 Restoration Script:</h4>
+                    <div class="restoration-script" id="scriptContent"></div>
+                    <button class="copy-btn" onclick="copyToClipboard('scriptContent')">Copy Script</button>
+                </div>
+
+                <div id="manualSteps" style="display: none;">
+                    <h4>🔧 Manual Steps:</h4>
+                    <div id="manualStepsContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Information -->
+        <div class="card" id="sessionInfo" style="display: none;">
+            <h3>📊 Session Information</h3>
+            <div id="sessionStats"></div>
+        </div>
+
+        <!-- Logs -->
+        <div class="card">
+            <h3>📝 Activity Log</h3>
+            <div class="log" id="activityLog">PSP Cloudflare UI initialized. Ready for session transfer.</div>
+            <button class="btn btn-danger" onclick="clearLog()">
+                <span class="icon">🗑️</span>
+                Clear Log
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentSession = null;
+        let transferResult = null;
+        let systemHealth = {
+            chrome: false,
+            r2: false,
+            isolation: false,
+            workers: false
+        };
+
+        // Critical issue detection and handling
+        const criticalIssues = [
+            {
+                id: 'chrome_lock',
+                message: 'Chrome process detection required',
+                check: () => !isChromeRunning(),
+                severity: 'critical'
+            },
+            {
+                id: 'oauth_expiry',
+                message: 'OAuth token refresh mechanism needed',
+                check: () => true, // Always show as this is implementation-dependent
+                severity: 'critical'
+            },
+            {
+                id: 'mfa_session',
+                message: 'MFA session extension strategy required',
+                check: () => true,
+                severity: 'critical'
+            },
+            {
+                id: 'workers_config',
+                message: 'Workers configuration validation needed',
+                check: () => !document.getElementById('teamName').value,
+                severity: 'critical'
+            }
+        ];
+
+        // Initialize UI
+        function initializeUI() {
+            log('Initializing PSP Cloudflare UI...');
+            detectChrome();
+            loadSavedConfiguration();
+            checkCriticalIssues();
+            setInterval(checkCriticalIssues, 30000); // Check every 30 seconds
+        }
+
+        // Critical issue monitoring
+        function checkCriticalIssues() {
+            const issuesContainer = document.getElementById('criticalIssues');
+            const issues = criticalIssues.filter(issue => issue.check());
+            
+            if (issues.length === 0) {
+                issuesContainer.innerHTML = '<p style="color: var(--success);">✅ No critical issues detected</p>';
+                return;
+            }
+
+            issuesContainer.innerHTML = issues.map(issue => 
+                `<p>• ${issue.message}</p>`
+            ).join('');
+        }
+
+        // Chrome detection and process checking
+        function detectChrome() {
+            log('Detecting Chrome installation...');
+            
+            // Simulate Chrome detection based on platform
+            const platform = navigator.platform.toLowerCase();
+            let chromePath = '';
+            
+            if (platform.includes('win')) {
+                chromePath = 'C:\\Users\\%USERNAME%\\AppData\\Local\\Google\\Chrome\\User Data';
+            } else if (platform.includes('mac')) {
+                chromePath = '~/Library/Application Support/Google/Chrome';
+            } else {
+                chromePath = '~/.config/google-chrome';
+            }
+            
+            document.getElementById('chromePath').value = chromePath;
+            log(`Chrome path detected: ${chromePath}`);
+            
+            // Check if Chrome is running (simulated)
+            setTimeout(() => {
+                const isRunning = Math.random() > 0.7; // 30% chance Chrome is running
+                if (isRunning) {
+                    showStatus('warning', '⚠️ Chrome is currently running. Close Chrome before extraction to avoid database locks.');
+                    systemHealth.chrome = false;
+                } else {
+                    showStatus('success', '✅ Chrome is not running. Safe to extract session data.');
+                    systemHealth.chrome = true;
+                }
+                updateHealthStatus();
+            }, 1000);
+        }
+
+        function isChromeRunning() {
+            // In real implementation, this would check for Chrome processes
+            return Math.random() > 0.7;
+        }
+
+        // System health monitoring
+        function checkSystemHealth() {
+            log('Checking system health...');
+            
+            const healthItems = document.querySelectorAll('.health-item .health-dot');
+            healthItems.forEach(dot => {
+                dot.className = 'health-dot unknown';
+            });
+            
+            // Simulate health checks
+            setTimeout(() => {
+                // Chrome health
+                systemHealth.chrome = !isChromeRunning();
+                
+                // R2 Storage health (simulated)
+                systemHealth.r2 = document.getElementById('r2Bucket').value.length > 0;
+                
+                // Browser Isolation health
+                systemHealth.isolation = document.getElementById('teamName').value.length > 0;
+                
+                // Workers API health (simulated as usually not configured)
+                systemHealth.workers = false;
+                
+                updateHealthStatus();
+                log('System health check completed');
+            }, 2000);
+        }
+
+        function updateHealthStatus() {
+            const healthItems = document.querySelectorAll('.health-item');
+            const services = ['chrome', 'r2', 'isolation', 'workers'];
+            
+            services.forEach((service, index) => {
+                const dot = healthItems[index].querySelector('.health-dot');
+                dot.className = `health-dot ${systemHealth[service] ? 'healthy' : 'unhealthy'}`;
+            });
+        }
+
+        // Session extraction with critical issue handling
+        function startExtraction() {
+            if (isChromeRunning()) {
+                showStatus('error', '❌ Critical: Chrome is running. Please close Chrome before extraction to prevent database locks.');
+                return;
+            }
+
+            const chromePath = document.getElementById('chromePath').value;
+            const profile = document.getElementById('chromeProfile').value;
+            
+            if (!chromePath) {
+                showStatus('error', '❌ Chrome path is required');
+                return;
+            }
+
+            log('Starting Chrome session extraction...');
+            document.getElementById('extractBtn').disabled = true;
+            document.getElementById('extractProgress').style.display = 'block';
+            
+            // Simulate extraction process
+            simulateExtraction();
+        }
+
+        function simulateExtraction() {
+            const progressBar = document.getElementById('extractProgressBar');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    completeExtraction();
+                }
+                progressBar.style.width = progress + '%';
+            }, 300);
+        }
+
+        function completeExtraction() {
+            log('Chrome session extraction completed');
+            
+            // Simulate extracted session data
+            currentSession = {
+                sessionId: `chrome_${Date.now()}`,
+                cookies: [
+                    { name: 'auth_token', value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...', domain: '.example.com' },
+                    { name: 'session_id', value: 'sess_abc123def456', domain: 'app.example.com' }
+                ],
+                localStorage: {
+                    'app.example.com': {
+                        'user_settings': '{"theme":"dark","language":"en"}',
+                        'access_token': 'bearer_token_12345'
+                    }
+                },
+                sessionStorage: {
+                    'app.example.com': {
+                        'csrf_token': 'abc123def456',
+                        'temp_data': '{"workflow_step":3}'
+                    }
+                },
+                extractedAt: new Date().toISOString()
+            };
+            
+            document.getElementById('extractBtn').disabled = false;
+            document.getElementById('extractProgress').style.display = 'none';
+            document.getElementById('transferBtn').disabled = false;
+            
+            showStatus('success', '✅ Session extracted successfully');
+            displaySessionInfo();
+            switchTab('transfer');
+        }
+
+        // Session transfer with enhanced error handling
+        function startTransfer() {
+            if (!currentSession) {
+                showStatus('error', '❌ No session data available. Please extract session first.');
+                return;
+            }
+
+            const teamName = document.getElementById('teamName').value;
+            const transferMode = document.getElementById('transferMode').value;
+            const targetUrl = document.getElementById('targetUrl').value;
+            
+            if (!teamName && transferMode !== 'manual') {
+                showStatus('error', '❌ Team name is required for Cloudflare integration');
+                return;
+            }
+
+            if (!targetUrl) {
+                showStatus('error', '❌ Target URL is required');
+                return;
+            }
+
+            log(`Starting ${transferMode} mode transfer...`);
+            document.getElementById('transferBtn').disabled = true;
+            document.getElementById('transferProgress').style.display = 'block';
+            
+            // Check for OAuth token expiry risk
+            checkOAuthTokens();
+            
+            simulateTransfer(transferMode, targetUrl, teamName);
+        }
+
+        function checkOAuthTokens() {
+            // Simulate OAuth token expiry detection
+            const hasOAuthTokens = currentSession.localStorage && 
+                Object.values(currentSession.localStorage).some(storage => 
+                    JSON.stringify(storage).includes('token') || 
+                    JSON.stringify(storage).includes('oauth')
+                );
+            
+            if (hasOAuthTokens) {
+                showStatus('warning', '⚠️ OAuth tokens detected. Ensure tokens are refreshed if they expire during transfer.');
+                log('Warning: OAuth tokens found in session data - implement refresh mechanism');
+            }
+        }
+
+        function simulateTransfer(mode, targetUrl, teamName) {
+            const progressBar = document.getElementById('transferProgressBar');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 12;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    completeTransfer(mode, targetUrl, teamName);
+                }
+                progressBar.style.width = progress + '%';
+            }, 400);
+        }
+
+        function completeTransfer(mode, targetUrl, teamName) {
+            log(`${mode} transfer completed successfully`);
+            
+            transferResult = {
+                transferId: `transfer_${Date.now()}`,
+                mode: mode,
+                targetUrl: targetUrl,
+                isolationUrl: mode === 'isolation' ? 
+                    `https://${teamName}.cloudflareaccess.com/browser/${encodeURIComponent(targetUrl)}` : null,
+                restorationScript: generateRestorationScript(),
+                timestamp: new Date().toISOString()
+            };
+            
+            document.getElementById('transferBtn').disabled = false;
+            document.getElementById('transferProgress').style.display = 'none';
+            
+            showStatus('success', `✅ ${mode} transfer completed successfully`);
+            
+            if (mode === 'isolation') {
+                displayIsolationUrl();
+            }
+            
+            switchTab('restore');
+            displayRestorationInstructions();
+        }
+
+        // Enhanced restoration script generation
+        function generateRestorationScript() {
+            if (!currentSession) return '';
+            
+            const script = [];
+            script.push('// PSP Session Restoration Script');
+            script.push('// Generated by PSP Cloudflare UI');
+            script.push('console.log("🔄 Starting PSP session restoration...");');
+            script.push('');
+            
+            // OAuth token expiry protection
+            script.push('// OAuth Token Expiry Protection');
+            script.push('const pspStartTime = Date.now();');
+            script.push('const pspMaxTime = 300000; // 5 minutes max');
+            script.push('');
+            
+            // Restore localStorage with error handling
+            if (currentSession.localStorage) {
+                script.push('// Restore localStorage');
+                for (const [domain, storage] of Object.entries(currentSession.localStorage)) {
+                    for (const [key, value] of Object.entries(storage)) {
+                        script.push(`try {`);
+                        script.push(`  localStorage.setItem(${JSON.stringify(key)}, ${JSON.stringify(value)});`);
+                        script.push(`  console.log("Set localStorage: ${key}");`);
+                        script.push(`} catch(e) {`);
+                        script.push(`  console.warn("Failed to set localStorage ${key}:", e);`);
+                        script.push(`}`);
+                    }
+                }
+                script.push('');
+            }
+            
+            // Restore sessionStorage
+            if (currentSession.sessionStorage) {
+                script.push('// Restore sessionStorage');
+                for (const [domain, storage] of Object.entries(currentSession.sessionStorage)) {
+                    for (const [key, value] of Object.entries(storage)) {
+                        script.push(`try {`);
+                        script.push(`  sessionStorage.setItem(${JSON.stringify(key)}, ${JSON.stringify(value)});`);
+                        script.push(`  console.log("Set sessionStorage: ${key}");`);
+                        script.push(`} catch(e) {`);
+                        script.push(`  console.warn("Failed to set sessionStorage ${key}:", e);`);
+                        script.push(`}`);
+                    }
+                }
+                script.push('');
+            }
+            
+            // Cookie restoration with security handling
+            if (currentSession.cookies && currentSession.cookies.length > 0) {
+                script.push('// Restore cookies (limited by same-origin policy)');
+                script.push('const pspCookies = ' + JSON.stringify(currentSession.cookies, null, 2) + ';');
+                script.push('pspCookies.forEach(cookie => {');
+                script.push('  try {');
+                script.push('    let cookieString = cookie.name + "=" + cookie.value;');
+                script.push('    if (cookie.path) cookieString += "; path=" + cookie.path;');
+                script.push('    if (cookie.domain && window.location.hostname.endsWith(cookie.domain.replace(".", ""))) {');
+                script.push('      cookieString += "; domain=" + cookie.domain;');
+                script.push('    }');
+                script.push('    if (cookie.secure) cookieString += "; secure";');
+                script.push('    if (cookie.httpOnly) {');
+                script.push('      console.warn("Cannot set HttpOnly cookie:", cookie.name);');
+                script.push('      return;');
+                script.push('    }');
+                script.push('    document.cookie = cookieString;');
+                script.push('    console.log("Set cookie:", cookie.name);');
+                script.push('  } catch(e) {');
+                script.push('    console.warn("Failed to set cookie:", cookie.name, e);');
+                script.push('  }');
+                script.push('});');
+                script.push('');
+            }
+            
+            // Completion and reload
+            script.push('// Check execution time');
+            script.push('const pspElapsed = Date.now() - pspStartTime;');
+            script.push('if (pspElapsed > pspMaxTime) {');
+            script.push('  console.error("⚠️ Session restoration took too long - tokens may have expired");');
+            script.push('}');
+            script.push('');
+            script.push('console.log("✅ PSP session restoration completed");');
+            script.push('console.log("🔄 Refreshing page to apply changes...");');
+            script.push('setTimeout(() => window.location.reload(), 1000);');
+            
+            return script.join('\n');
+        }
+
+        // UI Helper functions
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function showStatus(type, message) {
+            const existingStatus = document.querySelector('.status');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+            
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.innerHTML = message;
+            
+            const activeTab = document.querySelector('.tab-content.active');
+            activeTab.insertBefore(status, activeTab.firstChild);
+            
+            setTimeout(() => {
+                if (status.parentNode) {
+                    status.remove();
+                }
+            }, 5000);
+        }
+
+        function displayIsolationUrl() {
+            if (transferResult && transferResult.isolationUrl) {
+                document.getElementById('urlDisplay').textContent = transferResult.isolationUrl;
+                document.getElementById('isolationUrl').style.display = 'block';
+            }
+        }
+
+        function displayRestorationInstructions() {
+            if (transferResult) {
+                document.getElementById('scriptContent').textContent = transferResult.restorationScript;
+                document.getElementById('restorationScript').style.display = 'block';
+            }
+        }
+
+        function displaySessionInfo() {
+            if (currentSession) {
+                const stats = `
+                    <p><strong>Session ID:</strong> ${currentSession.sessionId}</p>
+                    <p><strong>Cookies:</strong> ${currentSession.cookies.length}</p>
+                    <p><strong>localStorage domains:</strong> ${Object.keys(currentSession.localStorage).length}</p>
+                    <p><strong>sessionStorage domains:</strong> ${Object.keys(currentSession.sessionStorage).length}</p>
+                    <p><strong>Extracted:</strong> ${new Date(currentSession.extractedAt).toLocaleString()}</p>
+                `;
+                document.getElementById('sessionStats').innerHTML = stats;
+                document.getElementById('sessionInfo').style.display = 'block';
+            }
+        }
+
+        function openIsolationUrl() {
+            if (transferResult && transferResult.isolationUrl) {
+                window.open(transferResult.isolationUrl, '_blank');
+                log('Opened Cloudflare isolation URL in new tab');
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                log('Copied to clipboard successfully');
+                showStatus('success', '✅ Copied to clipboard');
+            }).catch(err => {
+                log('Failed to copy to clipboard: ' + err);
+                showStatus('error', '❌ Failed to copy to clipboard');
+            });
+        }
+
+        function log(message) {
+            const logElement = document.getElementById('activityLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `\n[${timestamp}] ${message}`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('activityLog').textContent = 'PSP Cloudflare UI initialized. Ready for session transfer.';
+        }
+
+        function loadSavedConfiguration() {
+            // Load from localStorage if available
+            const savedConfig = localStorage.getItem('pspCloudflareConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                document.getElementById('teamName').value = config.teamName || '';
+                document.getElementById('r2Bucket').value = config.r2Bucket || '';
+                document.getElementById('transferMode').value = config.transferMode || 'isolation';
+            }
+        }
+
+        function saveConfiguration() {
+            const config = {
+                teamName: document.getElementById('teamName').value,
+                r2Bucket: document.getElementById('r2Bucket').value,
+                transferMode: document.getElementById('transferMode').value
+            };
+            localStorage.setItem('pspCloudflareConfig', JSON.stringify(config));
+        }
+
+        // Auto-save configuration on change
+        document.addEventListener('change', (e) => {
+            if (['teamName', 'r2Bucket', 'transferMode'].includes(e.target.id)) {
+                saveConfiguration();
+            }
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeUI);
+    </script>
+</body>
+</html>
