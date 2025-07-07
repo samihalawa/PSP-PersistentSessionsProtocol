@@ -297,6 +297,171 @@ app.post('/sessions/:id/launch', async (req, res) => {
 });
 
 /**
+ * Import current Chrome session endpoint
+ */
+app.post('/import', async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    // Import from the most active Chrome profile
+    const chromeDir = path.join(os.homedir(), 'Library', 'Application Support', 'Google', 'Chrome');
+    const activeProfile = findMostActiveProfile(chromeDir);
+    
+    if (!activeProfile) {
+      return res.status(400).json({ error: 'No active Chrome profile found. Make sure Chrome has been run at least once.' });
+    }
+    
+    // Create a new PSP session
+    const session = await ServerSession.create(name || `Imported Chrome Session ${new Date().toISOString()}`);
+    const targetDir = session.getUserDataDir();
+    
+    console.log(`📋 Importing Chrome session from: ${activeProfile}`);
+    console.log(`📁 Creating PSP profile at: ${targetDir}`);
+    
+    // Copy the entire Chrome profile for complete session preservation
+    console.log(`📋 Copying entire Chrome profile for complete session preservation...`);
+    const copyResults = [];
+    
+    try {
+      // CRITICAL: Chrome needs the COMPLETE profile structure to work properly
+      // This includes Sessions/, GPUCache/, Extensions/, and many system files
+      console.log(`📋 Starting COMPLETE Chrome profile copy...`);
+      
+      copyDirectoryRecursive(activeProfile, targetDir);
+      copyResults.push({ operation: 'complete_profile_copy', status: 'success' });
+      console.log(`✅ Complete Chrome profile copied successfully!`);
+      console.log(`📁 Profile size copied: ${getDirectorySize(targetDir)} bytes`);
+      
+    } catch (error) {
+      console.error(`❌ CRITICAL: Failed to copy complete profile: ${error}`);
+      copyResults.push({ operation: 'complete_profile_copy', status: 'failed', error: String(error) });
+      
+      // This is critical - without complete profile Chrome won't work properly
+      throw new Error(`Profile import failed - Chrome requires complete profile structure for authentication`);
+    }
+    
+    await session.save();
+    
+    res.json({
+      message: 'Chrome session imported successfully',
+      session: session.toJSON(),
+      import: {
+        sourceProfile: activeProfile,
+        targetProfile: targetDir,
+        copyResults: copyResults,
+        copiedFiles: copyResults.filter(r => r.status === 'copied').length
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error importing Chrome session:', error);
+    res.status(500).json({ error: 'Failed to import Chrome session' });
+  }
+});
+
+/**
+ * Helper function to copy directory recursively
+ */
+function copyDirectoryRecursive(source: string, target: string): void {
+  if (!fs.existsSync(target)) {
+    fs.mkdirSync(target, { recursive: true });
+  }
+  
+  const items = fs.readdirSync(source);
+  
+  for (const item of items) {
+    const sourcePath = path.join(source, item);
+    const targetPath = path.join(target, item);
+    
+    if (fs.statSync(sourcePath).isDirectory()) {
+      copyDirectoryRecursive(sourcePath, targetPath);
+    } else {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
+}
+
+/**
+ * Helper function to get directory size
+ */
+function getDirectorySize(dirPath: string): number {
+  let size = 0;
+  
+  if (!fs.existsSync(dirPath)) {
+    return 0;
+  }
+  
+  try {
+    const items = fs.readdirSync(dirPath);
+    
+    for (const item of items) {
+      const itemPath = path.join(dirPath, item);
+      const stats = fs.statSync(itemPath);
+      
+      if (stats.isDirectory()) {
+        size += getDirectorySize(itemPath);
+      } else {
+        size += stats.size;
+      }
+    }
+  } catch (error) {
+    console.warn(`Warning: Could not read directory ${dirPath}:`, error);
+  }
+  
+  return size;
+}
+
+/**
+ * Find the most active Chrome profile based on recent activity
+ */
+function findMostActiveProfile(chromeDir: string): string | null {
+  if (!fs.existsSync(chromeDir)) {
+    return null;
+  }
+  
+  const profileDirs = ['Default', 'Profile 1', 'Profile 2', 'Profile 3', 'Profile 4', 'Profile 5'];
+  let mostActiveProfile = null;
+  let latestTime = 0;
+  
+  for (const profileName of profileDirs) {
+    const profilePath = path.join(chromeDir, profileName);
+    
+    if (!fs.existsSync(profilePath)) {
+      continue;
+    }
+    
+    // Check for important files that indicate an active profile
+    const cookiesPath = path.join(profilePath, 'Cookies');
+    const preferencesPath = path.join(profilePath, 'Preferences');
+    
+    if (fs.existsSync(cookiesPath) && fs.existsSync(preferencesPath)) {
+      // Use the modification time of the Cookies file as activity indicator
+      const cookiesStat = fs.statSync(cookiesPath);
+      const modTime = cookiesStat.mtime.getTime();
+      
+      // Also check if this profile has substantial data (not just a fresh profile)
+      const cookiesSize = cookiesStat.size;
+      
+      // Prefer profiles with recent activity and substantial data
+      if (modTime > latestTime && cookiesSize > 100000) { // 100KB threshold
+        latestTime = modTime;
+        mostActiveProfile = profilePath;
+      }
+    }
+  }
+  
+  // If no substantial profile found, fall back to Default
+  if (!mostActiveProfile) {
+    const defaultPath = path.join(chromeDir, 'Default');
+    if (fs.existsSync(defaultPath)) {
+      mostActiveProfile = defaultPath;
+    }
+  }
+  
+  return mostActiveProfile;
+}
+
+/**
  * Server demo endpoint
  */
 app.post('/demo', async (req, res) => {
@@ -371,6 +536,7 @@ app.listen(port, () => {
   console.log('   GET  /sessions/:id    - Get session');
   console.log('   DELETE /sessions/:id  - Delete session');
   console.log('   POST /sessions/:id/launch - Launch session');
+  console.log('   POST /import          - Import Chrome session');
   console.log('   POST /demo            - Run demo');
   console.log('\n✅ Ready for PSP requests!');
 });

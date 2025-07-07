@@ -43,3 +43,7 @@ When implementing this protocol, focus on:
 - Ensuring secure handling of authentication data
 - Optimizing performance for both capture and replay
 - Supporting both local and remote storage options
+
+## Development Guidelines
+
+- Do not create any test files or demo JavaScript files in this repository

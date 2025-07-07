@@ -1,0 +1,27 @@
+{
+  "name": "@psp/adapter-browser-use",
+  "version": "0.1.0",
+  "description": "PSP adapter for browser-use framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@psp/core": "workspace:*",
+    "browser-use": "^0.1.0",
+    "playwright": "^1.40.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "typescript": "^5.1.3"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { launchWithPSP, listSessions, demo } from '../../adapters/playwright/src/helpers';
+import { launchWithPSP, listSessions, demo, importCurrentChromeSession } from '../../adapters/playwright/src/helpers';
 
 const program = new Command();
 
@@ -101,6 +101,28 @@ program
       
     } catch (error) {
       console.error('❌ Error opening session:', error);
+      process.exit(1);
+    }
+  });
+
+/**
+ * Import command
+ */
+program
+  .command('import [name]')
+  .description('Import your current Chrome session into PSP')
+  .action(async (name?: string) => {
+    try {
+      console.log('📥 Importing current Chrome session...');
+      
+      const sessionId = await importCurrentChromeSession(name);
+      
+      console.log(`\n🎉 Success! Your Chrome session has been imported!`);
+      console.log(`📋 Session ID: ${sessionId}`);
+      console.log(`💡 Use "psp open ${sessionId}" to launch with your session`);
+      
+    } catch (error) {
+      console.error('❌ Error importing Chrome session:', error);
       process.exit(1);
     }
   });

@@ -23,73 +23,63 @@ This project is currently under active development. The protocol specification i
 
 Check out the [documentation](docs/README.md) for more information on how to use PSP in your projects.
 
+### Quick Demo
+
+Try the working Chrome profile demo:
+
+```bash
+# Run complete demo with session capture and restore
+node demos/chrome-profiles/demo-psp-working.js
+
+# Capture your current Chrome session
+node demos/chrome-profiles/capture-current-chrome-session.js
+
+# List all saved sessions
+node demos/chrome-profiles/demo-psp-working.js list
+```
+
 ### Quick Start Examples
 
-#### Playwright
+#### Playwright with Chrome Profiles
 
 ```javascript
-// Create a PSP session with Playwright
-const { PlaywrightAdapter } = require('@psp/client-js');
-const { chromium } = require('playwright');
+// Using the working PSP implementation
+const { launchWithPSP } = require('./demos/chrome-profiles/demo-psp-working');
 
-// Initialize browser and context
-const browser = await chromium.launch();
-const context = await browser.newContext();
-const page = await context.newPage();
-
-// Create adapter and session
-const adapter = new PlaywrightAdapter();
-const session = await adapter.createSession(page, {
-  name: 'my-authentication-session',
-  storage: 'cloud' // or 'local', 'redis', etc.
+// Create new session or load existing one
+const { context, session } = await launchWithPSP(sessionId, {
+  sessionName: 'My Auth Session',
+  headless: false
 });
 
-// Log in to your application
+const page = await context.newPage();
+
+// Navigate and login
 await page.goto('https://example.com/login');
 await page.fill('input[name="username"]', 'user');
 await page.fill('input[name="password"]', 'pass');
 await page.click('button[type="submit"]');
 
-// Capture the authenticated session
-await session.capture();
+// Session is automatically captured in Chrome profile
+await session.capture(context);
 
 // Later, restore the session
-const newContext = await browser.newContext();
-const newPage = await newContext.newPage();
-await session.restore(newPage);
-// Now newPage has the same authenticated session
+const { context: newContext } = await launchWithPSP(session.getId());
+// Chrome launches with all previous session data intact
 ```
 
-#### Selenium
+#### Real-Time Session Capture
 
-```python
-# Create a PSP session with Selenium
-from psp.client import SeleniumAdapter
-from selenium import webdriver
+```javascript
+const { ChromeSessionCapture } = require('./demos/chrome-profiles/capture-current-chrome-session');
 
-# Initialize driver
-driver = webdriver.Chrome()
+const capture = new ChromeSessionCapture();
 
-# Create adapter and session
-adapter = SeleniumAdapter()
-session = adapter.create_session(driver, 
-  name="my-authentication-session",
-  storage="cloud"  # or 'local', 'redis', etc.
-)
+// Capture current Chrome session with comprehensive data
+const { sessionId } = await capture.captureCurrentChromeSession();
 
-# Log in to your application
-driver.get("https://example.com/login")
-driver.find_element_by_name("username").send_keys("user")
-driver.find_element_by_name("password").send_keys("pass")
-driver.find_element_by_xpath("//button[@type='submit']").click()
-
-# Capture the authenticated session
-session.capture()
-
-# Later, restore the session
-new_driver = webdriver.Chrome()
-session.restore(new_driver)
-# Now new_driver has the same authenticated session
+// Later, launch Chrome with captured session
+await capture.launchWithCapturedSession(sessionId);
 ```
 
 ## Architecture

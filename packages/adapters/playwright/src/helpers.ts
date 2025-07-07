@@ -199,6 +199,159 @@ export async function captureSession(
 }
 
 /**
+ * Import current Chrome session from running Chrome instance
+ */
+export async function importCurrentChromeSession(sessionName?: string): Promise<string> {
+  const chromeDir = path.join(os.homedir(), 'Library', 'Application Support', 'Google', 'Chrome');
+  
+  // Find the most active Chrome profile
+  const activeProfile = findMostActiveProfile(chromeDir);
+  
+  if (!activeProfile) {
+    throw new Error('No active Chrome profile found. Make sure Chrome has been run at least once.');
+  }
+  
+  console.log(`🔍 Using Chrome profile: ${activeProfile}`);
+  
+  // Create a new PSP session by copying the Chrome profile
+  const session = await SimpleSession.create({
+    name: sessionName || `Imported Chrome Session ${new Date().toISOString()}`
+  });
+  
+  const targetDir = session.getUserDataDir();
+  
+  console.log(`📋 Importing Chrome session from: ${activeProfile}`);
+  console.log(`📁 Creating PSP profile at: ${targetDir}`);
+  
+  // Copy the entire Chrome profile for complete session preservation
+  console.log(`📋 Copying entire Chrome profile for complete session preservation...`);
+  
+  try {
+    // Copy all files and directories from the active profile
+    copyDirectoryRecursive(activeProfile, targetDir);
+    console.log(`✅ Complete Chrome profile copied successfully!`);
+  } catch (error) {
+    console.error(`❌ Failed to copy complete profile: ${error}`);
+    
+    // Fallback to essential files only
+    console.log(`📋 Falling back to essential files copy...`);
+    const filesToCopy = [
+      'Cookies',
+      'Local Storage', 
+      'Session Storage',
+      'Preferences',
+      'Local State',
+      'History',
+      'Bookmarks',
+      'Web Data',
+      'Login Data',
+      'Network Persistent State',
+      'TransportSecurity',
+      'Secure Preferences'
+    ];
+    
+    for (const fileName of filesToCopy) {
+      const sourcePath = path.join(activeProfile, fileName);
+      const targetPath = path.join(targetDir, fileName);
+      
+      try {
+        if (fs.existsSync(sourcePath)) {
+          if (fs.statSync(sourcePath).isDirectory()) {
+            copyDirectoryRecursive(sourcePath, targetPath);
+          } else {
+            fs.copyFileSync(sourcePath, targetPath);
+          }
+          console.log(`✅ Copied: ${fileName}`);
+        }
+      } catch (error) {
+        console.warn(`⚠️  Could not copy ${fileName}: ${error}`);
+      }
+    }
+  }
+  
+  await session.save();
+  
+  console.log(`✅ Chrome session imported successfully!`);
+  console.log(`📋 Session ID: ${session.getId()}`);
+  console.log(`📁 PSP profile: ${targetDir}`);
+  console.log(`💡 Use "psp open ${session.getId()}" to launch with this session`);
+  
+  return session.getId();
+}
+
+/**
+ * Helper function to copy directory recursively
+ */
+function copyDirectoryRecursive(source: string, target: string): void {
+  if (!fs.existsSync(target)) {
+    fs.mkdirSync(target, { recursive: true });
+  }
+  
+  const items = fs.readdirSync(source);
+  
+  for (const item of items) {
+    const sourcePath = path.join(source, item);
+    const targetPath = path.join(target, item);
+    
+    if (fs.statSync(sourcePath).isDirectory()) {
+      copyDirectoryRecursive(sourcePath, targetPath);
+    } else {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
+}
+
+/**
+ * Find the most active Chrome profile based on recent activity
+ */
+function findMostActiveProfile(chromeDir: string): string | null {
+  if (!fs.existsSync(chromeDir)) {
+    return null;
+  }
+  
+  const profileDirs = ['Default', 'Profile 1', 'Profile 2', 'Profile 3', 'Profile 4', 'Profile 5'];
+  let mostActiveProfile = null;
+  let latestTime = 0;
+  
+  for (const profileName of profileDirs) {
+    const profilePath = path.join(chromeDir, profileName);
+    
+    if (!fs.existsSync(profilePath)) {
+      continue;
+    }
+    
+    // Check for important files that indicate an active profile
+    const cookiesPath = path.join(profilePath, 'Cookies');
+    const preferencesPath = path.join(profilePath, 'Preferences');
+    
+    if (fs.existsSync(cookiesPath) && fs.existsSync(preferencesPath)) {
+      // Use the modification time of the Cookies file as activity indicator
+      const cookiesStat = fs.statSync(cookiesPath);
+      const modTime = cookiesStat.mtime.getTime();
+      
+      // Also check if this profile has substantial data (not just a fresh profile)
+      const cookiesSize = cookiesStat.size;
+      
+      // Prefer profiles with recent activity and substantial data
+      if (modTime > latestTime && cookiesSize > 100000) { // 100KB threshold
+        latestTime = modTime;
+        mostActiveProfile = profilePath;
+      }
+    }
+  }
+  
+  // If no substantial profile found, fall back to Default
+  if (!mostActiveProfile) {
+    const defaultPath = path.join(chromeDir, 'Default');
+    if (fs.existsSync(defaultPath)) {
+      mostActiveProfile = defaultPath;
+    }
+  }
+  
+  return mostActiveProfile;
+}
+
+/**
  * List all available sessions
  */
 export async function listSessions(): Promise<SimpleSession[]> {

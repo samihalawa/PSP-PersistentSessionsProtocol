@@ -1,0 +1,46 @@
+{
+  "name": "@psp/core",
+  "version": "1.0.0",
+  "description": "PersistentSessionsProtocol - Core library for browser session persistence",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "browser",
+    "session",
+    "persistence",
+    "automation",
+    "playwright",
+    "chrome",
+    "sync"
+  ],
+  "author": "PSP Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/lib-storage": "^3.0.0",
+    "playwright": "^1.40.0",
+    "dotenv": "^16.0.0",
+    "uuid": "^9.0.0",
+    "tar": "^6.0.0",
+    "zlib": "^1.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "@types/tar": "^6.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ]
+}

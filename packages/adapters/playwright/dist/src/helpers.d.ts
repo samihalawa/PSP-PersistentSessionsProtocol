@@ -48,6 +48,10 @@ export declare function launchWithPSP(sessionId?: string, options?: {
  */
 export declare function captureSession(userDataDir: string, sessionName?: string): Promise<string>;
 /**
+ * Import current Chrome session from running Chrome instance
+ */
+export declare function importCurrentChromeSession(sessionName?: string): Promise<string>;
+/**
  * List all available sessions
  */
 export declare function listSessions(): Promise<SimpleSession[]>;

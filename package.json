@@ -8,10 +8,34 @@
     "lint": "eslint . --ext .ts,.tsx --config .eslintrc.json",
     "lint:fix": "eslint . --ext .ts,.tsx --config .eslintrc.json --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --config .prettierrc.json --ignore-path .prettierignore",
-    "build": "tsc",
-    "start:server": "node dist/server/index.js",
+    "build": "npm run build:core && npm run build:adapters && npm run build:cli && npm run build:server",
+    "build:core": "cd packages/core && npm run build",
+    "build:adapters": "cd packages/adapters/playwright && npm run build && cd ../stagehand && npm run build && cd ../skyvern && npm run build && cd ../hyperbrowser && npm run build",
+    "build:cli": "cd packages/cli && npm run build",
+    "build:server": "cd packages/server && npm run build",
+    "dev:server": "cd packages/server && npm run dev",
+    "start:server": "cd packages/server && npm start",
+    "install:all": "npm install && npm run install:packages",
+    "install:packages": "cd packages/core && npm install && cd ../adapters/playwright && npm install && cd ../stagehand && npm install && cd ../skyvern && npm install && cd ../hyperbrowser && npm install && cd ../../../cli && npm install && cd ../server && npm install",
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress build docs",
+    "psp:demo": "node psp-working-implementation.js demo",
+    "psp:enhanced": "node psp-enhanced-implementation.js",
+    "psp:capture": "node psp-working-implementation.js capture",
+    "psp:auth": "node psp-working-implementation.js auth",
+    "psp:list": "node psp-working-implementation.js list",
+    "psp:load": "node psp-working-implementation.js load",
+    "psp:cleanup": "node scripts/cleanup-sessions.js all",
+    "psp:cleanup:old": "node scripts/cleanup-sessions.js old 7",
+    "psp:sessions": "node scripts/cleanup-sessions.js list",
+    "server:start": "cd packages/server && npm start",
+    "server:dev": "cd packages/server && npm run dev", 
+    "cli:install": "cd packages/cli && npm install -g .",
+    "deploy": "npm run build && npm run server:start",
+    "docker:build": "docker build -t psp-server .",
+    "docker:run": "docker run -p 3000:3000 psp-server",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "integration:all": "npm run psp:demo && npm run psp:capture && npm run psp:list"
   },
   "keywords": [
     "browser",
@@ -41,11 +65,11 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "ws": "^8.13.0",
+    "protobufjs": "^7.2.4",
     "redis": "^4.6.7",
-    "protobufjs": "^7.2.4"
-  },
-  "workspaces": [
-    "packages/*"
-  ]
+    "sqlite3": "^5.1.7",
+    "ws": "^8.13.0",
+    "dotenv": "^16.0.0",
+    "playwright": "^1.40.0"
+  }
 }

@@ -1,0 +1,33 @@
+{
+  "name": "@psp/adapter-hyperbrowser",
+  "version": "0.1.0",
+  "description": "PSP adapter for Context7 Hyperbrowser AI platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@psp/core": "workspace:*",
+    "hyperbrowser": "^2.0.0",
+    "puppeteer": "^21.0.0",
+    "playwright": "^1.40.0",
+    "openai": "^4.0.0",
+    "langchain": "^0.1.0",
+    "dotenv": "^16.0.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.1.3"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
