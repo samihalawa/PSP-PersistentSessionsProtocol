@@ -46,8 +46,8 @@ export function setupWebSocketHandlers(
   storageProvider: StorageProvider,
   authEnabled: boolean = false
 ): void {
-  // Store clients by session ID
-  const sessionClients: Map<string, Set<ClientConnection>> = new Map();
+  // Use the global session clients map
+  const sessionClients = globalSessionClients;
   
   // Handle new connections
   wss.on('connection', (ws: ClientConnection) => {
@@ -250,60 +250,22 @@ export function setupWebSocketHandlers(
     }));
   }
   
-  /**
-   * Broadcast a message to all clients subscribed to a session
-   */
-  function broadcastToSession(sessionId: string, message: any): void {
-    const clients = sessionClients.get(sessionId);
-    if (!clients) {
-      return;
-    }
-    
-    const messageStr = JSON.stringify(message);
-    for (const client of clients) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(messageStr);
-      }
-    }
-  }
-  
-  /**
-   * Broadcast a session update to all subscribed clients
-   */
-  export function broadcastSessionUpdate(sessionId: string, data: any): void {
-    broadcastToSession(sessionId, {
-      type: MessageType.UPDATE,
-      sessionId,
-      data
-    });
-  }
-  
-  /**
-   * Broadcast a session event to all subscribed clients
-   */
-  export function broadcastSessionEvent(sessionId: string, event: any): void {
-    broadcastToSession(sessionId, {
-      type: MessageType.EVENT,
-      sessionId,
-      data: event
-    });
-  }
-  
   // Set up a health check interval
   const interval = setInterval(() => {
     let totalClients = 0;
     let inactiveClients = 0;
     
-    wss.clients.forEach((ws: ClientConnection) => {
+    wss.clients.forEach((ws) => {
+      const client = ws as ClientConnection;
       totalClients++;
       
-      if (ws.isAlive === false) {
+      if (client.isAlive === false) {
         inactiveClients++;
-        return ws.terminate();
+        return client.terminate();
       }
       
-      ws.isAlive = false;
-      ws.ping();
+      client.isAlive = false;
+      client.ping();
     });
     
     if (totalClients > 0) {
@@ -315,4 +277,46 @@ export function setupWebSocketHandlers(
   wss.on('close', () => {
     clearInterval(interval);
   });
+}
+
+// Global session clients map for broadcasting
+let globalSessionClients: Map<string, Set<ClientConnection>> = new Map();
+
+/**
+ * Broadcast a session update to all subscribed clients
+ */
+export function broadcastSessionUpdate(sessionId: string, data: any): void {
+  broadcastToSession(sessionId, {
+    type: MessageType.UPDATE,
+    sessionId,
+    data
+  });
+}
+
+/**
+ * Broadcast a session event to all subscribed clients
+ */
+export function broadcastSessionEvent(sessionId: string, event: any): void {
+  broadcastToSession(sessionId, {
+    type: MessageType.EVENT,
+    sessionId,
+    data: event
+  });
+}
+
+/**
+ * Broadcast a message to all clients subscribed to a session
+ */
+function broadcastToSession(sessionId: string, message: any): void {
+  const clients = globalSessionClients.get(sessionId);
+  if (!clients) {
+    return;
+  }
+  
+  const messageStr = JSON.stringify(message);
+  for (const client of clients) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(messageStr);
+    }
+  }
 }

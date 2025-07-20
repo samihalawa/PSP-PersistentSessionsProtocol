@@ -18,6 +18,7 @@ exports.VERSION = void 0;
 // Export public API
 __exportStar(require("./types"), exports);
 __exportStar(require("./session"), exports);
+__exportStar(require("./adapter"), exports);
 __exportStar(require("./storage/provider"), exports);
 __exportStar(require("./storage/local"), exports);
 // Export utilities

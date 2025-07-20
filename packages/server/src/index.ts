@@ -18,7 +18,7 @@ async function startServer() {
     const server = new Server({
       port: PORT,
       host: HOST,
-      storageType: process.env.STORAGE_TYPE || 'local',
+      storageType: (process.env.STORAGE_TYPE as 'local' | 'redis' | 'database' | 'cloud') || 'local',
       storageOptions: {
         // Redis options
         redisUrl: process.env.REDIS_URL,

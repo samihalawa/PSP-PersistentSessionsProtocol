@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupWebSocketHandlers = setupWebSocketHandlers;
+exports.broadcastSessionUpdate = broadcastSessionUpdate;
+exports.broadcastSessionEvent = broadcastSessionEvent;
 const ws_1 = require("ws");
 const logger_1 = require("../utils/logger");
 const auth_1 = require("./auth");
@@ -23,8 +25,8 @@ var MessageType;
  * Sets up WebSocket handlers
  */
 function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
-    // Store clients by session ID
-    const sessionClients = new Map();
+    // Use the global session clients map
+    const sessionClients = globalSessionClients;
     // Handle new connections
     wss.on('connection', (ws) => {
         ws.isAlive = true;
@@ -195,53 +197,19 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
             data: { message: errorMessage }
         }));
     }
-    /**
-     * Broadcast a message to all clients subscribed to a session
-     */
-    function broadcastToSession(sessionId, message) {
-        const clients = sessionClients.get(sessionId);
-        if (!clients) {
-            return;
-        }
-        const messageStr = JSON.stringify(message);
-        for (const client of clients) {
-            if (client.readyState === ws_1.WebSocket.OPEN) {
-                client.send(messageStr);
-            }
-        }
-    }
-    /**
-     * Broadcast a session update to all subscribed clients
-     */
-    export function broadcastSessionUpdate(sessionId, data) {
-        broadcastToSession(sessionId, {
-            type: MessageType.UPDATE,
-            sessionId,
-            data
-        });
-    }
-    /**
-     * Broadcast a session event to all subscribed clients
-     */
-    export function broadcastSessionEvent(sessionId, event) {
-        broadcastToSession(sessionId, {
-            type: MessageType.EVENT,
-            sessionId,
-            data: event
-        });
-    }
     // Set up a health check interval
     const interval = setInterval(() => {
         let totalClients = 0;
         let inactiveClients = 0;
         wss.clients.forEach((ws) => {
+            const client = ws;
             totalClients++;
-            if (ws.isAlive === false) {
+            if (client.isAlive === false) {
                 inactiveClients++;
-                return ws.terminate();
+                return client.terminate();
             }
-            ws.isAlive = false;
-            ws.ping();
+            client.isAlive = false;
+            client.ping();
         });
         if (totalClients > 0) {
             logger.debug(`WebSocket health check: ${totalClients} total, ${inactiveClients} inactive`);
@@ -251,4 +219,41 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
     wss.on('close', () => {
         clearInterval(interval);
     });
+}
+// Global session clients map for broadcasting
+let globalSessionClients = new Map();
+/**
+ * Broadcast a session update to all subscribed clients
+ */
+function broadcastSessionUpdate(sessionId, data) {
+    broadcastToSession(sessionId, {
+        type: MessageType.UPDATE,
+        sessionId,
+        data
+    });
+}
+/**
+ * Broadcast a session event to all subscribed clients
+ */
+function broadcastSessionEvent(sessionId, event) {
+    broadcastToSession(sessionId, {
+        type: MessageType.EVENT,
+        sessionId,
+        data: event
+    });
+}
+/**
+ * Broadcast a message to all clients subscribed to a session
+ */
+function broadcastToSession(sessionId, message) {
+    const clients = globalSessionClients.get(sessionId);
+    if (!clients) {
+        return;
+    }
+    const messageStr = JSON.stringify(message);
+    for (const client of clients) {
+        if (client.readyState === ws_1.WebSocket.OPEN) {
+            client.send(messageStr);
+        }
+    }
 }

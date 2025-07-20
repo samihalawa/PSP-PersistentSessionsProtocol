@@ -7,6 +7,15 @@ import {
   PlaybackOptions 
 } from '@psp/core';
 
+// Extend Window interface for PSP-specific properties
+declare global {
+  interface Window {
+    _pspEvents?: Event[];
+    _pspStartTime?: number;
+    _pspGetEvents?: () => Event[];
+  }
+}
+
 /**
  * Adapter for Playwright
  */
@@ -90,7 +99,7 @@ export class PlaywrightAdapter extends Adapter {
       timestamp: Date.now(),
       origin,
       storage: {
-        cookies: storageState.cookies.map(cookie => ({
+        cookies: storageState.cookies.map((cookie: any) => ({
           name: cookie.name,
           value: cookie.value,
           domain: cookie.domain,
@@ -162,11 +171,11 @@ export class PlaywrightAdapter extends Adapter {
     
     // Apply localStorage
     for (const [origin, storage] of state.storage.localStorage.entries()) {
-      await this.page.context().addInitScript(script => {
+      await this.page.context().addInitScript((script: any) => {
         if (window.location.origin === script.origin) {
           localStorage.clear();
           for (const [key, value] of Object.entries(script.storage)) {
-            localStorage.setItem(key, value);
+            localStorage.setItem(key, String(value));
           }
         }
       }, { origin, storage: Object.fromEntries(storage) });
@@ -175,10 +184,10 @@ export class PlaywrightAdapter extends Adapter {
     // Apply sessionStorage
     for (const [origin, storage] of state.storage.sessionStorage.entries()) {
       if (origin === new URL(this.page.url()).origin) {
-        await this.page.evaluate(storage => {
+        await this.page.evaluate((storage: any) => {
           sessionStorage.clear();
           for (const [key, value] of Object.entries(storage)) {
-            sessionStorage.setItem(key, value);
+            sessionStorage.setItem(key, String(value));
           }
         }, Object.fromEntries(storage));
       }
@@ -186,7 +195,7 @@ export class PlaywrightAdapter extends Adapter {
     
     // Apply scroll position if available
     if (state.dom?.scrollPosition) {
-      await this.page.evaluate(({ x, y }) => {
+      await this.page.evaluate(({ x, y }: { x: number; y: number }) => {
         window.scrollTo(x, y);
       }, state.dom.scrollPosition);
     }
@@ -220,13 +229,13 @@ export class PlaywrightAdapter extends Adapter {
     };
     
     // Install event listeners via page.evaluate
-    await this.page.evaluate(opts => {
+    await this.page.evaluate((opts: any) => {
       // Create global storage for events
       window._pspEvents = [];
       window._pspStartTime = Date.now();
       
       // Helper function to generate a CSS selector for an element
-      function cssPath(el) {
+      function cssPath(el: any): string {
         if (!el || !el.tagName) return '';
         
         const path = [];
@@ -252,9 +261,9 @@ export class PlaywrightAdapter extends Adapter {
       // Record click events
       if (opts.click) {
         document.addEventListener('click', e => {
-          window._pspEvents.push({
+          window._pspEvents?.push({
             type: 'click',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             target: cssPath(e.target),
             data: {
               button: e.button,
@@ -275,9 +284,9 @@ export class PlaywrightAdapter extends Adapter {
           if (e.target instanceof HTMLInputElement || 
               e.target instanceof HTMLTextAreaElement || 
               e.target instanceof HTMLSelectElement) {
-            window._pspEvents.push({
+            window._pspEvents?.push({
               type: 'input',
-              timestamp: Date.now() - window._pspStartTime,
+              timestamp: Date.now() - (window._pspStartTime || 0),
               target: cssPath(e.target),
               data: {
                 value: e.target.value
@@ -290,9 +299,9 @@ export class PlaywrightAdapter extends Adapter {
       // Record keypress events
       if (opts.keypress) {
         document.addEventListener('keydown', e => {
-          window._pspEvents.push({
+          window._pspEvents?.push({
             type: 'keydown',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             target: cssPath(e.target),
             data: {
               key: e.key,
@@ -312,34 +321,34 @@ export class PlaywrightAdapter extends Adapter {
         const originalPushState = history.pushState;
         const originalReplaceState = history.replaceState;
         
-        history.pushState = function() {
-          window._pspEvents.push({
+        history.pushState = function(...args: any[]) {
+          window._pspEvents?.push({
             type: 'navigation',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             data: {
-              url: arguments[2],
+              url: args[2],
               navigationType: 'navigate'
             }
           });
-          return originalPushState.apply(this, arguments);
+          return originalPushState.apply(this, args as [any, string, string?]);
         };
         
-        history.replaceState = function() {
-          window._pspEvents.push({
+        history.replaceState = function(...args: any[]) {
+          window._pspEvents?.push({
             type: 'navigation',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             data: {
-              url: arguments[2],
+              url: args[2],
               navigationType: 'navigate'
             }
           });
-          return originalReplaceState.apply(this, arguments);
+          return originalReplaceState.apply(this, args as [any, string, string?]);
         };
         
         window.addEventListener('popstate', () => {
-          window._pspEvents.push({
+          window._pspEvents?.push({
             type: 'navigation',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             data: {
               url: window.location.href,
               navigationType: 'back_forward'
@@ -356,9 +365,9 @@ export class PlaywrightAdapter extends Adapter {
             clearTimeout(scrollTimeout);
           }
           scrollTimeout = setTimeout(() => {
-            window._pspEvents.push({
+            window._pspEvents?.push({
               type: 'scroll',
-              timestamp: Date.now() - window._pspStartTime,
+              timestamp: Date.now() - (window._pspStartTime || 0),
               data: {
                 x: window.scrollX,
                 y: window.scrollY
@@ -453,7 +462,7 @@ export class PlaywrightAdapter extends Adapter {
     if (!this.page || !event.target) return;
     
     await this.page.click(event.target, {
-      button: event.data.button as 'left' | 'right' | 'middle',
+      button: (['left', 'middle', 'right'] as const)[event.data.button] || 'left',
       timeout: options.actionTimeout,
       position: {
         x: event.data.clientX,
@@ -504,7 +513,7 @@ export class PlaywrightAdapter extends Adapter {
   private async playScrollEvent(event: Event & { data: { x: number, y: number } }, options: any): Promise<void> {
     if (!this.page) return;
     
-    await this.page.evaluate(({ x, y }) => {
+    await this.page.evaluate(({ x, y }: { x: number; y: number }) => {
       window.scrollTo(x, y);
     }, event.data);
   }
@@ -576,13 +585,20 @@ export class PlaywrightAdapter extends Adapter {
   /**
    * Converts Playwright storage format to PSP format
    */
-  private convertPlaywrightStorageToMap(origins: Array<{ origin: string, localStorage: Record<string, string> }>): Map<string, Map<string, string>> {
+  private convertPlaywrightStorageToMap(origins: any[]): Map<string, Map<string, string>> {
     const result = new Map<string, Map<string, string>>();
     
     for (const origin of origins) {
       const storageMap = new Map<string, string>();
-      for (const [key, value] of Object.entries(origin.localStorage)) {
-        storageMap.set(key, value);
+      // Handle both array and object formats
+      if (Array.isArray(origin.localStorage)) {
+        for (const item of origin.localStorage) {
+          storageMap.set(item.name, item.value);
+        }
+      } else if (origin.localStorage && typeof origin.localStorage === 'object') {
+        for (const [key, value] of Object.entries(origin.localStorage)) {
+          storageMap.set(key, String(value));
+        }
       }
       result.set(origin.origin, storageMap);
     }

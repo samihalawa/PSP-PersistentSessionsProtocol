@@ -30,9 +30,9 @@ async function setupStorageProvider(type, options) {
         case 'redis':
             return new redis_provider_1.RedisStorageProvider(options);
         case 'database':
-            return new database_provider_1.DatabaseStorageProvider(options);
+            return new database_provider_1.DatabaseStorageProvider(options?.connectionString || 'sqlite://sessions.db');
         case 'cloud':
-            return new cloud_provider_1.CloudStorageProvider(options);
+            return new cloud_provider_1.CloudStorageProvider(options || { bucketName: 'psp-sessions' });
         case 'local':
         default:
             return new core_1.LocalStorageProvider(options);

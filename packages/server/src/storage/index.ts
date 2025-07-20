@@ -20,10 +20,10 @@ export async function setupStorageProvider(
       return new RedisStorageProvider(options);
       
     case 'database':
-      return new DatabaseStorageProvider(options);
+      return new DatabaseStorageProvider(options?.connectionString || 'sqlite://sessions.db');
       
     case 'cloud':
-      return new CloudStorageProvider(options);
+      return new CloudStorageProvider(options || { bucketName: 'psp-sessions' });
       
     case 'local':
     default:
