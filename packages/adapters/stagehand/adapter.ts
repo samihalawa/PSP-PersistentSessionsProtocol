@@ -196,6 +196,15 @@ export class StagehandAdapter extends Adapter {
     }
 
     // Apply localStorage and sessionStorage
+    const storageData = {
+      localStorage: Array.from(state.storage.localStorage.entries()).map(
+        ([origin, storage]) => [origin, Array.from(storage.entries())]
+      ),
+      sessionStorage: Array.from(state.storage.sessionStorage.entries()).map(
+        ([origin, storage]) => [origin, Array.from(storage.entries())]
+      ),
+    };
+    
     await this.page.evaluate((storageState: any) => {
       // Clear existing storage
       localStorage.clear();
@@ -218,14 +227,7 @@ export class StagehandAdapter extends Adapter {
           }
         }
       }
-    }, {
-      localStorage: Array.from(state.storage.localStorage.entries()).map(
-        ([origin, storage]) => [origin, Array.from(storage.entries())]
-      ),
-      sessionStorage: Array.from(state.storage.sessionStorage.entries()).map(
-        ([origin, storage]) => [origin, Array.from(storage.entries())]
-      ),
-    });
+    }, storageData);
 
     // Restore scroll position
     if (state.dom?.scrollPosition) {
@@ -311,7 +313,7 @@ export class StagehandAdapter extends Adapter {
       // Store events on window for retrieval
       (window as any)._pspEvents = events;
       (window as any)._pspCheckNavigation = setInterval(checkNavigation, 100);
-    }, this.recordingStartTime);
+    }, startTime);
   }
 
   /**
@@ -406,6 +408,17 @@ export class StagehandAdapter extends Adapter {
       throw new Error('Not connected to a Stagehand page');
     }
     return await this.page.pdf(options);
+  }
+
+  /**
+   * Plays back a recording from a captured state
+   */
+  async playRecording(state: BrowserSessionState, options?: PlaybackOptions): Promise<void> {
+    if (!state.recording) {
+      throw new Error('No recording found in the provided state');
+    }
+    
+    await this.replay(state.recording.events, options);
   }
 }
 

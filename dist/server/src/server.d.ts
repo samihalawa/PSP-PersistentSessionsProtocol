@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../core/dist';
 export interface ServerConfig {
     port: number;
     host: string;

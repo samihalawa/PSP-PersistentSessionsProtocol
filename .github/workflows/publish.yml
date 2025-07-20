@@ -1,0 +1,140 @@
+name: Publish to NPM
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish'
+        required: true
+        default: 'patch'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Lint code
+        run: npm run lint
+
+  publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Configure NPM authentication
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+
+      - name: Publish core package
+        run: cd packages/core && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+
+      - name: Publish CLI package
+        run: cd packages/cli && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+
+      - name: Publish MCP package
+        run: cd packages/mcp && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+
+      - name: Publish GUI package
+        run: cd packages/gui && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+
+      - name: Publish server package
+        run: cd packages/server && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+
+      - name: Publish adapters
+        run: |
+          cd packages/adapters/playwright && npm publish --access public
+          cd ../../../packages/adapters/skyvern && npm publish --access public
+          cd ../../../packages/adapters/stagehand && npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+
+  create-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ## PSP Release ${{ github.ref }}
+            
+            ### 🚀 New Features
+            - Modern React GUI for session management
+            - Comprehensive MCP integration with 12 tools
+            - Support for Browserbase and Hyperbrowser
+            - 20+ platform compatibility testing
+            
+            ### 📦 Published Packages
+            - @psp/core - Core session management
+            - @psp/cli - Command line interface
+            - @psp/gui - React web interface  
+            - @psp/mcp - MCP server for AI integration
+            - @psp/server - Backend server
+            - @psp/adapter-playwright - Enhanced Playwright adapter
+            - @psp/adapter-skyvern - Skyvern AI adapter
+            - @psp/adapter-stagehand - Stagehand adapter
+            
+            ### 🛠️ Installation
+            ```bash
+            npm install @psp/core @psp/cli
+            ```
+            
+            ### 📚 Documentation
+            Visit our [documentation site](https://samihalawa.github.io/PSP-PersistentSessionsProtocol/) for guides and examples.
+          draft: false
+          prerelease: false

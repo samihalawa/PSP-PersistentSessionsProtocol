@@ -15,7 +15,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupStorageProvider = setupStorageProvider;
-const core_1 = require("@psp/core");
+const dist_1 = require("../../../core/dist");
 const redis_provider_1 = require("./redis-provider");
 const database_provider_1 = require("./database-provider");
 const cloud_provider_1 = require("./cloud-provider");
@@ -38,7 +38,7 @@ async function setupStorageProvider(type, options) {
             });
         case 'local':
         default:
-            return new core_1.LocalStorageProvider(options);
+            return new dist_1.LocalStorageProvider(options);
     }
 }
 // Export storage providers

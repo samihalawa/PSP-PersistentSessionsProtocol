@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../core/dist';
 /**
  * Controller for session-related endpoints
  */

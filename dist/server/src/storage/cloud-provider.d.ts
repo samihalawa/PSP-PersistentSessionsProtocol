@@ -1,5 +1,5 @@
-import { StorageProvider } from '@psp/core';
-import { SessionMetadata, BrowserSessionState, SessionFilter } from '@psp/core';
+import { StorageProvider } from '../../../core/dist';
+import { SessionMetadata, BrowserSessionState, SessionFilter } from '../../../core/dist';
 /**
  * Cloud storage provider implementation (placeholder)
  * TODO: Implement with actual cloud storage service (AWS S3, Google Cloud Storage, etc.)
