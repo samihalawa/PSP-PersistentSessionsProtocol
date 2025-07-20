@@ -12,7 +12,7 @@ class SeleniumAdapter extends core_1.Adapter {
     constructor(options = {}) {
         super({
             ...options,
-            type: 'selenium'
+            type: 'selenium',
         });
         /** Recording in progress */
         this.recording = false;
@@ -42,7 +42,7 @@ class SeleniumAdapter extends core_1.Adapter {
         // Get cookies
         const cookies = await this.driver.manage().getCookies();
         // Get localStorage and sessionStorage
-        const storage = await this.driver.executeScript(() => {
+        const storage = (await this.driver.executeScript(() => {
             // Extract localStorage
             const localStorage = {};
             for (let i = 0; i < window.localStorage.length; i++) {
@@ -60,11 +60,11 @@ class SeleniumAdapter extends core_1.Adapter {
                 }
             }
             return { localStorage, sessionStorage };
-        });
+        }));
         // Get scroll position
         const scrollPosition = await this.driver.executeScript(() => ({
             x: window.scrollX,
-            y: window.scrollY
+            y: window.scrollY,
         }));
         // Get HTML content
         const html = await this.driver.executeScript(() => document.documentElement.outerHTML);
@@ -74,7 +74,7 @@ class SeleniumAdapter extends core_1.Adapter {
             timestamp: Date.now(),
             origin,
             storage: {
-                cookies: cookies.map(cookie => ({
+                cookies: cookies.map((cookie) => ({
                     name: cookie.name,
                     value: cookie.value,
                     domain: cookie.domain || '',
@@ -83,14 +83,14 @@ class SeleniumAdapter extends core_1.Adapter {
                     httpOnly: cookie.httpOnly || false,
                     secure: cookie.secure || false,
                     sameSite: 'Lax', // Selenium doesn't expose SameSite
-                    partitioned: false // Selenium doesn't support partitioned cookies
+                    partitioned: false, // Selenium doesn't support partitioned cookies
                 })),
                 localStorage: this.convertStorageToMap(storage.localStorage, origin),
-                sessionStorage: this.convertStorageToMap(storage.sessionStorage, origin)
+                sessionStorage: this.convertStorageToMap(storage.sessionStorage, origin),
             },
             dom: {
                 html: html,
-                scrollPosition: scrollPosition
+                scrollPosition: scrollPosition,
             },
             history: {
                 currentUrl: url,
@@ -99,18 +99,18 @@ class SeleniumAdapter extends core_1.Adapter {
                         url,
                         title,
                         timestamp: Date.now(),
-                        scrollPosition: scrollPosition
-                    }
+                        scrollPosition: scrollPosition,
+                    },
                 ],
-                currentIndex: 0
-            }
+                currentIndex: 0,
+            },
         };
         // Add recording if available
         if (this.recording && this.events.length > 0) {
             state.recording = {
                 events: [...this.events],
                 startTime: this.recordingStartTime,
-                duration: Date.now() - this.recordingStartTime
+                duration: Date.now() - this.recordingStartTime,
             };
         }
         return state;
@@ -136,7 +136,7 @@ class SeleniumAdapter extends core_1.Adapter {
                 path: cookie.path,
                 expiry: cookie.expires ? new Date(cookie.expires) : undefined,
                 httpOnly: cookie.httpOnly,
-                secure: cookie.secure
+                secure: cookie.secure,
             });
         }
         // Apply localStorage and sessionStorage
@@ -145,17 +145,17 @@ class SeleniumAdapter extends core_1.Adapter {
         const sessionStorage = state.storage.sessionStorage.get(origin);
         await this.driver.executeScript((ls, ss) => {
             // Apply localStorage
-            if (ls) {
-                localStorage.clear();
+            if (ls && window.localStorage) {
+                window.localStorage.clear();
                 for (const [key, value] of Object.entries(ls)) {
-                    localStorage.setItem(key, value);
+                    window.localStorage.setItem(key, String(value));
                 }
             }
             // Apply sessionStorage
-            if (ss) {
-                sessionStorage.clear();
+            if (ss && window.sessionStorage) {
+                window.sessionStorage.clear();
                 for (const [key, value] of Object.entries(ss)) {
-                    sessionStorage.setItem(key, value);
+                    window.sessionStorage.setItem(key, String(value));
                 }
             }
         }, localStorage ? Object.fromEntries(localStorage) : null, sessionStorage ? Object.fromEntries(sessionStorage) : null);
@@ -187,16 +187,16 @@ class SeleniumAdapter extends core_1.Adapter {
             navigation: true,
             scroll: false,
             network: false,
-            ...options?.events
+            ...options?.events,
         };
         // Install event listeners via executeScript
-        await this.driver.executeScript(opts => {
+        await this.driver.executeScript((opts) => {
             // Create global storage for events
             window._pspEvents = [];
             window._pspStartTime = Date.now();
             // Create a function to retrieve events later
             window._pspGetEvents = function () {
-                const events = window._pspEvents;
+                const events = window._pspEvents || [];
                 window._pspEvents = [];
                 return events;
             };
@@ -213,7 +213,7 @@ class SeleniumAdapter extends core_1.Adapter {
                         break;
                     }
                     else {
-                        let siblings = Array.from(el.parentNode.children);
+                        const siblings = Array.from(el.parentNode.children);
                         if (siblings.length > 1) {
                             const index = siblings.indexOf(el);
                             selector += `:nth-child(${index + 1})`;
@@ -226,10 +226,10 @@ class SeleniumAdapter extends core_1.Adapter {
             }
             // Record click events
             if (opts.click) {
-                document.addEventListener('click', e => {
-                    window._pspEvents.push({
+                document.addEventListener('click', (e) => {
+                    window._pspEvents?.push({
                         type: 'click',
-                        timestamp: Date.now() - window._pspStartTime,
+                        timestamp: Date.now() - (window._pspStartTime || 0),
                         target: cssPath(e.target),
                         data: {
                             button: e.button,
@@ -238,34 +238,34 @@ class SeleniumAdapter extends core_1.Adapter {
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
                             shiftKey: e.shiftKey,
-                            metaKey: e.metaKey
-                        }
+                            metaKey: e.metaKey,
+                        },
                     });
                 }, true);
             }
             // Record input events
             if (opts.input) {
-                document.addEventListener('input', e => {
+                document.addEventListener('input', (e) => {
                     if (e.target instanceof HTMLInputElement ||
                         e.target instanceof HTMLTextAreaElement ||
                         e.target instanceof HTMLSelectElement) {
-                        window._pspEvents.push({
+                        window._pspEvents?.push({
                             type: 'input',
-                            timestamp: Date.now() - window._pspStartTime,
+                            timestamp: Date.now() - (window._pspStartTime || 0),
                             target: cssPath(e.target),
                             data: {
-                                value: e.target.value
-                            }
+                                value: e.target.value,
+                            },
                         });
                     }
                 }, true);
             }
             // Record keypress events
             if (opts.keypress) {
-                document.addEventListener('keydown', e => {
-                    window._pspEvents.push({
+                document.addEventListener('keydown', (e) => {
+                    window._pspEvents?.push({
                         type: 'keydown',
-                        timestamp: Date.now() - window._pspStartTime,
+                        timestamp: Date.now() - (window._pspStartTime || 0),
                         target: cssPath(e.target),
                         data: {
                             key: e.key,
@@ -273,8 +273,8 @@ class SeleniumAdapter extends core_1.Adapter {
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
                             shiftKey: e.shiftKey,
-                            metaKey: e.metaKey
-                        }
+                            metaKey: e.metaKey,
+                        },
                     });
                 }, true);
             }
@@ -283,36 +283,36 @@ class SeleniumAdapter extends core_1.Adapter {
                 // Record via history API hooks
                 const originalPushState = history.pushState;
                 const originalReplaceState = history.replaceState;
-                history.pushState = function () {
-                    window._pspEvents.push({
+                history.pushState = function (...args) {
+                    window._pspEvents?.push({
                         type: 'navigation',
-                        timestamp: Date.now() - window._pspStartTime,
+                        timestamp: Date.now() - (window._pspStartTime || 0),
                         data: {
-                            url: arguments[2],
-                            navigationType: 'navigate'
-                        }
+                            url: args[2],
+                            navigationType: 'navigate',
+                        },
                     });
-                    return originalPushState.apply(this, arguments);
+                    return originalPushState.apply(this, args);
                 };
-                history.replaceState = function () {
-                    window._pspEvents.push({
+                history.replaceState = function (...args) {
+                    window._pspEvents?.push({
                         type: 'navigation',
-                        timestamp: Date.now() - window._pspStartTime,
+                        timestamp: Date.now() - (window._pspStartTime || 0),
                         data: {
-                            url: arguments[2],
-                            navigationType: 'navigate'
-                        }
+                            url: args[2],
+                            navigationType: 'navigate',
+                        },
                     });
-                    return originalReplaceState.apply(this, arguments);
+                    return originalReplaceState.apply(this, args);
                 };
                 window.addEventListener('popstate', () => {
-                    window._pspEvents.push({
+                    window._pspEvents?.push({
                         type: 'navigation',
-                        timestamp: Date.now() - window._pspStartTime,
+                        timestamp: Date.now() - (window._pspStartTime || 0),
                         data: {
                             url: window.location.href,
-                            navigationType: 'back_forward'
-                        }
+                            navigationType: 'back_forward',
+                        },
                     });
                 });
             }
@@ -324,13 +324,13 @@ class SeleniumAdapter extends core_1.Adapter {
                         clearTimeout(scrollTimeout);
                     }
                     scrollTimeout = setTimeout(() => {
-                        window._pspEvents.push({
+                        window._pspEvents?.push({
                             type: 'scroll',
-                            timestamp: Date.now() - window._pspStartTime,
+                            timestamp: Date.now() - (window._pspStartTime || 0),
                             data: {
                                 x: window.scrollX,
-                                y: window.scrollY
-                            }
+                                y: window.scrollY,
+                            },
                         });
                     }, 100); // Debounce scroll events
                 }, true);
@@ -358,8 +358,8 @@ class SeleniumAdapter extends core_1.Adapter {
         await this.driver.executeScript(() => {
             // Clear event storage
             window._pspEvents = [];
-            window._pspGetEvents = null;
-            window._pspStartTime = null;
+            window._pspGetEvents = undefined;
+            window._pspStartTime = undefined;
         });
         // Stop recording
         this.recording = false;
@@ -377,7 +377,7 @@ class SeleniumAdapter extends core_1.Adapter {
             speed: 1.0,
             validateTargets: true,
             actionTimeout: 30000,
-            ...options
+            ...options,
         };
         // Play each event sequentially
         for (const event of events) {
@@ -406,7 +406,7 @@ class SeleniumAdapter extends core_1.Adapter {
                     const nextEvent = events[events.indexOf(event) + 1];
                     const delay = (nextEvent.timestamp - event.timestamp) / playbackOptions.speed;
                     if (delay > 0) {
-                        await new Promise(resolve => setTimeout(resolve, delay));
+                        await new Promise((resolve) => setTimeout(resolve, delay));
                     }
                 }
             }
@@ -493,9 +493,11 @@ class SeleniumAdapter extends core_1.Adapter {
         if (!this.driver || !this.recording)
             return;
         try {
-            const newEvents = await this.driver.executeScript(() => {
-                return typeof window._pspGetEvents === 'function' ? window._pspGetEvents() : [];
-            });
+            const newEvents = (await this.driver.executeScript(() => {
+                return typeof window._pspGetEvents === 'function'
+                    ? window._pspGetEvents()
+                    : [];
+            }));
             this.events.push(...newEvents);
         }
         catch (error) {

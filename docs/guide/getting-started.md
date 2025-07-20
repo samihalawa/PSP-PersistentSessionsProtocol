@@ -19,11 +19,13 @@ npm install @psp/core
 Install the adapter for your browser automation framework:
 
 **Playwright:**
+
 ```bash
 npm install @psp/playwright
 ```
 
 **Selenium:**
+
 ```bash
 npm install @psp/selenium
 ```
@@ -59,37 +61,37 @@ async function captureSession() {
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
-  
+
   // Create PSP adapter
   const adapter = new PlaywrightAdapter();
-  
+
   // Create a new session
   const session = await adapter.createSession(page, {
     name: 'login-session',
     description: 'Authenticated user session',
-    storage: 'local'
+    storage: 'local',
   });
-  
+
   // Navigate to the login page
   await page.goto('https://example.com/login');
-  
+
   // Fill in the login form
   await page.fill('input[name="username"]', 'testuser');
   await page.fill('input[name="password"]', 'password123');
   await page.click('button[type="submit"]');
-  
+
   // Wait for the login to complete
   await page.waitForNavigation();
-  
+
   // Capture the session (includes cookies, localStorage, etc.)
   await session.capture();
-  
+
   // Get the session ID for later use
   const sessionId = session.getId();
   console.log(`Session saved with ID: ${sessionId}`);
-  
+
   await browser.close();
-  
+
   return sessionId;
 }
 ```
@@ -103,37 +105,37 @@ const { SeleniumAdapter } = require('@psp/selenium');
 async function captureSession() {
   // Initialize Selenium
   const driver = await new Builder().forBrowser('chrome').build();
-  
+
   // Create PSP adapter
   const adapter = new SeleniumAdapter();
-  
+
   // Create a new session
   const session = await adapter.createSession(driver, {
     name: 'login-session',
     description: 'Authenticated user session',
-    storage: 'local'
+    storage: 'local',
   });
-  
+
   // Navigate to the login page
   await driver.get('https://example.com/login');
-  
+
   // Fill in the login form
   await driver.findElement(By.name('username')).sendKeys('testuser');
   await driver.findElement(By.name('password')).sendKeys('password123');
   await driver.findElement(By.css('button[type="submit"]')).click();
-  
+
   // Wait for the login to complete (simplified)
   await driver.sleep(2000);
-  
+
   // Capture the session
   await session.capture();
-  
+
   // Get the session ID for later use
   const sessionId = session.getId();
   console.log(`Session saved with ID: ${sessionId}`);
-  
+
   await driver.quit();
-  
+
   return sessionId;
 }
 ```
@@ -158,22 +160,22 @@ async function restoreSession(sessionId) {
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
-  
+
   // Create PSP adapter
   const adapter = new PlaywrightAdapter();
-  
+
   // Load the saved session
   const session = await adapter.loadSession(sessionId);
-  
+
   // Restore the session to the new browser
   await session.restore(page);
-  
+
   // Now the browser has the authenticated session
   // Navigate to a page that requires authentication
   await page.goto('https://example.com/dashboard');
-  
+
   // The page should load without requiring login
-  
+
   return page;
 }
 ```
@@ -187,22 +189,22 @@ const { SeleniumAdapter } = require('@psp/selenium');
 async function restoreSession(sessionId) {
   // Initialize Selenium
   const driver = await new Builder().forBrowser('chrome').build();
-  
+
   // Create PSP adapter
   const adapter = new SeleniumAdapter();
-  
+
   // Load the saved session
   const session = await adapter.loadSession(sessionId);
-  
+
   // Restore the session to the new browser
   await session.restore(driver);
-  
+
   // Now the browser has the authenticated session
   // Navigate to a page that requires authentication
   await driver.get('https://example.com/dashboard');
-  
+
   // The page should load without requiring login
-  
+
   return driver;
 }
 ```
@@ -257,8 +259,8 @@ const session = await adapter.createSession(page, {
   storageOptions: {
     host: 'redis-server.example.com',
     port: 6379,
-    password: 'password'
-  }
+    password: 'password',
+  },
 });
 
 // The session will be stored in Redis

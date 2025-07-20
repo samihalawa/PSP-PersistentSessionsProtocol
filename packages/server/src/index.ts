@@ -18,35 +18,40 @@ async function startServer() {
     const server = new Server({
       port: PORT,
       host: HOST,
-      storageType: (process.env.STORAGE_TYPE as 'local' | 'redis' | 'database' | 'cloud') || 'local',
+      storageType:
+        (process.env.STORAGE_TYPE as
+          | 'local'
+          | 'redis'
+          | 'database'
+          | 'cloud') || 'local',
       storageOptions: {
         // Redis options
         redisUrl: process.env.REDIS_URL,
         redisPassword: process.env.REDIS_PASSWORD,
-        
+
         // Local storage options
         storagePath: process.env.STORAGE_PATH,
-        
+
         // DB options
         dbUrl: process.env.DB_URL,
-      }
+      },
     });
-    
+
     // Initialize the server
     await server.initialize();
-    
+
     // Start the server
     await server.start();
-    
+
     logger.info(`Server running on ${HOST}:${PORT}`);
-    
+
     // Handle graceful shutdown
     process.on('SIGINT', async () => {
       logger.info('Shutting down...');
       await server.stop();
       process.exit(0);
     });
-    
+
     process.on('SIGTERM', async () => {
       logger.info('Shutting down...');
       await server.stop();

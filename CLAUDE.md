@@ -22,6 +22,7 @@ PSP employs a layered architecture with four distinct components:
 ## Data Model
 
 The protocol captures browser state components including:
+
 - Storage state (cookies, localStorage, sessionStorage)
 - Authentication state (tokens, credentials)
 - Navigation state (history, current URL)
@@ -39,6 +40,7 @@ When implementation begins, the project will likely include:
 ## Future Development Notes
 
 When implementing this protocol, focus on:
+
 - Maintaining cross-framework compatibility
 - Ensuring secure handling of authentication data
 - Optimizing performance for both capture and replay

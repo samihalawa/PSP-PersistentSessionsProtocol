@@ -8,7 +8,6 @@ const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const cors_1 = __importDefault(require("cors"));
 const ws_1 = require("ws");
-const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const logger_1 = require("./utils/logger");
 const sessions_1 = require("./routes/sessions");
 const storage_1 = require("./storage");
@@ -34,8 +33,8 @@ class Server {
             corsOptions: config.corsOptions ?? {
                 origin: '*',
                 methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-                allowedHeaders: ['Content-Type', 'Authorization']
-            }
+                allowedHeaders: ['Content-Type', 'Authorization'],
+            },
         };
         // Create Express app
         this.app = (0, express_1.default)();
@@ -66,7 +65,7 @@ class Server {
             // Set up API routes
             (0, sessions_1.setupSessionRoutes)(this.app, this.storageProvider);
             // Serve Swagger UI
-            this.app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(require('../swagger.json')));
+            // this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('../swagger.json')));
             // Add error handler middleware
             this.app.use(error_handler_1.errorHandler);
             this.isInitialized = true;

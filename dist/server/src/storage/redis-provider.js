@@ -17,7 +17,7 @@ class RedisStorageProvider {
         // Create Redis client
         this.client = (0, redis_1.createClient)({
             url: options?.redisUrl,
-            password: options?.redisPassword
+            password: options?.redisPassword,
         });
         // Set up event handlers
         this.client.on('error', (err) => {
@@ -65,7 +65,7 @@ class RedisStorageProvider {
             // Add to index by name (for name-based searching)
             await this.client.zAdd(`${this.namespace}:index:name`, {
                 score: session.metadata.updatedAt,
-                value: `${session.metadata.name}:${id}`
+                value: `${session.metadata.name}:${id}`,
             });
             // Add to tags sets (for tag-based filtering)
             if (session.metadata.tags && session.metadata.tags.length > 0) {
@@ -141,7 +141,7 @@ class RedisStorageProvider {
             // Filter by tags if specified
             if (filter?.tags && filter.tags.length > 0) {
                 // Get intersection of tag sets
-                const tagKeys = filter.tags.map(tag => `${this.namespace}:tags:${tag}`);
+                const tagKeys = filter.tags.map((tag) => `${this.namespace}:tags:${tag}`);
                 sessionIds = await this.client.sInter(tagKeys);
             }
             else {
@@ -149,14 +149,14 @@ class RedisStorageProvider {
                 sessionIds = await this.client.hKeys(`${this.namespace}:metadata`);
             }
             // Get metadata for each session
-            const metadataPromises = sessionIds.map(id => this.client.hGet(`${this.namespace}:metadata`, id));
+            const metadataPromises = sessionIds.map((id) => this.client.hGet(`${this.namespace}:metadata`, id));
             const metadataResults = await Promise.all(metadataPromises);
             let metadata = metadataResults
                 .filter(Boolean)
-                .map(json => JSON.parse(json));
+                .map((json) => JSON.parse(json));
             // Filter by name if specified
             if (filter?.name) {
-                metadata = metadata.filter(m => m.name.toLowerCase().includes(filter.name.toLowerCase()));
+                metadata = metadata.filter((m) => m.name.toLowerCase().includes(filter.name.toLowerCase()));
             }
             // Sort by updated time (newest first)
             metadata.sort((a, b) => b.updatedAt - a.updatedAt);
@@ -205,7 +205,7 @@ class RedisStorageProvider {
         // Create the serialized session
         const serializedSession = {
             metadata,
-            state: serializedState
+            state: serializedState,
         };
         return JSON.stringify(serializedSession);
     }
@@ -218,7 +218,7 @@ class RedisStorageProvider {
         const deserializedState = this.deserializeState(parsed.state);
         return {
             metadata: parsed.metadata,
-            state: deserializedState
+            state: deserializedState,
         };
     }
     /**
@@ -253,7 +253,8 @@ class RedisStorageProvider {
     deserializeState(state) {
         const deserialized = { ...state };
         // Convert localStorage object to Map
-        if (state.storage?.localStorage && typeof state.storage.localStorage === 'object') {
+        if (state.storage?.localStorage &&
+            typeof state.storage.localStorage === 'object') {
             deserialized.storage = { ...deserialized.storage };
             const localStorage = new Map();
             for (const [origin, storage] of Object.entries(state.storage.localStorage)) {
@@ -262,7 +263,8 @@ class RedisStorageProvider {
             deserialized.storage.localStorage = localStorage;
         }
         // Convert sessionStorage object to Map
-        if (state.storage?.sessionStorage && typeof state.storage.sessionStorage === 'object') {
+        if (state.storage?.sessionStorage &&
+            typeof state.storage.sessionStorage === 'object') {
             deserialized.storage = { ...deserialized.storage };
             const sessionStorage = new Map();
             for (const [origin, storage] of Object.entries(state.storage.sessionStorage)) {

@@ -15,6 +15,6 @@ function validateToken(token) {
     // In a real implementation, you would decode and verify the token
     // and extract the user ID from it
     return {
-        userId: 'system'
+        userId: 'system',
     };
 }

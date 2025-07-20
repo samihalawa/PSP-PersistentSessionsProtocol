@@ -9,7 +9,7 @@ export class CloudStorageProvider implements StorageProvider {
   private bucketName: string;
   private region: string;
   private credentials: any;
-  
+
   constructor(options: {
     bucketName: string;
     region?: string;
@@ -19,42 +19,57 @@ export class CloudStorageProvider implements StorageProvider {
     this.region = options.region || 'us-east-1';
     this.credentials = options.credentials;
   }
-  
+
   /**
    * Saves a session to cloud storage
    */
-  async save(session: { metadata: SessionMetadata; state: BrowserSessionState }): Promise<void> {
+  async save(session: {
+    metadata: SessionMetadata;
+    state: BrowserSessionState;
+  }): Promise<void> {
     // TODO: Implement cloud storage save
-    console.warn('Cloud storage provider not yet implemented, falling back to console log');
-    console.log(`Saving session ${session.metadata.id} to cloud storage bucket: ${this.bucketName}`);
+    console.warn(
+      'Cloud storage provider not yet implemented, falling back to console log'
+    );
+    console.log(
+      `Saving session ${session.metadata.id} to cloud storage bucket: ${this.bucketName}`
+    );
   }
-  
+
   /**
    * Loads a session from cloud storage
    */
-  async load(id: string): Promise<{ metadata: SessionMetadata; state: BrowserSessionState }> {
+  async load(
+    id: string
+  ): Promise<{ metadata: SessionMetadata; state: BrowserSessionState }> {
     // TODO: Implement cloud storage load
     throw new Error('Cloud storage provider not yet implemented');
   }
-  
+
   /**
    * Deletes a session from cloud storage
    */
   async delete(id: string): Promise<void> {
     // TODO: Implement cloud storage delete
-    console.warn('Cloud storage provider not yet implemented, falling back to console log');
-    console.log(`Deleting session ${id} from cloud storage bucket: ${this.bucketName}`);
+    console.warn(
+      'Cloud storage provider not yet implemented, falling back to console log'
+    );
+    console.log(
+      `Deleting session ${id} from cloud storage bucket: ${this.bucketName}`
+    );
   }
-  
+
   /**
    * Lists sessions from cloud storage
    */
   async list(filter?: SessionFilter): Promise<SessionMetadata[]> {
     // TODO: Implement cloud storage list
-    console.warn('Cloud storage provider not yet implemented, returning empty array');
+    console.warn(
+      'Cloud storage provider not yet implemented, returning empty array'
+    );
     return [];
   }
-  
+
   /**
    * Check if a session exists
    */
@@ -62,13 +77,17 @@ export class CloudStorageProvider implements StorageProvider {
     // TODO: Implement cloud storage exists check
     return false;
   }
-  
+
   /**
    * Clear all sessions (for testing)
    */
   async clear(): Promise<void> {
     // TODO: Implement cloud storage clear
-    console.warn('Cloud storage provider not yet implemented, falling back to console log');
-    console.log(`Clearing all sessions from cloud storage bucket: ${this.bucketName}`);
+    console.warn(
+      'Cloud storage provider not yet implemented, falling back to console log'
+    );
+    console.log(
+      `Clearing all sessions from cloud storage bucket: ${this.bucketName}`
+    );
   }
 }

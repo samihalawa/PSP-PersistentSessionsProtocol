@@ -46,7 +46,8 @@ class LocalStorageProvider {
      * @param options.directory Directory to store sessions in (defaults to ~/.psp/sessions)
      */
     constructor(options) {
-        this.baseDir = options?.directory || path.join(os.homedir(), '.psp', 'sessions');
+        this.baseDir =
+            options?.directory || path.join(os.homedir(), '.psp', 'sessions');
         // Ensure the directory exists
         if (!fs.existsSync(this.baseDir)) {
             fs.mkdirSync(this.baseDir, { recursive: true });
@@ -67,7 +68,7 @@ class LocalStorageProvider {
         // Write the session to disk
         fs.writeFileSync(filePath, JSON.stringify({
             metadata: session.metadata,
-            state: serializedState
+            state: serializedState,
         }, null, 2));
     }
     /**
@@ -84,7 +85,7 @@ class LocalStorageProvider {
         const deserializedState = this.deserializeState(data.state);
         return {
             metadata: data.metadata,
-            state: deserializedState
+            state: deserializedState,
         };
     }
     /**
@@ -117,25 +118,25 @@ class LocalStorageProvider {
         let filtered = metadata;
         if (filter) {
             if (filter.name) {
-                filtered = filtered.filter(m => m.name.toLowerCase().includes(filter.name.toLowerCase()));
+                filtered = filtered.filter((m) => m.name.toLowerCase().includes(filter.name.toLowerCase()));
             }
             if (filter.tags && filter.tags.length > 0) {
-                filtered = filtered.filter(m => filter.tags.every(tag => m.tags?.includes(tag)));
+                filtered = filtered.filter((m) => filter.tags.every((tag) => m.tags?.includes(tag)));
             }
             if (filter.created) {
                 if (filter.created.from) {
-                    filtered = filtered.filter(m => m.createdAt >= filter.created.from);
+                    filtered = filtered.filter((m) => m.createdAt >= filter.created.from);
                 }
                 if (filter.created.to) {
-                    filtered = filtered.filter(m => m.createdAt <= filter.created.to);
+                    filtered = filtered.filter((m) => m.createdAt <= filter.created.to);
                 }
             }
             if (filter.updated) {
                 if (filter.updated.from) {
-                    filtered = filtered.filter(m => m.updatedAt >= filter.updated.from);
+                    filtered = filtered.filter((m) => m.updatedAt >= filter.updated.from);
                 }
                 if (filter.updated.to) {
-                    filtered = filtered.filter(m => m.updatedAt <= filter.updated.to);
+                    filtered = filtered.filter((m) => m.updatedAt <= filter.updated.to);
                 }
             }
             // Sort by updated time (newest first)
@@ -172,14 +173,16 @@ class LocalStorageProvider {
     getSessionFiles() {
         const files = [];
         // Get all subdirectories
-        const dirs = fs.readdirSync(this.baseDir)
-            .filter(file => fs.statSync(path.join(this.baseDir, file)).isDirectory());
+        const dirs = fs
+            .readdirSync(this.baseDir)
+            .filter((file) => fs.statSync(path.join(this.baseDir, file)).isDirectory());
         // Get all JSON files in each subdirectory
         for (const dir of dirs) {
             const dirPath = path.join(this.baseDir, dir);
-            const dirFiles = fs.readdirSync(dirPath)
-                .filter(file => file.endsWith('.json'))
-                .map(file => path.join(dirPath, file));
+            const dirFiles = fs
+                .readdirSync(dirPath)
+                .filter((file) => file.endsWith('.json'))
+                .map((file) => path.join(dirPath, file));
             files.push(...dirFiles);
         }
         return files;
@@ -216,7 +219,8 @@ class LocalStorageProvider {
     deserializeState(state) {
         const deserialized = { ...state };
         // Convert localStorage object to Map
-        if (state.storage?.localStorage && typeof state.storage.localStorage === 'object') {
+        if (state.storage?.localStorage &&
+            typeof state.storage.localStorage === 'object') {
             deserialized.storage = { ...deserialized.storage };
             const localStorage = new Map();
             for (const [origin, storage] of Object.entries(state.storage.localStorage)) {
@@ -225,7 +229,8 @@ class LocalStorageProvider {
             deserialized.storage.localStorage = localStorage;
         }
         // Convert sessionStorage object to Map
-        if (state.storage?.sessionStorage && typeof state.storage.sessionStorage === 'object') {
+        if (state.storage?.sessionStorage &&
+            typeof state.storage.sessionStorage === 'object') {
             deserialized.storage = { ...deserialized.storage };
             const sessionStorage = new Map();
             for (const [origin, storage] of Object.entries(state.storage.sessionStorage)) {

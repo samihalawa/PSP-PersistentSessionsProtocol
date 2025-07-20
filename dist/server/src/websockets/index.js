@@ -107,7 +107,7 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
         // Send connection acknowledgment
         ws.send(JSON.stringify({
             type: MessageType.CONNECT,
-            data: { connected: true }
+            data: { connected: true },
         }));
     }
     /**
@@ -131,7 +131,7 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
         ws.send(JSON.stringify({
             type: MessageType.SUBSCRIBE,
             sessionId: message.sessionId,
-            data: { subscribed: true }
+            data: { subscribed: true },
         }));
     }
     /**
@@ -158,7 +158,7 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
         ws.send(JSON.stringify({
             type: MessageType.UNSUBSCRIBE,
             sessionId: message.sessionId,
-            data: { unsubscribed: true }
+            data: { unsubscribed: true },
         }));
     }
     /**
@@ -177,7 +177,7 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
         broadcastToSession(message.sessionId, {
             type: MessageType.EVENT,
             sessionId: message.sessionId,
-            data: message.data
+            data: message.data,
         });
     }
     /**
@@ -185,7 +185,7 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
      */
     function handlePing(ws) {
         ws.send(JSON.stringify({
-            type: MessageType.PONG
+            type: MessageType.PONG,
         }));
     }
     /**
@@ -194,7 +194,7 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
     function sendError(ws, errorMessage) {
         ws.send(JSON.stringify({
             type: MessageType.ERROR,
-            data: { message: errorMessage }
+            data: { message: errorMessage },
         }));
     }
     // Set up a health check interval
@@ -221,7 +221,7 @@ function setupWebSocketHandlers(wss, storageProvider, authEnabled = false) {
     });
 }
 // Global session clients map for broadcasting
-let globalSessionClients = new Map();
+const globalSessionClients = new Map();
 /**
  * Broadcast a session update to all subscribed clients
  */
@@ -229,7 +229,7 @@ function broadcastSessionUpdate(sessionId, data) {
     broadcastToSession(sessionId, {
         type: MessageType.UPDATE,
         sessionId,
-        data
+        data,
     });
 }
 /**
@@ -239,7 +239,7 @@ function broadcastSessionEvent(sessionId, event) {
     broadcastToSession(sessionId, {
         type: MessageType.EVENT,
         sessionId,
-        data: event
+        data: event,
     });
 }
 /**

@@ -1,5 +1,12 @@
 import { WebDriver } from 'selenium-webdriver';
 import { Adapter, BrowserSessionState, Event, RecordingOptions, PlaybackOptions } from '@psp/core';
+declare global {
+    interface Window {
+        _pspEvents?: Event[];
+        _pspStartTime?: number;
+        _pspGetEvents?: () => Event[];
+    }
+}
 /**
  * Adapter for Selenium WebDriver
  */

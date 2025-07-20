@@ -14,28 +14,28 @@ export function errorHandler(
   next: NextFunction
 ): void {
   // Log the error
-  logger.error(err.message, { 
+  logger.error(err.message, {
     stack: err.stack,
     path: req.path,
-    method: req.method 
+    method: req.method,
   });
-  
+
   // Handle AppError (known application errors)
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
       error: {
         message: err.message,
-        code: err.statusCode
-      }
+        code: err.statusCode,
+      },
     });
     return;
   }
-  
+
   // Handle other errors
   res.status(500).json({
     error: {
       message: 'Internal Server Error',
-      code: 500
-    }
+      code: 500,
+    },
   });
 }

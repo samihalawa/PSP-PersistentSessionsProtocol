@@ -12,7 +12,7 @@ class PlaywrightAdapter extends core_1.Adapter {
     constructor(options = {}) {
         super({
             ...options,
-            type: 'playwright'
+            type: 'playwright',
         });
         /** Recording in progress */
         this.recording = false;
@@ -62,7 +62,7 @@ class PlaywrightAdapter extends core_1.Adapter {
         // Get scroll position
         const scrollPosition = await this.page.evaluate(() => ({
             x: window.scrollX,
-            y: window.scrollY
+            y: window.scrollY,
         }));
         // Build the full state object
         const state = {
@@ -79,14 +79,14 @@ class PlaywrightAdapter extends core_1.Adapter {
                     httpOnly: cookie.httpOnly,
                     secure: cookie.secure,
                     sameSite: cookie.sameSite,
-                    partitioned: false // Playwright doesn't support partitioned cookies yet
+                    partitioned: false, // Playwright doesn't support partitioned cookies yet
                 })),
                 localStorage: this.convertPlaywrightStorageToMap(storageState.origins),
-                sessionStorage: sessionStorage
+                sessionStorage: sessionStorage,
             },
             dom: {
                 html: await this.page.content(),
-                scrollPosition
+                scrollPosition,
             },
             history: {
                 currentUrl: url,
@@ -95,18 +95,18 @@ class PlaywrightAdapter extends core_1.Adapter {
                         url,
                         title,
                         timestamp: Date.now(),
-                        scrollPosition
-                    }
+                        scrollPosition,
+                    },
                 ],
-                currentIndex: 0
-            }
+                currentIndex: 0,
+            },
         };
         // Add recording if available
         if (this.recording && this.events.length > 0) {
             state.recording = {
                 events: [...this.events],
                 startTime: this.recordingStartTime,
-                duration: Date.now() - this.recordingStartTime
+                duration: Date.now() - this.recordingStartTime,
             };
         }
         return state;
@@ -120,7 +120,7 @@ class PlaywrightAdapter extends core_1.Adapter {
         }
         // Apply cookies
         await this.context.clearCookies();
-        await this.context.addCookies(state.storage.cookies.map(cookie => ({
+        await this.context.addCookies(state.storage.cookies.map((cookie) => ({
             name: cookie.name,
             value: cookie.value,
             domain: cookie.domain,
@@ -128,11 +128,13 @@ class PlaywrightAdapter extends core_1.Adapter {
             expires: cookie.expires ? cookie.expires / 1000 : undefined, // Convert to seconds
             httpOnly: cookie.httpOnly,
             secure: cookie.secure,
-            sameSite: cookie.sameSite
+            sameSite: cookie.sameSite,
         })));
         // Navigate to the URL
         if (state.history?.currentUrl) {
-            await this.page.goto(state.history.currentUrl, { waitUntil: 'domcontentloaded' });
+            await this.page.goto(state.history.currentUrl, {
+                waitUntil: 'domcontentloaded',
+            });
         }
         // Apply localStorage
         for (const [origin, storage] of state.storage.localStorage.entries()) {
@@ -184,7 +186,7 @@ class PlaywrightAdapter extends core_1.Adapter {
             navigation: true,
             scroll: false,
             network: false,
-            ...options?.events
+            ...options?.events,
         };
         // Install event listeners via page.evaluate
         await this.page.evaluate((opts) => {
@@ -204,7 +206,7 @@ class PlaywrightAdapter extends core_1.Adapter {
                         break;
                     }
                     else {
-                        let siblings = Array.from(el.parentNode.children);
+                        const siblings = Array.from(el.parentNode.children);
                         if (siblings.length > 1) {
                             const index = siblings.indexOf(el);
                             selector += `:nth-child(${index + 1})`;
@@ -217,7 +219,7 @@ class PlaywrightAdapter extends core_1.Adapter {
             }
             // Record click events
             if (opts.click) {
-                document.addEventListener('click', e => {
+                document.addEventListener('click', (e) => {
                     window._pspEvents?.push({
                         type: 'click',
                         timestamp: Date.now() - (window._pspStartTime || 0),
@@ -229,14 +231,14 @@ class PlaywrightAdapter extends core_1.Adapter {
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
                             shiftKey: e.shiftKey,
-                            metaKey: e.metaKey
-                        }
+                            metaKey: e.metaKey,
+                        },
                     });
                 }, true);
             }
             // Record input events
             if (opts.input) {
-                document.addEventListener('input', e => {
+                document.addEventListener('input', (e) => {
                     if (e.target instanceof HTMLInputElement ||
                         e.target instanceof HTMLTextAreaElement ||
                         e.target instanceof HTMLSelectElement) {
@@ -245,15 +247,15 @@ class PlaywrightAdapter extends core_1.Adapter {
                             timestamp: Date.now() - (window._pspStartTime || 0),
                             target: cssPath(e.target),
                             data: {
-                                value: e.target.value
-                            }
+                                value: e.target.value,
+                            },
                         });
                     }
                 }, true);
             }
             // Record keypress events
             if (opts.keypress) {
-                document.addEventListener('keydown', e => {
+                document.addEventListener('keydown', (e) => {
                     window._pspEvents?.push({
                         type: 'keydown',
                         timestamp: Date.now() - (window._pspStartTime || 0),
@@ -264,8 +266,8 @@ class PlaywrightAdapter extends core_1.Adapter {
                             altKey: e.altKey,
                             ctrlKey: e.ctrlKey,
                             shiftKey: e.shiftKey,
-                            metaKey: e.metaKey
-                        }
+                            metaKey: e.metaKey,
+                        },
                     });
                 }, true);
             }
@@ -280,8 +282,8 @@ class PlaywrightAdapter extends core_1.Adapter {
                         timestamp: Date.now() - (window._pspStartTime || 0),
                         data: {
                             url: args[2],
-                            navigationType: 'navigate'
-                        }
+                            navigationType: 'navigate',
+                        },
                     });
                     return originalPushState.apply(this, args);
                 };
@@ -291,8 +293,8 @@ class PlaywrightAdapter extends core_1.Adapter {
                         timestamp: Date.now() - (window._pspStartTime || 0),
                         data: {
                             url: args[2],
-                            navigationType: 'navigate'
-                        }
+                            navigationType: 'navigate',
+                        },
                     });
                     return originalReplaceState.apply(this, args);
                 };
@@ -302,8 +304,8 @@ class PlaywrightAdapter extends core_1.Adapter {
                         timestamp: Date.now() - (window._pspStartTime || 0),
                         data: {
                             url: window.location.href,
-                            navigationType: 'back_forward'
-                        }
+                            navigationType: 'back_forward',
+                        },
                     });
                 });
             }
@@ -320,8 +322,8 @@ class PlaywrightAdapter extends core_1.Adapter {
                             timestamp: Date.now() - (window._pspStartTime || 0),
                             data: {
                                 x: window.scrollX,
-                                y: window.scrollY
-                            }
+                                y: window.scrollY,
+                            },
                         });
                     }, 100); // Debounce scroll events
                 }, true);
@@ -355,7 +357,7 @@ class PlaywrightAdapter extends core_1.Adapter {
             speed: 1.0,
             validateTargets: true,
             actionTimeout: 30000,
-            ...options
+            ...options,
         };
         // Play each event sequentially
         for (const event of events) {
@@ -384,7 +386,7 @@ class PlaywrightAdapter extends core_1.Adapter {
                     const nextEvent = events[events.indexOf(event) + 1];
                     const delay = (nextEvent.timestamp - event.timestamp) / playbackOptions.speed;
                     if (delay > 0) {
-                        await new Promise(resolve => setTimeout(resolve, delay));
+                        await new Promise((resolve) => setTimeout(resolve, delay));
                     }
                 }
             }
@@ -407,8 +409,8 @@ class PlaywrightAdapter extends core_1.Adapter {
             timeout: options.actionTimeout,
             position: {
                 x: event.data.clientX,
-                y: event.data.clientY
-            }
+                y: event.data.clientY,
+            },
         });
     }
     /**
@@ -418,7 +420,7 @@ class PlaywrightAdapter extends core_1.Adapter {
         if (!this.page || !event.target)
             return;
         await this.page.fill(event.target, event.data.value, {
-            timeout: options.actionTimeout
+            timeout: options.actionTimeout,
         });
     }
     /**
@@ -440,7 +442,7 @@ class PlaywrightAdapter extends core_1.Adapter {
             return;
         await this.page.goto(event.data.url, {
             timeout: options.actionTimeout,
-            waitUntil: 'domcontentloaded'
+            waitUntil: 'domcontentloaded',
         });
     }
     /**
@@ -526,7 +528,8 @@ class PlaywrightAdapter extends core_1.Adapter {
                     storageMap.set(item.name, item.value);
                 }
             }
-            else if (origin.localStorage && typeof origin.localStorage === 'object') {
+            else if (origin.localStorage &&
+                typeof origin.localStorage === 'object') {
                 for (const [key, value] of Object.entries(origin.localStorage)) {
                     storageMap.set(key, String(value));
                 }

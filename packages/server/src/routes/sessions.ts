@@ -6,10 +6,13 @@ import { validateSession } from '../middleware/validators';
 /**
  * Sets up session routes
  */
-export function setupSessionRoutes(app: Application, storageProvider: StorageProvider): void {
+export function setupSessionRoutes(
+  app: Application,
+  storageProvider: StorageProvider
+): void {
   const router = Router();
   const controller = new SessionController(storageProvider);
-  
+
   /**
    * @swagger
    * /sessions:
@@ -44,7 +47,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: A list of sessions
    */
   router.get('/', controller.listSessions);
-  
+
   /**
    * @swagger
    * /sessions/{id}:
@@ -65,7 +68,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: Session not found
    */
   router.get('/:id', controller.getSession);
-  
+
   /**
    * @swagger
    * /sessions:
@@ -96,7 +99,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: Invalid request
    */
   router.post('/', validateSession, controller.createSession);
-  
+
   /**
    * @swagger
    * /sessions/{id}:
@@ -128,7 +131,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: Session not found
    */
   router.put('/:id', controller.updateSession);
-  
+
   /**
    * @swagger
    * /sessions/{id}:
@@ -160,7 +163,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: Session not found
    */
   router.patch('/:id', controller.patchSession);
-  
+
   /**
    * @swagger
    * /sessions/{id}:
@@ -181,7 +184,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: Session not found
    */
   router.delete('/:id', controller.deleteSession);
-  
+
   /**
    * @swagger
    * /sessions/{id}/events:
@@ -202,7 +205,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: Session not found
    */
   router.get('/:id/events', controller.getSessionEvents);
-  
+
   /**
    * @swagger
    * /sessions/{id}/events:
@@ -231,7 +234,7 @@ export function setupSessionRoutes(app: Application, storageProvider: StoragePro
    *         description: Session not found
    */
   router.post('/:id/events', controller.addSessionEvents);
-  
+
   // Mount the router
   app.use('/sessions', router);
 }

@@ -85,7 +85,7 @@ Web storage and cookie data:
 ```typescript
 interface StorageState {
   cookies: Cookie[];
-  localStorage: Map<string, Map<string, string>>;  // Origin to key-value map
+  localStorage: Map<string, Map<string, string>>; // Origin to key-value map
   sessionStorage: Map<string, Map<string, string>>;
   indexedDB?: IndexedDBState;
   cacheStorage?: CacheStorageState;
@@ -99,8 +99,8 @@ interface Cookie {
   expires: number | null;
   httpOnly: boolean;
   secure: boolean;
-  sameSite: "Strict" | "Lax" | "None";
-  partitioned: boolean;  // For CHIPS (Cookie Having Independent Partitioned State)
+  sameSite: 'Strict' | 'Lax' | 'None';
+  partitioned: boolean; // For CHIPS (Cookie Having Independent Partitioned State)
 }
 ```
 
@@ -111,11 +111,11 @@ Security tokens and credentials:
 ```typescript
 interface AuthenticationState {
   tokens: AuthToken[];
-  credentials?: EncryptedCredentials;  // Only with explicit permission
+  credentials?: EncryptedCredentials; // Only with explicit permission
 }
 
 interface AuthToken {
-  type: string;  // "Bearer", "JWT", "OAuth", etc.
+  type: string; // "Bearer", "JWT", "OAuth", etc.
   value: string;
   scope?: string[];
   expiresAt?: number;
@@ -139,8 +139,8 @@ interface NavigationState {
 interface HistoryEntry {
   url: string;
   title: string;
-  state?: object;  // History state object
-  scrollPosition?: { x: number, y: number };
+  state?: object; // History state object
+  scrollPosition?: { x: number; y: number };
   timestamp: number;
 }
 ```
@@ -157,10 +157,10 @@ interface RecordingState {
 }
 
 interface Event {
-  type: string;  // "click", "keydown", "timer", "network", etc.
+  type: string; // "click", "keydown", "timer", "network", etc.
   timestamp: number;
-  target?: string;  // CSS selector or XPath
-  data: object;  // Event-specific data
+  target?: string; // CSS selector or XPath
+  data: object; // Event-specific data
 }
 ```
 
@@ -222,7 +222,7 @@ interface PSPSession {
   // State operations
   capture(page: BrowserPage): Promise<void>;
   restore(page: BrowserPage): Promise<void>;
-  
+
   // Recording operations
   startRecording(options?: RecordingOptions): Promise<void>;
   stopRecording(): Promise<void>;
@@ -233,7 +233,7 @@ interface Session {
   id: string;
   metadata: SessionMetadata;
   state: BrowserSessionState;
-  
+
   // Session operations
   save(): Promise<void>;
   update(partialState?: Partial<BrowserSessionState>): Promise<void>;
@@ -258,16 +258,16 @@ POST   /sessions/:id/events     # Add events to session
 
 ```typescript
 // Event types
-type PSPWebSocketEvent = 
-  | { type: 'session.update', data: BrowserSessionState }
-  | { type: 'session.event', data: Event }
-  | { type: 'session.deleted', data: { id: string } };
+type PSPWebSocketEvent =
+  | { type: 'session.update'; data: BrowserSessionState }
+  | { type: 'session.event'; data: Event }
+  | { type: 'session.deleted'; data: { id: string } };
 
 // Connection message for subscribing to session updates
 interface PSPWebSocketConnect {
   action: 'subscribe';
   sessionId: string;
-  token: string;  // Authentication token
+  token: string; // Authentication token
 }
 ```
 

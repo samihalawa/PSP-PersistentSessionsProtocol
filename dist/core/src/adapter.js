@@ -13,7 +13,8 @@ class Adapter {
     constructor(options) {
         this.type = options.type;
         this.options = { ...options };
-        this.storageProvider = options.storageProvider || new local_1.LocalStorageProvider();
+        this.storageProvider =
+            options.storageProvider || new local_1.LocalStorageProvider();
     }
     /**
      * Connects to a browser instance

@@ -11,7 +11,9 @@
     "build": "tsc",
     "start:server": "node dist/server/index.js",
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress build docs",
+    "demo": "node bin/psp-demo.js",
+    "example:core": "npx ts-node examples/core-example.ts"
   },
   "keywords": [
     "browser",

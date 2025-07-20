@@ -50,7 +50,7 @@ export interface Cookie {
     expires: number | null;
     httpOnly: boolean;
     secure: boolean;
-    sameSite: "Strict" | "Lax" | "None";
+    sameSite: 'Strict' | 'Lax' | 'None';
     partitioned: boolean;
 }
 /**

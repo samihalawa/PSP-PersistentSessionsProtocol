@@ -10,28 +10,28 @@ The core of PSP is the `BrowserSessionState` which encapsulates all aspects of a
 interface BrowserSessionState {
   // Protocol version for backward compatibility
   version: string;
-  
+
   // Creation/modification timestamp (milliseconds since epoch)
   timestamp: number;
-  
+
   // Original domain/URL where the session was captured
   origin: string;
-  
+
   // Core storage data (cookies, localStorage, etc.)
   storage: StorageState;
-  
+
   // Optional DOM state snapshot (can be large)
   dom?: DOMState;
-  
+
   // Browser history state
   history?: HistoryState;
-  
+
   // Captured network requests/responses
   network?: NetworkState;
-  
+
   // Recorded user interactions
   recording?: RecordingState;
-  
+
   // Framework-specific extensions
   extensions?: Record<string, unknown>;
 }
@@ -45,18 +45,18 @@ The `StorageState` contains web storage mechanisms:
 interface StorageState {
   // HTTP cookies
   cookies: Cookie[];
-  
+
   // Local storage by origin
   // Outer map key is origin (e.g., "https://example.com")
   // Inner map is key-value pairs for that origin
   localStorage: Map<string, Map<string, string>>;
-  
+
   // Session storage by origin (same structure as localStorage)
   sessionStorage: Map<string, Map<string, string>>;
-  
+
   // IndexedDB data (optional due to potentially large size)
   indexedDB?: IndexedDBState;
-  
+
   // Cache API storage (optional)
   cacheStorage?: CacheStorageState;
 }
@@ -66,11 +66,11 @@ interface Cookie {
   value: string;
   domain: string;
   path: string;
-  expires: number | null;  // Unix timestamp or null for session cookies
+  expires: number | null; // Unix timestamp or null for session cookies
   httpOnly: boolean;
   secure: boolean;
-  sameSite: "Strict" | "Lax" | "None";
-  partitioned: boolean;    // For CHIPS partitioned cookies
+  sameSite: 'Strict' | 'Lax' | 'None';
+  partitioned: boolean; // For CHIPS partitioned cookies
 }
 
 interface IndexedDBState {
@@ -122,19 +122,19 @@ The `DOMState` represents the Document Object Model:
 interface DOMState {
   // Serialized HTML content
   html: string;
-  
+
   // Current scroll position
   scrollPosition: {
     x: number;
     y: number;
   };
-  
+
   // Active element information (e.g., focused input)
   activeElement?: {
     selector: string;
     value?: string;
   };
-  
+
   // Form input values by selector
   formData?: Map<string, string>;
 }
@@ -148,10 +148,10 @@ The `HistoryState` captures browser navigation history:
 interface HistoryState {
   // Current URL
   currentUrl: string;
-  
+
   // History entries stack
   entries: HistoryEntry[];
-  
+
   // Current position in history stack
   currentIndex: number;
 }
@@ -159,16 +159,16 @@ interface HistoryState {
 interface HistoryEntry {
   // URL of the history entry
   url: string;
-  
+
   // Page title
   title: string;
-  
+
   // History state object (pushState/replaceState data)
   state?: object;
-  
+
   // Scroll position for this history entry
-  scrollPosition?: { x: number, y: number };
-  
+  scrollPosition?: { x: number; y: number };
+
   // When this entry was created/visited
   timestamp: number;
 }
@@ -182,7 +182,7 @@ The `NetworkState` contains information about network requests:
 interface NetworkState {
   // Captured requests and responses
   captures: NetworkCapture[];
-  
+
   // Active WebSocket connections
   webSockets?: WebSocketConnection[];
 }
@@ -197,7 +197,7 @@ interface SerializedRequest {
   url: string;
   method: string;
   headers: Record<string, string>;
-  body?: string;  // Base64 encoded for binary data
+  body?: string; // Base64 encoded for binary data
   timestamp: number;
 }
 
@@ -205,7 +205,7 @@ interface SerializedResponse {
   status: number;
   statusText: string;
   headers: Record<string, string>;
-  body?: string;  // Base64 encoded for binary data
+  body?: string; // Base64 encoded for binary data
   timestamp: number;
 }
 
@@ -239,27 +239,27 @@ The `RecordingState` captures user interactions:
 interface RecordingState {
   // Chronological list of recorded events
   events: Event[];
-  
+
   // When recording started (milliseconds since epoch)
   startTime: number;
-  
+
   // Duration of the recording in milliseconds
   duration: number;
-  
+
   // Additional recording metadata
   metadata?: Record<string, any>;
 }
 
 interface Event {
   // Event type
-  type: string;  // "click", "keydown", "input", "timer", "network", etc.
-  
+  type: string; // "click", "keydown", "input", "timer", "network", etc.
+
   // When the event occurred relative to startTime
   timestamp: number;
-  
+
   // Target element (CSS selector or XPath)
   target?: string;
-  
+
   // Event-specific data
   data: object;
 }
@@ -314,31 +314,31 @@ Additional metadata for managing sessions:
 interface SessionMetadata {
   // Unique identifier for the session
   id: string;
-  
+
   // User-provided name
   name: string;
-  
+
   // Optional description
   description?: string;
-  
+
   // Creation timestamp
   createdAt: number;
-  
+
   // Last modification timestamp
   updatedAt: number;
-  
+
   // User-defined tags for organization
   tags?: string[];
-  
+
   // Original framework used to create this session
   createdWith?: string;
-  
+
   // Session expiration (if applicable)
   expireAt?: number;
-  
+
   // Creator user/entity ID
   createdBy?: string;
-  
+
   // Access control information
   acl?: {
     owner: string;

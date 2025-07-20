@@ -44,7 +44,7 @@ async function startServer() {
                 storagePath: process.env.STORAGE_PATH,
                 // DB options
                 dbUrl: process.env.DB_URL,
-            }
+            },
         });
         // Initialize the server
         await server.initialize();

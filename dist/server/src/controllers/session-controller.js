@@ -76,7 +76,7 @@ class SessionController {
                         tags: tags || [],
                         createdAt: now,
                         updatedAt: now,
-                        createdWith: 'psp-server'
+                        createdWith: 'psp-server',
                     },
                     state: state || {
                         version: '1.0.0',
@@ -85,9 +85,9 @@ class SessionController {
                         storage: {
                             cookies: [],
                             localStorage: new Map(),
-                            sessionStorage: new Map()
-                        }
-                    }
+                            sessionStorage: new Map(),
+                        },
+                    },
                 };
                 // Save to storage
                 await this.storageProvider.save(session);
@@ -119,7 +119,7 @@ class SessionController {
                     metadata.updatedAt = Date.now();
                     session.metadata = {
                         ...session.metadata,
-                        ...metadata
+                        ...metadata,
                     };
                 }
                 if (state) {
@@ -155,7 +155,7 @@ class SessionController {
                     metadata.updatedAt = Date.now();
                     session.metadata = {
                         ...session.metadata,
-                        ...metadata
+                        ...metadata,
                     };
                 }
                 // Update state if provided (shallow merge)
@@ -163,7 +163,7 @@ class SessionController {
                     session.state = {
                         ...session.state,
                         ...state,
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
                     };
                 }
                 // Save the updated session
@@ -236,12 +236,12 @@ class SessionController {
                     session.state.recording = {
                         events: [],
                         startTime: Date.now(),
-                        duration: 0
+                        duration: 0,
                     };
                 }
                 session.state.recording.events = [
                     ...session.state.recording.events,
-                    ...events
+                    ...events,
                 ];
                 // Update duration if needed
                 if (events.length > 0) {

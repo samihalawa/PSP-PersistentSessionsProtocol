@@ -15,7 +15,8 @@ class Session {
         this.isRecording = false;
         this.metadata = options.metadata;
         this.state = options.state;
-        this.storageProvider = options.storageProvider || new local_1.LocalStorageProvider();
+        this.storageProvider =
+            options.storageProvider || new local_1.LocalStorageProvider();
         this.adapter = options.adapter;
     }
     /**
@@ -34,7 +35,7 @@ class Session {
             createdWith: adapter?.type || 'unknown',
         };
         if (options.expireIn && options.expireIn > 0) {
-            metadata.expireAt = now + (options.expireIn * 1000);
+            metadata.expireAt = now + options.expireIn * 1000;
         }
         const state = {
             version: '1.0.0',
@@ -44,7 +45,7 @@ class Session {
                 cookies: [],
                 localStorage: new Map(),
                 sessionStorage: new Map(),
-            }
+            },
         };
         // Determine which storage provider to use
         let storageProvider;
@@ -70,7 +71,7 @@ class Session {
             metadata,
             state,
             storageProvider,
-            adapter
+            adapter,
         });
         // Initial save
         await session.save();
@@ -85,7 +86,7 @@ class Session {
         return new Session({
             metadata,
             state,
-            storageProvider: provider
+            storageProvider: provider,
         });
     }
     /**
@@ -113,7 +114,7 @@ class Session {
         this.metadata = {
             ...this.metadata,
             ...metadata,
-            updatedAt: Date.now()
+            updatedAt: Date.now(),
         };
         await this.save();
     }
@@ -135,7 +136,7 @@ class Session {
             const newState = await this.adapter.captureState();
             this.state = {
                 ...newState,
-                timestamp: Date.now()
+                timestamp: Date.now(),
             };
         }
         else {
@@ -188,8 +189,9 @@ class Session {
         // Update the state with recorded events
         this.state.recording = {
             events,
-            startTime: Date.now() - (events.length > 0 ? events[events.length - 1].timestamp : 0),
-            duration: events.length > 0 ? events[events.length - 1].timestamp : 0
+            startTime: Date.now() -
+                (events.length > 0 ? events[events.length - 1].timestamp : 0),
+            duration: events.length > 0 ? events[events.length - 1].timestamp : 0,
         };
         this.isRecording = false;
         // Save the updated state
@@ -225,7 +227,7 @@ class Session {
     async save() {
         await this.storageProvider.save({
             metadata: this.metadata,
-            state: this.state
+            state: this.state,
         });
     }
     /**
@@ -252,7 +254,7 @@ class Session {
             metadata: newMetadata,
             state: { ...this.state, timestamp: now },
             storageProvider: this.storageProvider,
-            adapter: this.adapter
+            adapter: this.adapter,
         });
         // Save the new session
         await session.save();

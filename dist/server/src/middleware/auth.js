@@ -26,7 +26,7 @@ function authMiddleware(req, res, next) {
     if (!token || token !== process.env.API_TOKEN) {
         logger.warn('Invalid token', {
             token: token.substring(0, 5) + '...',
-            ip: req.ip
+            ip: req.ip,
         });
         throw new errors_1.UnauthorizedError('Invalid token');
     }

@@ -1,1 +1,6 @@
-{ "name": "@psp/provider-template", "version": "0.1.0", "private": true, "main": "index.js" }
+{
+  "name": "@psp/provider-template",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js"
+}

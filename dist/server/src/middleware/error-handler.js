@@ -12,15 +12,15 @@ function errorHandler(err, req, res, next) {
     logger.error(err.message, {
         stack: err.stack,
         path: req.path,
-        method: req.method
+        method: req.method,
     });
     // Handle AppError (known application errors)
     if (err instanceof errors_1.AppError) {
         res.status(err.statusCode).json({
             error: {
                 message: err.message,
-                code: err.statusCode
-            }
+                code: err.statusCode,
+            },
         });
         return;
     }
@@ -28,7 +28,7 @@ function errorHandler(err, req, res, next) {
     res.status(500).json({
         error: {
             message: 'Internal Server Error',
-            code: 500
-        }
+            code: 500,
+        },
     });
 }
