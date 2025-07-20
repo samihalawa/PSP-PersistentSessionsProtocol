@@ -20,6 +20,7 @@ Commands:
   show <session-id>       Show session details
   delete <session-id>     Delete a session
   server [port]           Start PSP server (default port: 3000)
+  ui                      Start PSP GUI (browser-based interface)
   help                    Show this help
 
 Examples:
@@ -166,6 +167,54 @@ async function startServer(port) {
   }
 }
 
+async function startUI() {
+  try {
+    console.log('🚀 Starting PSP GUI...');
+    console.log('📱 PSP Web Interface will be available at: http://localhost:3000/ui');
+    console.log('');
+    
+    // Start the server with UI enabled
+    const server = new Server({
+      port: 3000,
+      host: 'localhost',
+      storageType: 'local',
+      authEnabled: false,
+      enableUI: true
+    });
+
+    await server.initialize();
+    await server.start();
+    
+    console.log('✅ PSP GUI started successfully!');
+    console.log('');
+    console.log('🌐 Open your browser and go to: http://localhost:3000/ui');
+    console.log('');
+    console.log('Features available:');
+    console.log('  • Session Management - Create, list, view, delete sessions');
+    console.log('  • Cookie Manager - Visual cookie management interface');
+    console.log('  • Session Import/Export - Backup and restore sessions');
+    console.log('  • Real-time Session Monitoring - Live session updates');
+    console.log('');
+    console.log('Press Ctrl+C to stop the GUI');
+
+    // Handle graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('\\n🛑 Shutting down PSP GUI...');
+      await server.stop();
+      console.log('✅ GUI stopped');
+      process.exit(0);
+    });
+
+  } catch (error) {
+    console.error('❌ Error starting PSP GUI:', error.message);
+    console.log('');
+    console.log('💡 Tip: Try starting the server first:');
+    console.log('   psp-cli server');
+    console.log('   Then visit http://localhost:3000/ui in your browser');
+    process.exit(1);
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0];
@@ -202,6 +251,10 @@ async function main() {
     
     case 'server':
       await startServer(args[1]);
+      break;
+    
+    case 'ui':
+      await startUI();
       break;
     
     default:
