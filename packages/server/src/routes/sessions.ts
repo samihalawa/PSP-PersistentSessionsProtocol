@@ -1,5 +1,5 @@
 import { Router, Application } from 'express';
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../core/dist';
 import { SessionController } from '../controllers/session-controller';
 import { validateSession } from '../middleware/validators';
 

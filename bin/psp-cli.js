@@ -4,8 +4,8 @@
  * PSP CLI - Command Line Interface for Persistent Sessions Protocol
  */
 
-const { Session, LocalStorageProvider } = require('../dist/core/src/index.js');
-const { Server } = require('../dist/server/src/index.js');
+const { Session, LocalStorageProvider } = require('../packages/core/dist/index.js');
+const { Server } = require('../packages/server/dist/index.js');
 
 function showHelp() {
   console.log(`

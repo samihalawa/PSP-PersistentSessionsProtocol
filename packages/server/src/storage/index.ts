@@ -1,4 +1,4 @@
-import { StorageProvider, LocalStorageProvider } from '@psp/core';
+import { StorageProvider, LocalStorageProvider } from '../../../core/dist';
 import { RedisStorageProvider } from './redis-provider';
 import { DatabaseStorageProvider } from './database-provider';
 import { CloudStorageProvider } from './cloud-provider';

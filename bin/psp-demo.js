@@ -5,7 +5,7 @@
  */
 
 // Use relative paths to the built files
-const { Session, LocalStorageProvider } = require('../dist/core/src/index.js');
+const { Session, LocalStorageProvider } = require('../packages/core/dist/index.js');
 
 async function runDemo() {
   console.log('🚀 PSP Demo - Persistent Sessions Protocol');

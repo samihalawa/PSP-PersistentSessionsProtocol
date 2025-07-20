@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../core/dist';
 import { createLogger } from '../utils/logger';
 import { validateToken } from './auth';
 

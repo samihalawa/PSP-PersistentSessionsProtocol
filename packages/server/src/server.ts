@@ -6,7 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import { createLogger } from './utils/logger';
 import { setupSessionRoutes } from './routes/sessions';
 import { setupStorageProvider } from './storage';
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../core/dist';
 import { errorHandler } from './middleware/error-handler';
 import { authMiddleware } from './middleware/auth';
 import { setupWebSocketHandlers } from './websockets';
