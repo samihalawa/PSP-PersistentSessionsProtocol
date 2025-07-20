@@ -1,0 +1,49 @@
+---
+title: PSP - Persistent Sessions Protocol
+description: A unified protocol for browser session persistence across automation frameworks
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Site settings
+baseurl: ""
+url: "https://samihalawa.github.io/PSP-PersistentSessionsProtocol"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+sass:
+  sass_dir: _sass
+  style: compressed
+
+# Collections
+collections:
+  guides:
+    output: true
+    permalink: /:collection/:name/
+
+# Navigation
+navigation:
+  - title: Home
+    url: /
+  - title: Getting Started
+    url: /guide/getting-started/
+  - title: API Reference
+    url: /api/
+  - title: Platform Support
+    url: /platforms/
+  - title: Examples
+    url: /examples/
+  - title: GitHub
+    url: https://github.com/samihalawa/PSP-PersistentSessionsProtocol
+
+# Footer
+footer_links:
+  - title: GitHub
+    url: https://github.com/samihalawa/PSP-PersistentSessionsProtocol
+  - title: Issues
+    url: https://github.com/samihalawa/PSP-PersistentSessionsProtocol/issues
+  - title: Discussions
+    url: https://github.com/samihalawa/PSP-PersistentSessionsProtocol/discussions
