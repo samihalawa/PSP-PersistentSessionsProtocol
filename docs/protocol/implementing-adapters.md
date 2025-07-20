@@ -15,18 +15,18 @@ A PSP adapter translates between the PersistentSessionsProtocol data model and a
 
 When implementing an adapter, you'll need to address these capabilities:
 
-| Capability | Description | Priority |
-|------------|-------------|----------|
-| Cookies | Access to browser cookies | Required |
-| LocalStorage | Access to localStorage | Required |
-| SessionStorage | Access to sessionStorage | Required |
-| History Handling | Browser history management | Required |
-| Event Recording | User interaction capture | Required |
-| Event Replay | Playback of recorded events | Required |
-| Network Capture | Request/response recording | Optional |
-| DOM State | HTML/DOM structure storage | Optional |
-| IndexedDB | IndexedDB database access | Optional |
-| WebSocket | WebSocket connection state | Optional |
+| Capability       | Description                 | Priority |
+| ---------------- | --------------------------- | -------- |
+| Cookies          | Access to browser cookies   | Required |
+| LocalStorage     | Access to localStorage      | Required |
+| SessionStorage   | Access to sessionStorage    | Required |
+| History Handling | Browser history management  | Required |
+| Event Recording  | User interaction capture    | Required |
+| Event Replay     | Playback of recorded events | Required |
+| Network Capture  | Request/response recording  | Optional |
+| DOM State        | HTML/DOM structure storage  | Optional |
+| IndexedDB        | IndexedDB database access   | Optional |
+| WebSocket        | WebSocket connection state  | Optional |
 
 ## Adapter Interface
 
@@ -36,25 +36,25 @@ Each adapter should implement this general interface:
 interface PSPAdapter {
   // Initialize the adapter
   initialize(options?: AdapterOptions): Promise<void>;
-  
+
   // Connect to browser/framework
   connect(target: any): Promise<void>;
-  
+
   // Capture state from browser
   captureState(): Promise<BrowserSessionState>;
-  
+
   // Apply state to browser
   applyState(state: BrowserSessionState): Promise<void>;
-  
+
   // Start recording events
   startRecording(options?: RecordingOptions): Promise<void>;
-  
+
   // Stop recording and return events
   stopRecording(): Promise<Event[]>;
-  
+
   // Play recorded events
   playRecording(events: Event[], options?: PlaybackOptions): Promise<void>;
-  
+
   // Clean up resources
   dispose(): Promise<void>;
 }
@@ -70,13 +70,13 @@ interface AdapterOptions {
     dom?: boolean;
     indexedDB?: boolean;
   };
-  
+
   // Storage options
   storage?: StorageOptions;
-  
+
   // Recording options
   recording?: RecordingOptions;
-  
+
   // Framework-specific options
   [key: string]: any;
 }
@@ -94,9 +94,9 @@ Implement state capture mechanisms for each storage type:
 async function captureCookies(target): Promise<Cookie[]> {
   // Framework-specific cookie access
   const rawCookies = await target.cookies();
-  
+
   // Convert to PSP format
-  return rawCookies.map(cookie => ({
+  return rawCookies.map((cookie) => ({
     name: cookie.name,
     value: cookie.value,
     domain: cookie.domain,
@@ -105,7 +105,7 @@ async function captureCookies(target): Promise<Cookie[]> {
     httpOnly: cookie.httpOnly,
     secure: cookie.secure,
     sameSite: cookie.sameSite,
-    partitioned: cookie.partitioned || false
+    partitioned: cookie.partitioned || false,
   }));
 }
 ```
@@ -115,7 +115,10 @@ async function captureCookies(target): Promise<Cookie[]> {
 This often requires JavaScript execution:
 
 ```typescript
-async function captureLocalStorage(target, origin): Promise<Map<string, string>> {
+async function captureLocalStorage(
+  target,
+  origin
+): Promise<Map<string, string>> {
   // Execute JavaScript to extract localStorage
   const result = await target.evaluate(() => {
     const data = {};
@@ -125,7 +128,7 @@ async function captureLocalStorage(target, origin): Promise<Map<string, string>>
     }
     return data;
   });
-  
+
   return new Map(Object.entries(result));
 }
 ```
@@ -148,10 +151,14 @@ async function restoreCookies(target, cookies: Cookie[]): Promise<void> {
 #### localStorage and sessionStorage
 
 ```typescript
-async function restoreLocalStorage(target, origin: string, data: Map<string, string>): Promise<void> {
+async function restoreLocalStorage(
+  target,
+  origin: string,
+  data: Map<string, string>
+): Promise<void> {
   // Convert Map to object for serialization
   const storageObj = Object.fromEntries(data);
-  
+
   // Execute JavaScript to set localStorage
   await target.evaluate((storageData) => {
     localStorage.clear();
@@ -172,31 +179,35 @@ async function startEventRecording(target): Promise<void> {
   await target.evaluate(() => {
     window._pspEvents = [];
     window._pspStartTime = Date.now();
-    
+
     // Record clicks
-    document.addEventListener('click', (e) => {
-      window._pspEvents.push({
-        type: 'click',
-        timestamp: Date.now() - window._pspStartTime,
-        target: cssPath(e.target),
-        data: {
-          button: e.button,
-          clientX: e.clientX,
-          clientY: e.clientY,
-          altKey: e.altKey,
-          ctrlKey: e.ctrlKey,
-          shiftKey: e.shiftKey,
-          metaKey: e.metaKey
-        }
-      });
-    }, true);
-    
+    document.addEventListener(
+      'click',
+      (e) => {
+        window._pspEvents.push({
+          type: 'click',
+          timestamp: Date.now() - window._pspStartTime,
+          target: cssPath(e.target),
+          data: {
+            button: e.button,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            altKey: e.altKey,
+            ctrlKey: e.ctrlKey,
+            shiftKey: e.shiftKey,
+            metaKey: e.metaKey,
+          },
+        });
+      },
+      true
+    );
+
     // Helper function to generate CSS selector
     function cssPath(el) {
       // Implementation of CSS path generation
       // ...
     }
-    
+
     // Additional event listener setup...
   });
 }
@@ -227,14 +238,14 @@ async function replayClick(target, event: ClickEvent): Promise<void> {
     button: event.data.button,
     position: {
       x: event.data.clientX,
-      y: event.data.clientY
+      y: event.data.clientY,
     },
     modifiers: [
       event.data.altKey && 'Alt',
       event.data.ctrlKey && 'Control',
       event.data.shiftKey && 'Shift',
-      event.data.metaKey && 'Meta'
-    ].filter(Boolean)
+      event.data.metaKey && 'Meta',
+    ].filter(Boolean),
   });
 }
 ```
@@ -249,26 +260,26 @@ class PlaywrightAdapter implements PSPAdapter {
   private recording: boolean = false;
   private events: Event[] = [];
   private startTime: number = 0;
-  
+
   async connect(page: Page): Promise<void> {
     this.page = page;
   }
-  
+
   async captureState(): Promise<BrowserSessionState> {
     // Use Playwright's built-in state capture for cookies and storage
     const storageState = await this.page.context().storageState();
-    
+
     // Collect additional state
     const url = this.page.url();
     const title = await this.page.title();
-    
+
     // Build the complete state object
     return {
       version: '1.0.0',
       timestamp: Date.now(),
       origin: new URL(url).origin,
       storage: {
-        cookies: storageState.cookies.map(cookie => ({
+        cookies: storageState.cookies.map((cookie) => ({
           name: cookie.name,
           value: cookie.value,
           domain: cookie.domain,
@@ -277,54 +288,64 @@ class PlaywrightAdapter implements PSPAdapter {
           httpOnly: cookie.httpOnly,
           secure: cookie.secure,
           sameSite: cookie.sameSite as any,
-          partitioned: false // Playwright doesn't yet support partitioned cookies
+          partitioned: false, // Playwright doesn't yet support partitioned cookies
         })),
         localStorage: this.convertStorageToMap(storageState.origins),
-        sessionStorage: new Map() // Requires custom implementation
+        sessionStorage: new Map(), // Requires custom implementation
       },
       history: {
         currentUrl: url,
         entries: [{ url, title, timestamp: Date.now() }],
-        currentIndex: 0
+        currentIndex: 0,
       },
-      recording: this.recording ? {
-        events: this.events,
-        startTime: this.startTime,
-        duration: Date.now() - this.startTime
-      } : undefined
+      recording: this.recording
+        ? {
+            events: this.events,
+            startTime: this.startTime,
+            duration: Date.now() - this.startTime,
+          }
+        : undefined,
     };
   }
-  
+
   async applyState(state: BrowserSessionState): Promise<void> {
     // Build Playwright-compatible storageState
     const storageState = {
       cookies: state.storage.cookies,
-      origins: this.convertMapToStorageOrigins(state.storage.localStorage)
+      origins: this.convertMapToStorageOrigins(state.storage.localStorage),
     };
-    
+
     // Apply storage state
     await this.page.context().addCookies(storageState.cookies);
-    
+
     // Apply localStorage
     for (const [origin, storage] of state.storage.localStorage.entries()) {
-      await this.page.context().addInitScript(script => {
-        if (window.location.origin === script.origin) {
-          for (const [key, value] of Object.entries(script.storage)) {
-            window.localStorage.setItem(key, value);
+      await this.page.context().addInitScript(
+        (script) => {
+          if (window.location.origin === script.origin) {
+            for (const [key, value] of Object.entries(script.storage)) {
+              window.localStorage.setItem(key, value);
+            }
           }
-        }
-      }, { origin, storage: Object.fromEntries(storage) });
+        },
+        { origin, storage: Object.fromEntries(storage) }
+      );
     }
-    
+
     // Navigate to current URL if needed
-    if (state.history?.currentUrl && this.page.url() !== state.history.currentUrl) {
+    if (
+      state.history?.currentUrl &&
+      this.page.url() !== state.history.currentUrl
+    ) {
       await this.page.goto(state.history.currentUrl);
     }
   }
-  
+
   // Additional methods implementation...
-  
-  private convertStorageToMap(origins: any[]): Map<string, Map<string, string>> {
+
+  private convertStorageToMap(
+    origins: any[]
+  ): Map<string, Map<string, string>> {
     const result = new Map();
     for (const origin of origins) {
       const storageMap = new Map();
@@ -335,11 +356,13 @@ class PlaywrightAdapter implements PSPAdapter {
     }
     return result;
   }
-  
-  private convertMapToStorageOrigins(map: Map<string, Map<string, string>>): any[] {
+
+  private convertMapToStorageOrigins(
+    map: Map<string, Map<string, string>>
+  ): any[] {
     return Array.from(map.entries()).map(([origin, storage]) => ({
       origin,
-      localStorage: Object.fromEntries(storage)
+      localStorage: Object.fromEntries(storage),
     }));
   }
 }
@@ -350,19 +373,19 @@ class PlaywrightAdapter implements PSPAdapter {
 ```typescript
 class SeleniumAdapter implements PSPAdapter {
   private driver: WebDriver;
-  
+
   async connect(driver: WebDriver): Promise<void> {
     this.driver = driver;
   }
-  
+
   async captureState(): Promise<BrowserSessionState> {
     // Current URL and title
     const url = await this.driver.getCurrentUrl();
     const title = await this.driver.getTitle();
-    
+
     // Get cookies
     const cookies = await this.driver.manage().getCookies();
-    
+
     // Get localStorage and sessionStorage via JavaScript
     const storage = await this.driver.executeScript(() => {
       const localStorage = {};
@@ -370,23 +393,23 @@ class SeleniumAdapter implements PSPAdapter {
         const key = window.localStorage.key(i);
         localStorage[key] = window.localStorage.getItem(key);
       }
-      
+
       const sessionStorage = {};
       for (let i = 0; i < window.sessionStorage.length; i++) {
         const key = window.sessionStorage.key(i);
         sessionStorage[key] = window.sessionStorage.getItem(key);
       }
-      
+
       return { localStorage, sessionStorage };
     });
-    
+
     // Build complete state object
     return {
       version: '1.0.0',
       timestamp: Date.now(),
       origin: new URL(url).origin,
       storage: {
-        cookies: cookies.map(cookie => ({
+        cookies: cookies.map((cookie) => ({
           name: cookie.getName(),
           value: cookie.getValue(),
           domain: cookie.getDomain(),
@@ -395,19 +418,19 @@ class SeleniumAdapter implements PSPAdapter {
           httpOnly: cookie.isHttpOnly(),
           secure: cookie.isSecure(),
           sameSite: 'Lax', // Selenium doesn't expose SameSite
-          partitioned: false
+          partitioned: false,
         })),
         localStorage: this.convertStorageToMap(storage.localStorage, url),
-        sessionStorage: this.convertStorageToMap(storage.sessionStorage, url)
+        sessionStorage: this.convertStorageToMap(storage.sessionStorage, url),
       },
       history: {
         currentUrl: url,
         entries: [{ url, title, timestamp: Date.now() }],
-        currentIndex: 0
-      }
+        currentIndex: 0,
+      },
     };
   }
-  
+
   async applyState(state: BrowserSessionState): Promise<void> {
     // Set cookies
     for (const cookie of state.storage.cookies) {
@@ -418,43 +441,49 @@ class SeleniumAdapter implements PSPAdapter {
         path: cookie.path,
         expiry: cookie.expires ? new Date(cookie.expires) : undefined,
         httpOnly: cookie.httpOnly,
-        secure: cookie.secure
+        secure: cookie.secure,
       });
     }
-    
+
     // Navigate to the URL
     if (state.history?.currentUrl) {
       await this.driver.get(state.history.currentUrl);
-      
+
       // Set localStorage and sessionStorage
       const origin = new URL(state.history.currentUrl).origin;
       const localStorage = state.storage.localStorage.get(origin);
       const sessionStorage = state.storage.sessionStorage.get(origin);
-      
+
       if (localStorage || sessionStorage) {
-        await this.driver.executeScript((ls, ss) => {
-          if (ls) {
-            window.localStorage.clear();
-            for (const [key, value] of Object.entries(ls)) {
-              window.localStorage.setItem(key, value);
+        await this.driver.executeScript(
+          (ls, ss) => {
+            if (ls) {
+              window.localStorage.clear();
+              for (const [key, value] of Object.entries(ls)) {
+                window.localStorage.setItem(key, value);
+              }
             }
-          }
-          
-          if (ss) {
-            window.sessionStorage.clear();
-            for (const [key, value] of Object.entries(ss)) {
-              window.sessionStorage.setItem(key, value);
+
+            if (ss) {
+              window.sessionStorage.clear();
+              for (const [key, value] of Object.entries(ss)) {
+                window.sessionStorage.setItem(key, value);
+              }
             }
-          }
-        }, localStorage ? Object.fromEntries(localStorage) : null, 
-           sessionStorage ? Object.fromEntries(sessionStorage) : null);
+          },
+          localStorage ? Object.fromEntries(localStorage) : null,
+          sessionStorage ? Object.fromEntries(sessionStorage) : null
+        );
       }
     }
   }
-  
+
   // Additional methods implementation...
-  
-  private convertStorageToMap(storage: Record<string, string>, url: string): Map<string, Map<string, string>> {
+
+  private convertStorageToMap(
+    storage: Record<string, string>,
+    url: string
+  ): Map<string, Map<string, string>> {
     const map = new Map();
     const origin = new URL(url).origin;
     const storageMap = new Map(Object.entries(storage));

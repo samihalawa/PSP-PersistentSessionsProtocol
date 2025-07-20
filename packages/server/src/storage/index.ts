@@ -14,17 +14,22 @@ export async function setupStorageProvider(
   options?: Record<string, any>
 ): Promise<StorageProvider> {
   logger.info(`Setting up ${type} storage provider`);
-  
+
   switch (type) {
     case 'redis':
       return new RedisStorageProvider(options);
-      
+
     case 'database':
-      return new DatabaseStorageProvider(options);
-      
+      return new DatabaseStorageProvider(
+        options?.connectionString || 'sqlite://sessions.db'
+      );
+
     case 'cloud':
-      return new CloudStorageProvider(options);
-      
+      return new CloudStorageProvider({
+        bucketName: 'psp-sessions',
+        ...(options || {}),
+      });
+
     case 'local':
     default:
       return new LocalStorageProvider(options);

@@ -15,9 +15,147 @@ The PersistentSessionsProtocol (PSP) creates a standardized approach for browser
 - **Session Recording & Replay** - Capture and reproduce user interactions across environments
 - **REST and WebSocket APIs** - For server-based session management and real-time updates
 
-## Current Status
+## 🚀 Quick Start
 
-This project is currently under active development. The protocol specification is available in the [docs/protocol](docs/protocol) directory.
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/samihalawa/PSP-PersistentSessionsProtocol.git
+cd PSP-PersistentSessionsProtocol
+
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+```
+
+### Try the Demo
+
+```bash
+# Run the interactive demo
+npm run demo
+```
+
+### Basic Usage
+
+```bash
+# Run core functionality example
+npm run example:core
+```
+
+## 📚 Usage Examples
+
+### Core Session Management
+
+```typescript
+import { Session, LocalStorageProvider } from '@psp/core';
+
+// Create a new session
+const session = await Session.create({
+  name: 'My Session',
+  description: 'Example session',
+  tags: ['example'],
+  storage: 'local'
+});
+
+console.log(`Session created: ${session.getId()}`);
+
+// Update session metadata
+await session.updateMetadata({
+  description: 'Updated description'
+});
+
+// Clone the session
+const clonedSession = await session.clone('Cloned Session');
+
+// Save and load sessions
+await session.save();
+const loadedSession = await Session.load(session.getId());
+```
+
+### Server Usage
+
+```typescript
+import { Server } from '@psp/server';
+
+const server = new Server({
+  port: 3000,
+  host: 'localhost',
+  storageType: 'local',
+  authEnabled: false
+});
+
+await server.initialize();
+await server.start();
+
+console.log('PSP Server running on http://localhost:3000');
+```
+
+## 🏗️ Architecture
+
+PSP employs a layered architecture with four distinct components:
+
+1. **Session Capture Layer** - Extracts state using browser-specific adapters
+2. **Serialization and Transport Layer** - Handles data encoding and transmission
+3. **Storage Layer** - Manages persistent storage of session data
+4. **Replay Layer** - Restores sessions across different environments
+
+## 📦 Components
+
+### Core Library (`@psp/core`)
+- Framework-agnostic session management
+- Local storage provider
+- Session CRUD operations
+- State serialization/deserialization
+
+### Server (`@psp/server`)
+- REST API for session management
+- WebSocket support for real-time updates
+- Multiple storage backends
+- Authentication middleware
+
+### Adapters
+- **Playwright** - Integration with Playwright browser automation
+- **Selenium** - WebDriver-based session capture and replay
+- **More coming soon** - Puppeteer, Skyvern, Stagehand
+
+### Storage Providers
+- **Local** - File system storage (ready to use)
+- **Redis** - In-memory data store (ready to use)
+- **Database** - SQL database storage (placeholder)
+- **Cloud** - Cloud storage backends (placeholder)
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run linting
+npm run lint
+
+# Format code
+npm run format
+```
+
+## 📖 Documentation
+
+Detailed documentation is available in the [docs](docs) directory:
+
+- [Protocol Specification](docs/protocol/README.md)
+- [Data Model](docs/protocol/data-model.md)
+- [Implementing Adapters](docs/protocol/implementing-adapters.md)
+- [Getting Started Guide](docs/guide/getting-started.md)
+
+## 🤝 Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Getting Started
 
@@ -41,7 +179,7 @@ const page = await context.newPage();
 const adapter = new PlaywrightAdapter();
 const session = await adapter.createSession(page, {
   name: 'my-authentication-session',
-  storage: 'cloud' // or 'local', 'redis', etc.
+  storage: 'cloud', // or 'local', 'redis', etc.
 });
 
 // Log in to your application
@@ -72,7 +210,7 @@ driver = webdriver.Chrome()
 
 # Create adapter and session
 adapter = SeleniumAdapter()
-session = adapter.create_session(driver, 
+session = adapter.create_session(driver,
   name="my-authentication-session",
   storage="cloud"  # or 'local', 'redis', etc.
 )

@@ -16,22 +16,22 @@ export interface StorageProvider {
    * Save a session to storage
    */
   save(session: StoredSession): Promise<void>;
-  
+
   /**
    * Load a session from storage by ID
    */
   load(id: string): Promise<StoredSession>;
-  
+
   /**
    * Delete a session from storage
    */
   delete(id: string): Promise<void>;
-  
+
   /**
    * List sessions matching the filter
    */
   list(filter?: SessionFilter): Promise<SessionMetadata[]>;
-  
+
   /**
    * Check if a session exists
    */

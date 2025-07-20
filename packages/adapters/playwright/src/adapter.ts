@@ -1,11 +1,20 @@
 import { Page, BrowserContext } from 'playwright';
-import { 
+import {
   Adapter,
-  BrowserSessionState, 
-  Event, 
-  RecordingOptions, 
-  PlaybackOptions 
+  BrowserSessionState,
+  Event,
+  RecordingOptions,
+  PlaybackOptions,
 } from '@psp/core';
+
+// Extend Window interface for PSP-specific properties
+declare global {
+  interface Window {
+    _pspEvents?: Event[];
+    _pspStartTime?: number;
+    _pspGetEvents?: () => Event[];
+  }
+}
 
 /**
  * Adapter for Playwright
@@ -13,29 +22,29 @@ import {
 export class PlaywrightAdapter extends Adapter {
   /** The Playwright page */
   private page?: Page;
-  
+
   /** The Playwright browser context */
   private context?: BrowserContext;
-  
+
   /** Recording in progress */
-  private recording: boolean = false;
-  
+  private recording = false;
+
   /** Events recorded */
   private events: Event[] = [];
-  
+
   /** Recording start time */
-  private recordingStartTime: number = 0;
-  
+  private recordingStartTime = 0;
+
   /**
    * Creates a new PlaywrightAdapter
    */
   constructor(options: any = {}) {
     super({
       ...options,
-      type: 'playwright'
+      type: 'playwright',
     });
   }
-  
+
   /**
    * Connects to a Playwright page or context
    */
@@ -55,10 +64,10 @@ export class PlaywrightAdapter extends Adapter {
         this.page = await this.context.newPage();
       }
     }
-    
+
     await super.connect(target);
   }
-  
+
   /**
    * Captures the current browser state
    */
@@ -66,31 +75,31 @@ export class PlaywrightAdapter extends Adapter {
     if (!this.page || !this.context) {
       throw new Error('Not connected to a Playwright page or context');
     }
-    
+
     // Get current URL and title
     const url = this.page.url();
     const title = await this.page.title();
     const origin = new URL(url).origin;
-    
+
     // Get storage state (cookies and localStorage)
     const storageState = await this.context.storageState();
-    
+
     // Get session storage
     const sessionStorage = await this.getSessionStorage();
-    
+
     // Get scroll position
     const scrollPosition = await this.page.evaluate(() => ({
       x: window.scrollX,
-      y: window.scrollY
+      y: window.scrollY,
     }));
-    
+
     // Build the full state object
     const state: BrowserSessionState = {
       version: '1.0.0',
       timestamp: Date.now(),
       origin,
       storage: {
-        cookies: storageState.cookies.map(cookie => ({
+        cookies: storageState.cookies.map((cookie: any) => ({
           name: cookie.name,
           value: cookie.value,
           domain: cookie.domain,
@@ -99,14 +108,14 @@ export class PlaywrightAdapter extends Adapter {
           httpOnly: cookie.httpOnly,
           secure: cookie.secure,
           sameSite: cookie.sameSite as 'Strict' | 'Lax' | 'None',
-          partitioned: false // Playwright doesn't support partitioned cookies yet
+          partitioned: false, // Playwright doesn't support partitioned cookies yet
         })),
         localStorage: this.convertPlaywrightStorageToMap(storageState.origins),
-        sessionStorage: sessionStorage
+        sessionStorage: sessionStorage,
       },
       dom: {
         html: await this.page.content(),
-        scrollPosition
+        scrollPosition,
       },
       history: {
         currentUrl: url,
@@ -115,25 +124,25 @@ export class PlaywrightAdapter extends Adapter {
             url,
             title,
             timestamp: Date.now(),
-            scrollPosition
-          }
+            scrollPosition,
+          },
         ],
-        currentIndex: 0
-      }
+        currentIndex: 0,
+      },
     };
-    
+
     // Add recording if available
     if (this.recording && this.events.length > 0) {
       state.recording = {
         events: [...this.events],
         startTime: this.recordingStartTime,
-        duration: Date.now() - this.recordingStartTime
+        duration: Date.now() - this.recordingStartTime,
       };
     }
-    
+
     return state;
   }
-  
+
   /**
    * Applies a browser state to the current page
    */
@@ -141,60 +150,67 @@ export class PlaywrightAdapter extends Adapter {
     if (!this.page || !this.context) {
       throw new Error('Not connected to a Playwright page or context');
     }
-    
+
     // Apply cookies
     await this.context.clearCookies();
-    await this.context.addCookies(state.storage.cookies.map(cookie => ({
-      name: cookie.name,
-      value: cookie.value,
-      domain: cookie.domain,
-      path: cookie.path,
-      expires: cookie.expires ? cookie.expires / 1000 : undefined, // Convert to seconds
-      httpOnly: cookie.httpOnly,
-      secure: cookie.secure,
-      sameSite: cookie.sameSite
-    })));
-    
+    await this.context.addCookies(
+      state.storage.cookies.map((cookie) => ({
+        name: cookie.name,
+        value: cookie.value,
+        domain: cookie.domain,
+        path: cookie.path,
+        expires: cookie.expires ? cookie.expires / 1000 : undefined, // Convert to seconds
+        httpOnly: cookie.httpOnly,
+        secure: cookie.secure,
+        sameSite: cookie.sameSite,
+      }))
+    );
+
     // Navigate to the URL
     if (state.history?.currentUrl) {
-      await this.page.goto(state.history.currentUrl, { waitUntil: 'domcontentloaded' });
+      await this.page.goto(state.history.currentUrl, {
+        waitUntil: 'domcontentloaded',
+      });
     }
-    
+
     // Apply localStorage
     for (const [origin, storage] of state.storage.localStorage.entries()) {
-      await this.page.context().addInitScript(script => {
-        if (window.location.origin === script.origin) {
-          localStorage.clear();
-          for (const [key, value] of Object.entries(script.storage)) {
-            localStorage.setItem(key, value);
+      await this.page.context().addInitScript(
+        (script: any) => {
+          if (window.location.origin === script.origin) {
+            localStorage.clear();
+            for (const [key, value] of Object.entries(script.storage)) {
+              localStorage.setItem(key, String(value));
+            }
           }
-        }
-      }, { origin, storage: Object.fromEntries(storage) });
+        },
+        { origin, storage: Object.fromEntries(storage) }
+      );
     }
-    
+
     // Apply sessionStorage
     for (const [origin, storage] of state.storage.sessionStorage.entries()) {
       if (origin === new URL(this.page.url()).origin) {
-        await this.page.evaluate(storage => {
+        await this.page.evaluate((storage: any) => {
           sessionStorage.clear();
           for (const [key, value] of Object.entries(storage)) {
-            sessionStorage.setItem(key, value);
+            sessionStorage.setItem(key, String(value));
           }
         }, Object.fromEntries(storage));
       }
     }
-    
+
     // Apply scroll position if available
     if (state.dom?.scrollPosition) {
-      await this.page.evaluate(({ x, y }) => {
+      await this.page.evaluate(({ x, y }: { x: number; y: number }) => {
         window.scrollTo(x, y);
       }, state.dom.scrollPosition);
     }
-    
+
     // Reload the page to ensure everything is applied
     await this.page.reload();
   }
-  
+
   /**
    * Starts recording user interactions
    */
@@ -202,12 +218,12 @@ export class PlaywrightAdapter extends Adapter {
     if (!this.page) {
       throw new Error('Not connected to a Playwright page');
     }
-    
+
     // Reset recording state
     this.events = [];
     this.recordingStartTime = Date.now();
     this.recording = true;
-    
+
     // Determine which events to record
     const recordOptions = {
       click: true,
@@ -216,19 +232,19 @@ export class PlaywrightAdapter extends Adapter {
       navigation: true,
       scroll: false,
       network: false,
-      ...options?.events
+      ...options?.events,
     };
-    
+
     // Install event listeners via page.evaluate
-    await this.page.evaluate(opts => {
+    await this.page.evaluate((opts: any) => {
       // Create global storage for events
       window._pspEvents = [];
       window._pspStartTime = Date.now();
-      
+
       // Helper function to generate a CSS selector for an element
-      function cssPath(el) {
+      function cssPath(el: any): string {
         if (!el || !el.tagName) return '';
-        
+
         const path = [];
         while (el.nodeType === Node.ELEMENT_NODE) {
           let selector = el.nodeName.toLowerCase();
@@ -237,7 +253,7 @@ export class PlaywrightAdapter extends Adapter {
             path.unshift(selector);
             break;
           } else {
-            let siblings = Array.from(el.parentNode.children);
+            const siblings = Array.from(el.parentNode.children);
             if (siblings.length > 1) {
               const index = siblings.indexOf(el);
               selector += `:nth-child(${index + 1})`;
@@ -248,131 +264,152 @@ export class PlaywrightAdapter extends Adapter {
         }
         return path.join(' > ');
       }
-      
+
       // Record click events
       if (opts.click) {
-        document.addEventListener('click', e => {
-          window._pspEvents.push({
-            type: 'click',
-            timestamp: Date.now() - window._pspStartTime,
-            target: cssPath(e.target),
-            data: {
-              button: e.button,
-              clientX: e.clientX,
-              clientY: e.clientY,
-              altKey: e.altKey,
-              ctrlKey: e.ctrlKey,
-              shiftKey: e.shiftKey,
-              metaKey: e.metaKey
-            }
-          });
-        }, true);
-      }
-      
-      // Record input events
-      if (opts.input) {
-        document.addEventListener('input', e => {
-          if (e.target instanceof HTMLInputElement || 
-              e.target instanceof HTMLTextAreaElement || 
-              e.target instanceof HTMLSelectElement) {
-            window._pspEvents.push({
-              type: 'input',
-              timestamp: Date.now() - window._pspStartTime,
+        document.addEventListener(
+          'click',
+          (e) => {
+            window._pspEvents?.push({
+              type: 'click',
+              timestamp: Date.now() - (window._pspStartTime || 0),
               target: cssPath(e.target),
               data: {
-                value: e.target.value
-              }
+                button: e.button,
+                clientX: e.clientX,
+                clientY: e.clientY,
+                altKey: e.altKey,
+                ctrlKey: e.ctrlKey,
+                shiftKey: e.shiftKey,
+                metaKey: e.metaKey,
+              },
             });
-          }
-        }, true);
+          },
+          true
+        );
       }
-      
+
+      // Record input events
+      if (opts.input) {
+        document.addEventListener(
+          'input',
+          (e) => {
+            if (
+              e.target instanceof HTMLInputElement ||
+              e.target instanceof HTMLTextAreaElement ||
+              e.target instanceof HTMLSelectElement
+            ) {
+              window._pspEvents?.push({
+                type: 'input',
+                timestamp: Date.now() - (window._pspStartTime || 0),
+                target: cssPath(e.target),
+                data: {
+                  value: e.target.value,
+                },
+              });
+            }
+          },
+          true
+        );
+      }
+
       // Record keypress events
       if (opts.keypress) {
-        document.addEventListener('keydown', e => {
-          window._pspEvents.push({
-            type: 'keydown',
-            timestamp: Date.now() - window._pspStartTime,
-            target: cssPath(e.target),
-            data: {
-              key: e.key,
-              code: e.code,
-              altKey: e.altKey,
-              ctrlKey: e.ctrlKey,
-              shiftKey: e.shiftKey,
-              metaKey: e.metaKey
-            }
-          });
-        }, true);
+        document.addEventListener(
+          'keydown',
+          (e) => {
+            window._pspEvents?.push({
+              type: 'keydown',
+              timestamp: Date.now() - (window._pspStartTime || 0),
+              target: cssPath(e.target),
+              data: {
+                key: e.key,
+                code: e.code,
+                altKey: e.altKey,
+                ctrlKey: e.ctrlKey,
+                shiftKey: e.shiftKey,
+                metaKey: e.metaKey,
+              },
+            });
+          },
+          true
+        );
       }
-      
+
       // Record navigation events
       if (opts.navigation) {
         // This requires a different approach since we need to hook into browser navigation
         const originalPushState = history.pushState;
         const originalReplaceState = history.replaceState;
-        
-        history.pushState = function() {
-          window._pspEvents.push({
+
+        history.pushState = function (...args: any[]) {
+          window._pspEvents?.push({
             type: 'navigation',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             data: {
-              url: arguments[2],
-              navigationType: 'navigate'
-            }
+              url: args[2],
+              navigationType: 'navigate',
+            },
           });
-          return originalPushState.apply(this, arguments);
+          return originalPushState.apply(this, args as [any, string, string?]);
         };
-        
-        history.replaceState = function() {
-          window._pspEvents.push({
+
+        history.replaceState = function (...args: any[]) {
+          window._pspEvents?.push({
             type: 'navigation',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             data: {
-              url: arguments[2],
-              navigationType: 'navigate'
-            }
+              url: args[2],
+              navigationType: 'navigate',
+            },
           });
-          return originalReplaceState.apply(this, arguments);
+          return originalReplaceState.apply(
+            this,
+            args as [any, string, string?]
+          );
         };
-        
+
         window.addEventListener('popstate', () => {
-          window._pspEvents.push({
+          window._pspEvents?.push({
             type: 'navigation',
-            timestamp: Date.now() - window._pspStartTime,
+            timestamp: Date.now() - (window._pspStartTime || 0),
             data: {
               url: window.location.href,
-              navigationType: 'back_forward'
-            }
+              navigationType: 'back_forward',
+            },
           });
         });
       }
-      
+
       // Record scroll events
       if (opts.scroll) {
         let scrollTimeout: any = null;
-        window.addEventListener('scroll', () => {
-          if (scrollTimeout) {
-            clearTimeout(scrollTimeout);
-          }
-          scrollTimeout = setTimeout(() => {
-            window._pspEvents.push({
-              type: 'scroll',
-              timestamp: Date.now() - window._pspStartTime,
-              data: {
-                x: window.scrollX,
-                y: window.scrollY
-              }
-            });
-          }, 100); // Debounce scroll events
-        }, true);
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (scrollTimeout) {
+              clearTimeout(scrollTimeout);
+            }
+            scrollTimeout = setTimeout(() => {
+              window._pspEvents?.push({
+                type: 'scroll',
+                timestamp: Date.now() - (window._pspStartTime || 0),
+                data: {
+                  x: window.scrollX,
+                  y: window.scrollY,
+                },
+              });
+            }, 100); // Debounce scroll events
+          },
+          true
+        );
       }
     }, recordOptions);
-    
+
     // Set up a polling interval to collect events
     this.startEventPolling();
   }
-  
+
   /**
    * Stops recording and returns the recorded events
    */
@@ -380,32 +417,35 @@ export class PlaywrightAdapter extends Adapter {
     if (!this.page || !this.recording) {
       throw new Error('Recording is not in progress');
     }
-    
+
     // Get final events
     await this.pollEvents();
-    
+
     // Stop recording
     this.recording = false;
-    
+
     // Return collected events
     return [...this.events];
   }
-  
+
   /**
    * Plays back recorded events
    */
-  async playRecording(events: Event[], options?: PlaybackOptions): Promise<void> {
+  async playRecording(
+    events: Event[],
+    options?: PlaybackOptions
+  ): Promise<void> {
     if (!this.page) {
       throw new Error('Not connected to a Playwright page');
     }
-    
+
     const playbackOptions = {
       speed: 1.0,
       validateTargets: true,
       actionTimeout: 30000,
-      ...options
+      ...options,
     };
-    
+
     // Play each event sequentially
     for (const event of events) {
       try {
@@ -428,13 +468,14 @@ export class PlaywrightAdapter extends Adapter {
           default:
             console.warn(`Unsupported event type: ${event.type}`);
         }
-        
+
         // Add delay based on playback speed
         if (events.indexOf(event) < events.length - 1) {
           const nextEvent = events[events.indexOf(event) + 1];
-          const delay = (nextEvent.timestamp - event.timestamp) / playbackOptions.speed;
+          const delay =
+            (nextEvent.timestamp - event.timestamp) / playbackOptions.speed;
           if (delay > 0) {
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise((resolve) => setTimeout(resolve, delay));
           }
         }
       } catch (error) {
@@ -445,76 +486,94 @@ export class PlaywrightAdapter extends Adapter {
       }
     }
   }
-  
+
   /**
    * Plays a click event
    */
-  private async playClickEvent(event: Event & { data: { button: number, clientX: number, clientY: number } }, options: any): Promise<void> {
+  private async playClickEvent(
+    event: Event & {
+      data: { button: number; clientX: number; clientY: number };
+    },
+    options: any
+  ): Promise<void> {
     if (!this.page || !event.target) return;
-    
+
     await this.page.click(event.target, {
-      button: event.data.button as 'left' | 'right' | 'middle',
+      button:
+        (['left', 'middle', 'right'] as const)[event.data.button] || 'left',
       timeout: options.actionTimeout,
       position: {
         x: event.data.clientX,
-        y: event.data.clientY
-      }
+        y: event.data.clientY,
+      },
     });
   }
-  
+
   /**
    * Plays an input event
    */
-  private async playInputEvent(event: Event & { data: { value: string } }, options: any): Promise<void> {
+  private async playInputEvent(
+    event: Event & { data: { value: string } },
+    options: any
+  ): Promise<void> {
     if (!this.page || !event.target) return;
-    
+
     await this.page.fill(event.target, event.data.value, {
-      timeout: options.actionTimeout
+      timeout: options.actionTimeout,
     });
   }
-  
+
   /**
    * Plays a key event
    */
-  private async playKeyEvent(event: Event & { data: { key: string } }, options: any): Promise<void> {
+  private async playKeyEvent(
+    event: Event & { data: { key: string } },
+    options: any
+  ): Promise<void> {
     if (!this.page) return;
-    
+
     if (event.target) {
       await this.page.focus(event.target, { timeout: options.actionTimeout });
     }
-    
+
     await this.page.keyboard.press(event.data.key);
   }
-  
+
   /**
    * Plays a navigation event
    */
-  private async playNavigationEvent(event: Event & { data: { url: string } }, options: any): Promise<void> {
+  private async playNavigationEvent(
+    event: Event & { data: { url: string } },
+    options: any
+  ): Promise<void> {
     if (!this.page) return;
-    
+
     await this.page.goto(event.data.url, {
       timeout: options.actionTimeout,
-      waitUntil: 'domcontentloaded'
+      waitUntil: 'domcontentloaded',
     });
   }
-  
+
   /**
    * Plays a scroll event
    */
-  private async playScrollEvent(event: Event & { data: { x: number, y: number } }, options: any): Promise<void> {
+  private async playScrollEvent(
+    event: Event & { data: { x: number; y: number } },
+    options: any
+  ): Promise<void> {
     if (!this.page) return;
-    
-    await this.page.evaluate(({ x, y }) => {
+
+    await this.page.evaluate(({ x, y }: { x: number; y: number }) => {
       window.scrollTo(x, y);
     }, event.data);
   }
-  
+
   /**
    * Starts polling for events during recording
    */
   private async startEventPolling(): Promise<void> {
     if (!this.recording) return;
-    
+
     // Poll for events every 500ms
     setTimeout(async () => {
       await this.pollEvents();
@@ -523,26 +582,26 @@ export class PlaywrightAdapter extends Adapter {
       }
     }, 500);
   }
-  
+
   /**
    * Polls for new events from the page
    */
   private async pollEvents(): Promise<void> {
     if (!this.page || !this.recording) return;
-    
+
     try {
       const newEvents = await this.page.evaluate(() => {
         const events = window._pspEvents || [];
         window._pspEvents = [];
         return events;
       });
-      
+
       this.events.push(...newEvents);
     } catch (error) {
       console.error('Error polling events:', error);
     }
   }
-  
+
   /**
    * Gets the session storage from the page
    */
@@ -550,7 +609,7 @@ export class PlaywrightAdapter extends Adapter {
     if (!this.page) {
       return new Map();
     }
-    
+
     try {
       const origin = new URL(this.page.url()).origin;
       const sessionStorageData = await this.page.evaluate(() => {
@@ -563,7 +622,7 @@ export class PlaywrightAdapter extends Adapter {
         }
         return data;
       });
-      
+
       const result = new Map<string, Map<string, string>>();
       result.set(origin, new Map(Object.entries(sessionStorageData)));
       return result;
@@ -572,21 +631,33 @@ export class PlaywrightAdapter extends Adapter {
       return new Map();
     }
   }
-  
+
   /**
    * Converts Playwright storage format to PSP format
    */
-  private convertPlaywrightStorageToMap(origins: Array<{ origin: string, localStorage: Record<string, string> }>): Map<string, Map<string, string>> {
+  private convertPlaywrightStorageToMap(
+    origins: any[]
+  ): Map<string, Map<string, string>> {
     const result = new Map<string, Map<string, string>>();
-    
+
     for (const origin of origins) {
       const storageMap = new Map<string, string>();
-      for (const [key, value] of Object.entries(origin.localStorage)) {
-        storageMap.set(key, value);
+      // Handle both array and object formats
+      if (Array.isArray(origin.localStorage)) {
+        for (const item of origin.localStorage) {
+          storageMap.set(item.name, item.value);
+        }
+      } else if (
+        origin.localStorage &&
+        typeof origin.localStorage === 'object'
+      ) {
+        for (const [key, value] of Object.entries(origin.localStorage)) {
+          storageMap.set(key, String(value));
+        }
       }
       result.set(origin.origin, storageMap);
     }
-    
+
     return result;
   }
 }

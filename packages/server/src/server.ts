@@ -32,7 +32,7 @@ export class Server {
   private config: ServerConfig;
   private logger = createLogger('server');
   private isInitialized = false;
-  
+
   /**
    * Create a new server instance
    */
@@ -43,25 +43,25 @@ export class Server {
       corsOptions: config.corsOptions ?? {
         origin: '*',
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-        allowedHeaders: ['Content-Type', 'Authorization']
-      }
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      },
     };
-    
+
     // Create Express app
     this.app = express();
-    
+
     // Set up basic middleware
     this.app.use(express.json({ limit: '50mb' }));
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cors(this.config.corsOptions));
-    
+
     // Add request logging
     this.app.use((req, res, next) => {
       this.logger.debug(`${req.method} ${req.path}`);
       next();
     });
   }
-  
+
   /**
    * Initialize the server
    */
@@ -69,28 +69,28 @@ export class Server {
     if (this.isInitialized) {
       return;
     }
-    
+
     try {
       // Set up storage provider
       this.storageProvider = await setupStorageProvider(
         this.config.storageType,
         this.config.storageOptions
       );
-      
+
       // Set up authentication if enabled
       if (this.config.authEnabled) {
         this.app.use(authMiddleware);
       }
-      
+
       // Set up API routes
       setupSessionRoutes(this.app, this.storageProvider);
-      
+
       // Serve Swagger UI
-      this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('../swagger.json')));
-      
+      // this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('../swagger.json')));
+
       // Add error handler middleware
       this.app.use(errorHandler);
-      
+
       this.isInitialized = true;
       this.logger.info('Server initialized');
     } catch (error) {
@@ -98,7 +98,7 @@ export class Server {
       throw error;
     }
   }
-  
+
   /**
    * Start the server
    */
@@ -106,23 +106,29 @@ export class Server {
     if (!this.isInitialized) {
       await this.initialize();
     }
-    
+
     return new Promise((resolve, reject) => {
       try {
         // Create HTTP server
         this.server = http.createServer(this.app);
-        
+
         // Create WebSocket server
         this.wss = new WebSocketServer({ server: this.server });
-        
+
         // Set up WebSocket handlers
         if (this.storageProvider) {
-          setupWebSocketHandlers(this.wss, this.storageProvider, this.config.authEnabled);
+          setupWebSocketHandlers(
+            this.wss,
+            this.storageProvider,
+            this.config.authEnabled
+          );
         }
-        
+
         // Start the server
         this.server.listen(this.config.port, this.config.host, () => {
-          this.logger.info(`Server listening on ${this.config.host}:${this.config.port}`);
+          this.logger.info(
+            `Server listening on ${this.config.host}:${this.config.port}`
+          );
           resolve();
         });
       } catch (error) {
@@ -131,7 +137,7 @@ export class Server {
       }
     });
   }
-  
+
   /**
    * Stop the server
    */
@@ -146,7 +152,7 @@ export class Server {
           }
         });
       }
-      
+
       if (this.server) {
         this.server.close((err) => {
           if (err) {
@@ -164,28 +170,28 @@ export class Server {
       }
     });
   }
-  
+
   /**
    * Get the Express app
    */
   getApp(): express.Application {
     return this.app;
   }
-  
+
   /**
    * Get the HTTP server
    */
   getServer(): http.Server | null {
     return this.server;
   }
-  
+
   /**
    * Get the WebSocket server
    */
   getWss(): WebSocketServer | null {
     return this.wss;
   }
-  
+
   /**
    * Get the storage provider
    */

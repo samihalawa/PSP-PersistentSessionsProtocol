@@ -51,36 +51,36 @@ async function example() {
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
-  
+
   // Create PSP adapter and session
   const adapter = new PlaywrightAdapter();
   const session = await adapter.createSession(page, {
     name: 'my-auth-session',
-    storage: 'local'
+    storage: 'local',
   });
-  
+
   // Navigate and log in
   await page.goto('https://example.com/login');
   await page.fill('input[name="username"]', 'user');
   await page.fill('input[name="password"]', 'pass');
   await page.click('button[type="submit"]');
-  
+
   // Wait for login to complete
   await page.waitForNavigation();
-  
+
   // Capture the authenticated session
   await session.capture();
   console.log(`Session saved with ID: ${session.getId()}`);
-  
+
   // Later, restore the session in a new browser
   const newBrowser = await chromium.launch();
   const newContext = await newBrowser.newContext();
   const newPage = await newContext.newPage();
-  
+
   // Load the saved session
   const savedSession = await adapter.loadSession(session.getId());
   await savedSession.restore(newPage);
-  
+
   // Now the new page has the authenticated session
   await newPage.goto('https://example.com/dashboard');
   // Already logged in!

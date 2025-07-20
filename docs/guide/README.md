@@ -21,6 +21,7 @@ PSP consists of several key components:
 ### Session Capture Layer
 
 Extracts browser state using multiple mechanisms:
+
 - Storage APIs (cookies, localStorage, sessionStorage)
 - DOM state
 - Navigation history
@@ -29,6 +30,7 @@ Extracts browser state using multiple mechanisms:
 ### Storage Layer
 
 Persists session data with support for multiple backends:
+
 - Local filesystem
 - Redis
 - Databases (SQL/NoSQL)
@@ -37,6 +39,7 @@ Persists session data with support for multiple backends:
 ### Replay Layer
 
 Restores saved sessions across environments:
+
 - Direct state application
 - Event replay for user interactions
 - Network simulation
@@ -44,6 +47,7 @@ Restores saved sessions across environments:
 ### Adapters
 
 Framework-specific adapters translate between PSP's standardized data structures and the framework's native capabilities:
+
 - Playwright Adapter
 - Selenium Adapter
 - Additional adapters for other frameworks

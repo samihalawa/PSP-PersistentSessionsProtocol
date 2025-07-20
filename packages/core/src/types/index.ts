@@ -8,28 +8,28 @@
 export interface BrowserSessionState {
   /** Protocol version for backward compatibility */
   version: string;
-  
+
   /** Creation/modification timestamp (milliseconds since epoch) */
   timestamp: number;
-  
+
   /** Original domain/URL where the session was captured */
   origin: string;
-  
+
   /** Core storage data (cookies, localStorage, etc.) */
   storage: StorageState;
-  
+
   /** Optional DOM state snapshot */
   dom?: DOMState;
-  
+
   /** Browser history state */
   history?: HistoryState;
-  
+
   /** Captured network requests/responses */
   network?: NetworkState;
-  
+
   /** Recorded user interactions */
   recording?: RecordingState;
-  
+
   /** Framework-specific extensions */
   extensions?: Record<string, unknown>;
 }
@@ -40,16 +40,16 @@ export interface BrowserSessionState {
 export interface StorageState {
   /** HTTP cookies */
   cookies: Cookie[];
-  
+
   /** Local storage by origin */
   localStorage: Map<string, Map<string, string>>;
-  
+
   /** Session storage by origin */
   sessionStorage: Map<string, Map<string, string>>;
-  
+
   /** IndexedDB data (optional due to potentially large size) */
   indexedDB?: IndexedDBState;
-  
+
   /** Cache API storage (optional) */
   cacheStorage?: CacheStorageState;
 }
@@ -65,7 +65,7 @@ export interface Cookie {
   expires: number | null;
   httpOnly: boolean;
   secure: boolean;
-  sameSite: "Strict" | "Lax" | "None";
+  sameSite: 'Strict' | 'Lax' | 'None';
   partitioned: boolean;
 }
 
@@ -121,19 +121,19 @@ export interface CacheEntry {
 export interface DOMState {
   /** Serialized HTML content */
   html: string;
-  
+
   /** Current scroll position */
   scrollPosition: {
     x: number;
     y: number;
   };
-  
+
   /** Active element information (e.g., focused input) */
   activeElement?: {
     selector: string;
     value?: string;
   };
-  
+
   /** Form input values by selector */
   formData?: Map<string, string>;
 }
@@ -144,10 +144,10 @@ export interface DOMState {
 export interface HistoryState {
   /** Current URL */
   currentUrl: string;
-  
+
   /** History entries stack */
   entries: HistoryEntry[];
-  
+
   /** Current position in history stack */
   currentIndex: number;
 }
@@ -156,7 +156,7 @@ export interface HistoryEntry {
   url: string;
   title: string;
   state?: object;
-  scrollPosition?: { x: number, y: number };
+  scrollPosition?: { x: number; y: number };
   timestamp: number;
 }
 
@@ -166,7 +166,7 @@ export interface HistoryEntry {
 export interface NetworkState {
   /** Captured requests and responses */
   captures: NetworkCapture[];
-  
+
   /** Active WebSocket connections */
   webSockets?: WebSocketConnection[];
 }
@@ -220,13 +220,13 @@ export interface WebSocketMessage {
 export interface RecordingState {
   /** Chronological list of recorded events */
   events: Event[];
-  
+
   /** When recording started (milliseconds since epoch) */
   startTime: number;
-  
+
   /** Duration of the recording in milliseconds */
   duration: number;
-  
+
   /** Additional recording metadata */
   metadata?: Record<string, any>;
 }
@@ -234,13 +234,13 @@ export interface RecordingState {
 export interface Event {
   /** Event type */
   type: string;
-  
+
   /** When the event occurred relative to startTime */
   timestamp: number;
-  
+
   /** Target element (CSS selector or XPath) */
   target?: string;
-  
+
   /** Event-specific data */
   data: Record<string, any>;
 }
@@ -294,31 +294,31 @@ export interface NavigationEvent extends Event {
 export interface SessionMetadata {
   /** Unique identifier for the session */
   id: string;
-  
+
   /** User-provided name */
   name: string;
-  
+
   /** Optional description */
   description?: string;
-  
+
   /** Creation timestamp */
   createdAt: number;
-  
+
   /** Last modification timestamp */
   updatedAt: number;
-  
+
   /** User-defined tags for organization */
   tags?: string[];
-  
+
   /** Original framework used to create this session */
   createdWith?: string;
-  
+
   /** Session expiration (if applicable) */
   expireAt?: number;
-  
+
   /** Creator user/entity ID */
   createdBy?: string;
-  
+
   /** Access control information */
   acl?: {
     owner: string;
@@ -333,19 +333,19 @@ export interface SessionMetadata {
 export interface SessionOptions {
   /** Session name */
   name: string;
-  
+
   /** Optional description */
   description?: string;
-  
+
   /** Session tags */
   tags?: string[];
-  
+
   /** Storage backend to use */
   storage?: 'local' | 'redis' | 'database' | 'cloud';
-  
+
   /** Storage-specific options */
   storageOptions?: Record<string, any>;
-  
+
   /** Features to enable/disable */
   features?: {
     cookies?: boolean;
@@ -356,7 +356,7 @@ export interface SessionOptions {
     dom?: boolean;
     indexedDB?: boolean;
   };
-  
+
   /** Expiration time in seconds (0 for no expiration) */
   expireIn?: number;
 }
@@ -367,25 +367,25 @@ export interface SessionOptions {
 export interface SessionFilter {
   /** Filter by name (substring match) */
   name?: string;
-  
+
   /** Filter by tags (must include all) */
   tags?: string[];
-  
+
   /** Filter by creation time range */
   created?: {
     from?: number;
     to?: number;
   };
-  
+
   /** Filter by update time range */
   updated?: {
     from?: number;
     to?: number;
   };
-  
+
   /** Limit the number of results */
   limit?: number;
-  
+
   /** Skip a number of results */
   offset?: number;
 }
@@ -403,10 +403,10 @@ export interface RecordingOptions {
     scroll?: boolean;
     network?: boolean;
   };
-  
+
   /** Maximum number of events to record */
   maxEvents?: number;
-  
+
   /** Maximum duration in milliseconds */
   maxDuration?: number;
 }
@@ -417,16 +417,16 @@ export interface RecordingOptions {
 export interface PlaybackOptions {
   /** Playback speed multiplier (1.0 = normal speed) */
   speed?: number;
-  
+
   /** Whether to simulate network requests */
   simulateNetwork?: boolean;
-  
+
   /** Whether to validate element presence before actions */
   validateTargets?: boolean;
-  
+
   /** Timeout for actions in milliseconds */
   actionTimeout?: number;
-  
+
   /** Events to skip during playback */
   skipEvents?: string[];
 }
