@@ -27,6 +27,36 @@ program
 interface ListOptions {
   status?: string;
   tags?: string;
+  limit?: number;
+}
+
+interface CreateOptions {
+  tags?: string;
+  storage?: string;
+  description?: string;
+}
+
+interface LaunchOptions {
+  url?: string;
+  profile?: string;
+  adapter?: string;
+  headless?: boolean;
+}
+
+interface UIOptions {
+  port?: number;
+  host?: string;
+}
+
+interface TestOptions {
+  platform?: string;
+  headless?: boolean;
+  verbose?: boolean;
+}
+
+interface ExportOptions {
+  format?: string;
+  output?: string;
 }
 
 interface CreateOptions {
