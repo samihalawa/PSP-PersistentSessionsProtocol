@@ -1,25 +1,41 @@
-# PersistentSessionsProtocol (PSP) 🚀
+# PSP - Persistent Sessions Protocol 🚀
 
-A unified, production-ready protocol for browser session persistence across automation frameworks.
+A comprehensive, production-ready solution for browser session management and automation across multiple frameworks.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/samihalawa/PSP-PersistentSessionsProtocol)
 [![Platform Support](https://img.shields.io/badge/platforms-20%2B%20tested-green.svg)](#platform-compatibility)
+[![CLI Ready](https://img.shields.io/badge/CLI-ready-brightgreen.svg)](#cli-interface)
+[![GUI Available](https://img.shields.io/badge/GUI-available-blue.svg)](#web-interface)
 
 ## 🌟 Overview
 
-The PersistentSessionsProtocol (PSP) creates a standardized approach for browser automation tools to save, share, and restore session data across different frameworks and machines. This protocol bridges the critical gap in browser automation by providing a framework-agnostic method for persisting state, significantly reducing authentication friction and improving testing reliability.
+The PersistentSessionsProtocol (PSP) transforms browser automation by providing a **unified, framework-agnostic approach** to session management. Whether you're automating Gmail, GitHub, AWS Console, or any of 20+ tested platforms, PSP captures, stores, and restores complete browser sessions seamlessly across different tools and environments.
+
+**🎯 Perfect for:** Browser automation, testing, web scraping, AI agents, and any scenario requiring persistent browser state.
 
 ## ✨ Key Features
 
-- **🔄 Cross-Framework Compatibility** - Works with Playwright, Selenium, Skyvern, Stagehand, and other major automation tools
-- **🍪 Complete State Capture** - Preserves cookies (including HttpOnly), localStorage, sessionStorage, and authentication tokens
-- **🎨 Modern GUI Interface** - Beautiful React-based UI accessible via `psp --ui`
-- **🤖 MCP Integration** - Smithery.ai compatible Model Context Protocol with 12 powerful tools
-- **🔒 Secure by Design** - Encryption for sensitive session data with configurable security levels
-- **🎬 Session Recording & Replay** - Capture and reproduce user interactions across environments
-- **🌐 REST and WebSocket APIs** - For server-based session management and real-time updates
-- **☁️ Flexible Storage Options** - Support for local filesystem, Redis, database, and cloud storage backends
+- **🎨 Modern Web Interface** - Beautiful, responsive GUI for session management
+- **🖥️ Comprehensive CLI** - Full-featured command-line interface with interactive demos
+- **🌐 Browserbase Integration** - Cloud browser automation with full session support
+- **🚀 Hyperbrowser Integration** - AI-powered browser automation with profile management
+- **🤖 MCP Integration** - 12 powerful tools for Smithery.ai and other MCP clients
+- **🍪 Complete State Capture** - Cookies, localStorage, sessionStorage, and authentication tokens
+- **🔒 Enterprise Security** - Encryption, secure cookies, and configurable security levels
+- **🎬 Session Recording** - Capture and replay user interactions across environments
+- **📊 Platform Testing** - Verified compatibility with 20+ popular services
+
+## 📸 Screenshots
+
+### Dashboard Overview
+![PSP Dashboard](https://github.com/user-attachments/assets/ca9f216d-4415-44cb-86b7-84d6753ff745)
+
+### Session Management
+![PSP Sessions](https://github.com/user-attachments/assets/9e52001c-0793-4445-a912-0f9e1a212998)
+
+### Platform Integrations
+![PSP Platforms](https://github.com/user-attachments/assets/27bd95e5-cd43-4127-aa7a-a52c6246ad99)
 
 ## 🚀 Quick Start
 
@@ -37,37 +53,141 @@ npm install
 npm run build
 ```
 
-### Launch the Modern GUI
+### CLI Interface
+
+PSP provides a comprehensive command-line interface for all operations:
 
 ```bash
-# Start the beautiful web interface
-psp-cli ui
+# Run the comprehensive demo
+psp demo
+
+# List all sessions
+psp list
+
+# Create a new session interactively
+psp create
+
+# Launch browser for session capture
+psp launch
+
+# Test platform compatibility
+psp test
+
+# Export session data
+psp export <sessionId> --format json
 ```
 
-🌐 **Open your browser and go to: http://localhost:3000/ui**
+### Web Interface
 
-![PSP Dashboard Screenshot](docs/images/dashboard-screenshot.png)
-
-### Basic CLI Usage
+Launch the beautiful, modern web interface:
 
 ```bash
-# List all sessions
-psp-cli list
+# Start the PSP web interface
+psp ui
 
-# Create a new session
-psp-cli create "My Gmail Session" "Testing PSP with Gmail"
+# Or specify a custom port
+psp ui --port 3000
+```
 
-# Show session details
-psp-cli show <session-id>
+🌐 **The interface automatically opens at: http://localhost:3000**
 
-# Delete a session
-psp-cli delete <session-id>
+The web interface provides:
+- **Dashboard** - Overview of sessions, stats, and quick actions
+- **Session Management** - Create, view, restore, and delete sessions
+- **Platform Testing** - Test compatibility with 20+ services
+- **Integrations** - Connect to Browserbase and Hyperbrowser
+- **Settings** - Configure storage, adapters, and security options
 
-# Start the server
-psp-cli server
+## 🌐 Cloud Browser Integrations
 
-# Launch the GUI
-psp-cli ui
+PSP seamlessly integrates with leading cloud browser automation platforms, providing enhanced session management and scalability.
+
+### Browserbase Integration
+
+Connect PSP to [Browserbase](https://browserbase.com) for cloud-hosted browser automation:
+
+```typescript
+import { BrowserbaseAdapter } from '@psp/adapter-browserbase';
+
+const adapter = new BrowserbaseAdapter({
+  apiKey: process.env.BROWSERBASE_API_KEY,
+  projectId: process.env.BROWSERBASE_PROJECT_ID,
+  fingerprint: {
+    locales: ['en-US'],
+    operatingSystems: ['windows'],
+    devices: ['desktop']
+  }
+});
+
+// Connect and capture session
+await adapter.connect();
+await adapter.navigate('https://gmail.com');
+const state = await adapter.captureState();
+
+// Get debug URL for live viewing
+const debugUrl = await adapter.getDebugUrl();
+console.log(`Live session: ${debugUrl}`);
+```
+
+**Browserbase Features:**
+- ✅ Cloud-hosted browsers with session recording
+- ✅ Debug URLs for live session viewing
+- ✅ Multiple projects and environments
+- ✅ Fingerprinting and stealth mode
+- ✅ Session state preservation across restarts
+
+### Hyperbrowser Integration
+
+Leverage [Hyperbrowser AI](https://hyperbrowser.ai) for advanced automation:
+
+```typescript
+import { HyperbrowserAdapter } from '@psp/adapter-hyperbrowser';
+
+const adapter = new HyperbrowserAdapter({
+  apiKey: process.env.HYPERBROWSER_API_KEY,
+  useStealth: true,
+  useProxy: true,
+  proxyCountry: 'US',
+  solveCaptchas: true,
+  adblock: true,
+  profileId: 'my-profile-id' // Reuse browser profiles
+});
+
+// Create and reuse profiles
+const profileId = await adapter.createProfile('Gmail Profile');
+
+// Connect with profile
+await adapter.connect();
+const state = await adapter.captureState();
+
+// Get live monitoring URL
+const liveUrl = await adapter.getLiveUrl();
+```
+
+**Hyperbrowser Features:**
+- ✅ AI-powered browser automation
+- ✅ Profile management for session persistence
+- ✅ Stealth mode and advanced anti-detection
+- ✅ Automatic CAPTCHA solving
+- ✅ Proxy support with country/city targeting
+- ✅ Ad/tracker blocking for cleaner sessions
+
+### Usage in PSP
+
+Both integrations work seamlessly with PSP's core functionality:
+
+```bash
+# Test compatibility with cloud platforms
+psp test --platform browserbase
+psp test --platform hyperbrowser
+
+# Launch browser with cloud integration
+psp launch --adapter browserbase
+psp launch --adapter hyperbrowser
+
+# Create sessions with specific adapters
+psp create "Cloud Session" --adapter browserbase --tags cloud,production
+```
 ```
 
 ## 🎯 Real-World Usage Examples

@@ -58,9 +58,9 @@ jobs:
         run: npm run build
 
       - name: Configure NPM authentication
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${NPMJS_TOKEN}" > ~/.npmrc
         env:
-          NPM_TOKEN: ${{ secrets.NPMJS_TOKEN }}
+          NPMJS_TOKEN: ${{ secrets.NPMJS_TOKEN }}
 
       - name: Publish core package
         run: cd packages/core && npm publish --access public

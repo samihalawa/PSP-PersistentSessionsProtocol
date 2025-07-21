@@ -11,6 +11,8 @@ import inquirer from 'inquirer';
 import open from 'open';
 import { spawn } from 'child_process';
 import path from 'path';
+import http from 'http';
+import fs from 'fs';
 
 // Create the main program
 const program = new Command();
@@ -121,19 +123,46 @@ program
     
     const spinner = ora(`Starting server on port ${options.port}...`).start();
     
-    // Start the server (simplified for now)
-    setTimeout(async () => {
+    // Start a simple HTTP server to serve the static GUI
+    const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+      let filePath = path.join(__dirname, '../../gui/public/index.html');
+      
+      // Simple static file serving
+      fs.readFile(filePath, (err: NodeJS.ErrnoException | null, content: Buffer) => {
+        if (err) {
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('PSP GUI not found. Please build the GUI first.');
+          return;
+        }
+        
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(content);
+      });
+    });
+    
+    server.listen(options.port, 'localhost', () => {
       spinner.succeed(chalk.green(`✅ PSP web interface is running!`));
       console.log(chalk.cyan(`   🌐 Open: http://localhost:${options.port}`));
       console.log(chalk.gray('   Press Ctrl+C to stop the server'));
       
       // Auto-open browser
-      try {
-        await open(`http://localhost:${options.port}`);
-      } catch (error) {
-        console.log(chalk.yellow('   Could not auto-open browser. Please open the URL manually.'));
-      }
-    }, 2000);
+      (async () => {
+        try {
+          await open(`http://localhost:${options.port}`);
+        } catch (error) {
+          console.log(chalk.yellow('   Could not auto-open browser. Please open the URL manually.'));
+        }
+      })();
+    });
+    
+    // Handle server shutdown
+    process.on('SIGINT', () => {
+      console.log(chalk.yellow('\n   Shutting down PSP web interface...'));
+      server.close(() => {
+        console.log(chalk.green('   ✅ Server stopped'));
+        process.exit(0);
+      });
+    });
   });
 
 // Export session command
