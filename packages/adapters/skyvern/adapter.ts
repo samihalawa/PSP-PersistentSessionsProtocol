@@ -233,14 +233,10 @@ export class SkyvernAdapter extends Adapter {
   }
 
   /**
-   * Plays back a recording from a captured state
+   * Plays back a recording from events
    */
-  async playRecording(state: BrowserSessionState, options?: PlaybackOptions): Promise<void> {
-    if (!state.recording) {
-      throw new Error('No recording found in the provided state');
-    }
-    
-    await this.replay(state.recording.events, options);
+  async playRecording(events: Event[], options?: PlaybackOptions): Promise<void> {
+    await this.replay(events, options);
   }
 
   /**

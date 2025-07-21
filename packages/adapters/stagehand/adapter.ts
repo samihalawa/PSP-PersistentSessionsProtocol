@@ -227,13 +227,14 @@ export class StagehandAdapter extends Adapter {
           }
         }
       }
-    }, storageData);
+    }, JSON.stringify(storageData));
 
     // Restore scroll position
     if (state.dom?.scrollPosition) {
-      await this.page.evaluate((scrollPos: any) => {
+      await this.page.evaluate((scrollPosStr: string) => {
+        const scrollPos = JSON.parse(scrollPosStr);
         window.scrollTo(scrollPos.x, scrollPos.y);
-      }, state.dom.scrollPosition);
+      }, JSON.stringify(state.dom.scrollPosition));
     }
   }
 
@@ -313,7 +314,7 @@ export class StagehandAdapter extends Adapter {
       // Store events on window for retrieval
       (window as any)._pspEvents = events;
       (window as any)._pspCheckNavigation = setInterval(checkNavigation, 100);
-    }, startTime);
+    }, this.recordingStartTime);
   }
 
   /**
@@ -411,14 +412,10 @@ export class StagehandAdapter extends Adapter {
   }
 
   /**
-   * Plays back a recording from a captured state
+   * Plays back a recording from events
    */
-  async playRecording(state: BrowserSessionState, options?: PlaybackOptions): Promise<void> {
-    if (!state.recording) {
-      throw new Error('No recording found in the provided state');
-    }
-    
-    await this.replay(state.recording.events, options);
+  async playRecording(events: Event[], options?: PlaybackOptions): Promise<void> {
+    await this.replay(events, options);
   }
 }
 

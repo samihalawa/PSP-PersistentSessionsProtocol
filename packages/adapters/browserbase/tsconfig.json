@@ -4,16 +4,19 @@
     "module": "CommonJS",
     "declaration": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@psp/*": ["packages/*/src"]
+      "@psp/core": ["../../core/dist"]
     }
   },
-  "include": ["src/**/*", "packages/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "packages/gui/**/*", "packages/sdk-go/**/*", "packages/sdk-python/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts"]
 }

@@ -8,6 +8,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
+  Transport,
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 

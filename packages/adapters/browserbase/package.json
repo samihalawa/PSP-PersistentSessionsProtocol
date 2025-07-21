@@ -1,16 +1,11 @@
 {
-  "name": "@psp/cli",
+  "name": "@psp/adapter-browserbase",
   "version": "0.1.0",
-  "description": "Command line interface for PSP session management",
+  "description": "Browserbase adapter for PSP session management",
   "main": "dist/index.js",
-  "bin": {
-    "psp": "dist/cli.js",
-    "psp-cli": "dist/cli.js"
-  },
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/cli.js",
-    "dev": "ts-node-dev --respawn src/cli.ts",
     "test": "jest",
     "lint": "eslint src --ext ts"
   },
@@ -19,7 +14,7 @@
     "session",
     "persistence",
     "automation",
-    "cli"
+    "browserbase"
   ],
   "author": "PSP Contributors",
   "license": "MIT",
@@ -28,21 +23,14 @@
     "README.md"
   ],
   "dependencies": {
-    "@psp/core": "file:../core",
-    "@psp/server": "file:../server",
-    "chalk": "^5.4.1",
-    "commander": "^9.5.0",
-    "inquirer": "^9.2.7",
-    "open": "^9.1.0",
-    "ora": "^6.3.1"
+    "@psp/core": "file:../../core",
+    "playwright-core": "^1.54.1"
   },
   "devDependencies": {
-    "@types/inquirer": "^9.0.3",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.2.5",
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5.1.3"
   }
 }

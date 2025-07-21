@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { StorageProvider, SessionFilter, Event, generateId } from '../../../core/dist';
+import { StorageProvider, SessionFilter, Event, generateId } from '@psp/core';
 import { createLogger } from '../utils/logger';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 
