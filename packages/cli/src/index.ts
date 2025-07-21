@@ -46,6 +46,7 @@ interface LaunchOptions {
 interface UIOptions {
   port?: number;
   host?: string;
+  open?: boolean;
 }
 
 interface TestOptions {
@@ -216,7 +217,7 @@ program
       });
     });
     
-    server.listen(parseInt(options.port || '3000'), 'localhost', () => {
+    server.listen(parseInt(String(options.port || 3000)), 'localhost', () => {
       spinner.succeed(chalk.green(`✅ PSP web interface is running!`));
       console.log(chalk.cyan(`   🌐 Open: http://localhost:${options.port}`));
       console.log(chalk.gray('   Press Ctrl+C to stop the server'));

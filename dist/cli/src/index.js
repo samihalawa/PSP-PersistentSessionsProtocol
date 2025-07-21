@@ -142,7 +142,7 @@ program
             res.end(content);
         });
     });
-    server.listen(parseInt(options.port || '3000'), 'localhost', () => {
+    server.listen(parseInt(String(options.port || 3000)), 'localhost', () => {
         spinner.succeed(chalk_1.default.green(`✅ PSP web interface is running!`));
         console.log(chalk_1.default.cyan(`   🌐 Open: http://localhost:${options.port}`));
         console.log(chalk_1.default.gray('   Press Ctrl+C to stop the server'));
