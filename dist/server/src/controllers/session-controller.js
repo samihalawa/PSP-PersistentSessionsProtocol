@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionController = void 0;
-const dist_1 = require("../../../core/dist");
+const core_1 = require("@psp/core");
 const logger_1 = require("../utils/logger");
 const errors_1 = require("../utils/errors");
 /**
@@ -65,7 +65,7 @@ class SessionController {
             try {
                 const { name, description, tags, state } = req.body;
                 // Generate a new session ID
-                const id = (0, dist_1.generateId)();
+                const id = (0, core_1.generateId)();
                 const now = Date.now();
                 // Create the session
                 const session = {

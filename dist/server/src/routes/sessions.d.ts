@@ -1,5 +1,5 @@
 import { Application } from 'express';
-import { StorageProvider } from '../../../core/dist';
+import { StorageProvider } from '@psp/core';
 /**
  * Sets up session routes
  */
