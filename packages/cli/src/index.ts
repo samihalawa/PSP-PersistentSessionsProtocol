@@ -41,6 +41,9 @@ interface LaunchOptions {
   profile?: string;
   adapter?: string;
   headless?: boolean;
+  platform?: string;
+  session?: string;
+  timeout?: string;
 }
 
 interface UIOptions {
@@ -79,24 +82,74 @@ interface DeleteOptions {
 program
   .command('list')
   .description('List all PSP sessions')
+  .option('-c, --captured', 'Show only captured browser sessions')
   .option('-s, --status <status>', 'Filter by status (active, inactive, expired)')
   .option('-t, --tags <tags>', 'Filter by tags (comma separated)')
-  .action(async (options: ListOptions) => {
+  .action(async (options: ListOptions & { captured?: boolean }) => {
     console.log(chalk.blue('🔍 Listing PSP sessions...'));
     
-    // Mock data for now
-    const sessions = [
-      { id: '1', name: 'Gmail Session', status: 'active', tags: ['gmail', 'prod'] },
-      { id: '2', name: 'GitHub Session', status: 'active', tags: ['github', 'dev'] },
-      { id: '3', name: 'AWS Console', status: 'inactive', tags: ['aws', 'admin'] }
-    ];
-    
-    console.log(chalk.green('\n✅ Sessions found:'));
-    sessions.forEach(session => {
-      const statusColor = session.status === 'active' ? chalk.green : chalk.yellow;
-      console.log(`  ${session.id}: ${chalk.bold(session.name)} ${statusColor(`[${session.status}]`)} ${chalk.gray(session.tags.join(', '))}`);
-    });
+    try {
+      if (options.captured) {
+        // Show captured browser sessions
+        const { listCapturedSessions } = await import('./commands/launch');
+        const capturedSessions = await listCapturedSessions();
+        
+        if (capturedSessions.length === 0) {
+          console.log(chalk.yellow('\n📭 No captured sessions found.'));
+          console.log(chalk.gray('   Run `psp launch` to capture your first session!'));
+          return;
+        }
+        
+        console.log(chalk.green(`\n✅ Found ${capturedSessions.length} captured session(s):`));
+        console.log('');
+        
+        capturedSessions.forEach((session, index) => {
+          const timeAgo = getTimeAgo(new Date(session.capturedAt));
+          console.log(chalk.bold(`${index + 1}. ${session.sessionName}`));
+          console.log(chalk.gray(`   📁 Profile: ${session.profile}`));
+          if (session.platform) {
+            console.log(chalk.gray(`   🏷️  Platform: ${session.platform}`));
+          }
+          console.log(chalk.gray(`   🍪 Data: ${session.cookies} cookies, ${session.localStorage} storage items`));
+          console.log(chalk.gray(`   ⏰ Captured: ${timeAgo}`));
+          console.log('');
+        });
+      } else {
+        // Show regular PSP sessions (mock for now)
+        const sessions = [
+          { id: '1', name: 'Gmail Session', status: 'active', tags: ['gmail', 'prod'] },
+          { id: '2', name: 'GitHub Session', status: 'active', tags: ['github', 'dev'] },
+          { id: '3', name: 'AWS Console', status: 'inactive', tags: ['aws', 'admin'] }
+        ];
+        
+        console.log(chalk.green('\n✅ Sessions found:'));
+        sessions.forEach(session => {
+          const statusColor = session.status === 'active' ? chalk.green : chalk.yellow;
+          console.log(`  ${session.id}: ${chalk.bold(session.name)} ${statusColor(`[${session.status}]`)} ${chalk.gray(session.tags.join(', '))}`);
+        });
+        
+        console.log('');
+        console.log(chalk.gray('💡 Tip: Use `psp list --captured` to see browser sessions'));
+      }
+    } catch (error) {
+      console.error(chalk.red('❌ Failed to list sessions:'), error);
+    }
   });
+
+// Helper function for time formatting
+function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} minute(s) ago`;
+  if (diffHours < 24) return `${diffHours} hour(s) ago`;
+  if (diffDays < 7) return `${diffDays} day(s) ago`;
+  return date.toLocaleDateString();
+}
 
 // Create session command
 program
@@ -148,26 +201,46 @@ interface LaunchOptions {
 
 // Launch browser command
 program
-  .command('launch')
-  .description('Launch a browser for session capture')
+  .command('launch [session-name]')
+  .description('Launch interactive browser for session capture')
+  .option('-u, --url <url>', 'URL to navigate to initially')
+  .option('-p, --platform <platform>', 'Platform name (gmail, github, aws, etc.)')
+  .option('--profile <profile>', 'Browser profile name', 'default')
   .option('-s, --session <id>', 'Existing session ID to continue')
-  .option('-p, --profile <profile>', 'Browser profile to use')
-  .action(async (options: LaunchOptions) => {
-    console.log(chalk.blue('🚀 Launching browser for session capture...'));
-    
-    if (options.session) {
-      console.log(chalk.gray(`   Continuing session: ${options.session}`));
-    } else {
-      console.log(chalk.gray('   Creating new session...'));
+  .option('-t, --timeout <seconds>', 'Timeout in seconds', '180')
+  .action(async (sessionName: string | undefined, options: LaunchOptions) => {
+    try {
+      // Import the real implementation
+      const { launchInteractiveBrowser, getPlatformUrl } = await import('./commands/launch');
+      
+      // Determine URL from platform or direct URL
+      let targetUrl = options.url;
+      if (!targetUrl && options.platform) {
+        targetUrl = getPlatformUrl(options.platform);
+        if (targetUrl) {
+          console.log(chalk.gray(`🎯 Using ${options.platform} URL: ${targetUrl}`));
+        }
+      }
+      
+      // Launch interactive browser
+      await launchInteractiveBrowser({
+        name: sessionName,
+        session: options.session,
+        url: targetUrl,
+        platform: options.platform,
+        profile: options.profile || 'default',
+        timeout: parseInt(options.timeout || '180') * 1000,
+        headless: false
+      });
+      
+    } catch (error: any) {
+      console.error(chalk.red('\n❌ Launch failed:'), error.message);
+      if (error.message.includes('chromium')) {
+        console.log(chalk.yellow('\n💡 Tip: Install Playwright browsers with:'));
+        console.log(chalk.white('   npx playwright install chromium'));
+      }
+      process.exit(1);
     }
-    
-    // Simulate browser launch
-    const spinner = ora('Starting browser...').start();
-    setTimeout(() => {
-      spinner.succeed(chalk.green('✅ Browser launched! Sign in to your desired services.'));
-      console.log(chalk.yellow('   📌 PSP is capturing your session state.'));
-      console.log(chalk.gray('   Close the browser window when you\'re done to save the session.'));
-    }, 2000);
   });
 
 // UI command
