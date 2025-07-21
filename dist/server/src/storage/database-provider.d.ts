@@ -1,8 +1,18 @@
 import { StorageProvider } from '@psp/core';
 import { SessionMetadata, BrowserSessionState, SessionFilter } from '@psp/core';
 /**
- * Database storage provider implementation (placeholder)
- * TODO: Implement with actual database connection
+ * Database storage provider implementation (Future Feature)
+ *
+ * This is a placeholder implementation for future database integration.
+ * Currently supports logging operations for development/debugging purposes.
+ *
+ * Planned features:
+ * - SQLite support for local development
+ * - PostgreSQL/MySQL support for production deployments
+ * - Connection pooling and transaction management
+ * - Migration system for schema updates
+ *
+ * For production use, consider using LocalStorageProvider or CloudStorageProvider.
  */
 export declare class DatabaseStorageProvider implements StorageProvider {
     private connectionString;

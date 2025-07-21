@@ -27,15 +27,45 @@ program
 interface ListOptions {
   status?: string;
   tags?: string;
+  limit?: number;
+}
+
+interface CreateOptions {
+  tags?: string;
+  storage?: string;
+  description?: string;
+}
+
+interface LaunchOptions {
+  url?: string;
+  profile?: string;
+  adapter?: string;
+  headless?: boolean;
+}
+
+interface UIOptions {
+  port?: number;
+  host?: string;
+  open?: boolean;
+}
+
+interface TestOptions {
+  platform?: string;
+  headless?: boolean;
+  verbose?: boolean;
+}
+
+interface ExportOptions {
+  format?: string;
+  output?: string;
 }
 
 interface CreateOptions {
   tags?: string;
 }
 
-interface UIOptions {
-  port?: string;
-}
+// Remove duplicate interface - already defined above
+// interface UIOptions moved to top
 
 interface DemoOptions {
   // No specific options for demo
@@ -186,7 +216,7 @@ program
       });
     });
     
-    server.listen(parseInt(options.port || '3000'), 'localhost', () => {
+    server.listen(parseInt(String(options.port || 3000)), 'localhost', () => {
       spinner.succeed(chalk.green(`✅ PSP web interface is running!`));
       console.log(chalk.cyan(`   🌐 Open: http://localhost:${options.port}`));
       console.log(chalk.gray('   Press Ctrl+C to stop the server'));

@@ -9,7 +9,7 @@ module.exports = {
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest'
   },
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@psp/core$': '<rootDir>/packages/core/src',
     '^@psp/server$': '<rootDir>/packages/server/src'
   },
