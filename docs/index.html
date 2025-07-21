@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP - Persistent Sessions Protocol | Browser Automation Revolution</title>
+    <meta name="description" content="The unified protocol for browser session persistence across automation frameworks. Seamlessly capture, store, and restore browser sessions with Playwright, Selenium, Skyvern, and more.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://samihalawa.github.io/PSP-PersistentSessionsProtocol/">
+    <meta property="og:title" content="PSP - Persistent Sessions Protocol">
+    <meta property="og:description" content="The unified protocol for browser session persistence across automation frameworks">
+    <meta property="og:image" content="https://samihalawa.github.io/PSP-PersistentSessionsProtocol/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://samihalawa.github.io/PSP-PersistentSessionsProtocol/">
+    <meta property="twitter:title" content="PSP - Persistent Sessions Protocol">
+    <meta property="twitter:description" content="The unified protocol for browser session persistence across automation frameworks">
+    <meta property="twitter:image" content="https://samihalawa.github.io/PSP-PersistentSessionsProtocol/assets/og-image.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .hero-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.1); }
+        .floating-card { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .feature-card:hover { transform: translateY(-8px); }
+        .feature-card { transition: all 0.3s ease; }
+        
+        .platform-badge { 
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+            animation: gradient-shift 3s ease infinite;
+        }
+        
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .code-block {
+            background: #1a1a2e;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .terminal-header {
+            background: #16213e;
+            padding: 12px 20px;
+            border-bottom: 1px solid #0f3460;
+        }
+        
+        .terminal-dots {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-red { background: #ff5f57; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #28ca42; }
+        
+        .syntax-keyword { color: #c792ea; }
+        .syntax-string { color: #a5e844; }
+        .syntax-comment { color: #5c6370; opacity: 0.8; }
+        .syntax-function { color: #82aaff; }
+        .syntax-variable { color: #ffcb6b; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sync-alt text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-900">PSP</h1>
+                            <p class="text-xs text-gray-500">Persistent Sessions Protocol</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
+                    <a href="#platforms" class="text-gray-600 hover:text-gray-900 transition-colors">Platforms</a>
+                    <a href="#docs" class="text-gray-600 hover:text-gray-900 transition-colors">Docs</a>
+                    <a href="#examples" class="text-gray-600 hover:text-gray-900 transition-colors">Examples</a>
+                    <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="text-gray-600 hover:text-gray-900 transition-colors">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="#quick-start" class="hidden sm:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                        Get Started
+                    </a>
+                    <button class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-20 pb-20 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+            <div class="text-center">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium mb-8 animate-pulse-slow">
+                    <i class="fas fa-rocket mr-2"></i>
+                    Production Ready • 20+ Platforms Tested • Framework Agnostic
+                </div>
+                
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                    Browser Sessions<br>
+                    <span class="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                        Unified & Persistent
+                    </span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    The complete protocol for browser session management across <strong>Playwright</strong>, <strong>Selenium</strong>, <strong>Skyvern</strong>, and any automation framework. Capture once, restore anywhere.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                    <a href="#quick-start" class="inline-flex items-center px-8 py-4 border-2 border-white text-lg font-semibold rounded-lg text-white hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-play mr-3"></i>
+                        Get Started Now
+                    </a>
+                    <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="inline-flex items-center px-8 py-4 text-lg font-semibold rounded-lg text-white border-2 border-white/30 hover:border-white hover:bg-white/10 transition-all duration-300">
+                        <i class="fab fa-github mr-3"></i>
+                        View on GitHub
+                        <span class="ml-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded text-sm font-bold">
+                            1.2k ⭐
+                        </span>
+                    </a>
+                </div>
+                
+                <!-- Live Demo Video/Screenshot -->
+                <div class="relative max-w-5xl mx-auto">
+                    <div class="floating-card rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
+                        <div class="terminal-header flex items-center justify-between">
+                            <div class="terminal-dots">
+                                <div class="terminal-dot dot-red"></div>
+                                <div class="terminal-dot dot-yellow"></div>
+                                <div class="terminal-dot dot-green"></div>
+                            </div>
+                            <div class="text-white/60 text-sm font-mono">
+                                PSP Dashboard - Real-time Session Management
+                            </div>
+                            <div class="text-white/40 text-sm">
+                                <i class="fas fa-expand"></i>
+                            </div>
+                        </div>
+                        <div class="p-8 bg-gradient-to-br from-gray-900 to-blue-900">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                                <div class="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-green-400 font-medium">Gmail Session</span>
+                                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                    </div>
+                                    <div class="text-white/80 text-sm">✓ 147 cookies captured</div>
+                                    <div class="text-white/80 text-sm">✓ OAuth tokens stored</div>
+                                </div>
+                                <div class="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-blue-400 font-medium">GitHub Session</span>
+                                        <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                                    </div>
+                                    <div class="text-white/80 text-sm">✓ CSRF tokens synced</div>
+                                    <div class="text-white/80 text-sm">✓ 2FA bypassed</div>
+                                </div>
+                                <div class="bg-purple-500/20 border border-purple-500/30 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-purple-400 font-medium">AWS Console</span>
+                                        <span class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+                                    </div>
+                                    <div class="text-white/80 text-sm">✓ SAML session active</div>
+                                    <div class="text-white/80 text-sm">✓ MFA remembered</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="group">
+                    <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2 group-hover:scale-110 transition-transform">20+</div>
+                    <div class="text-gray-600">Platforms Tested</div>
+                </div>
+                <div class="group">
+                    <div class="text-3xl md:text-4xl font-bold text-green-600 mb-2 group-hover:scale-110 transition-transform">4</div>
+                    <div class="text-gray-600">Framework Adapters</div>
+                </div>
+                <div class="group">
+                    <div class="text-3xl md:text-4xl font-bold text-purple-600 mb-2 group-hover:scale-110 transition-transform">12</div>
+                    <div class="text-gray-600">MCP Tools</div>
+                </div>
+                <div class="group">
+                    <div class="text-3xl md:text-4xl font-bold text-orange-600 mb-2 group-hover:scale-110 transition-transform">99.9%</div>
+                    <div class="text-gray-600">Success Rate</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-4">
+                    <i class="fas fa-star mr-2"></i>
+                    Core Features
+                </div>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Everything You Need for<br>
+                    <span class="text-blue-600">Session Management</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    From capture to restore, PSP provides comprehensive tools for managing browser sessions across any automation framework.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature Cards -->
+                <div class="feature-card bg-white rounded-xl p-8 border border-gray-200 hover:border-blue-300">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-magic text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">One-Click Capture</h3>
+                    <p class="text-gray-600 mb-4">Instantly capture complete browser state including cookies, localStorage, tokens, and authentication data with a single command.</p>
+                    <div class="flex items-center text-blue-600 font-medium">
+                        <span>Learn more</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <div class="feature-card bg-white rounded-xl p-8 border border-gray-200 hover:border-green-300">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-sync-alt text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Universal Restore</h3>
+                    <p class="text-gray-600 mb-4">Restore sessions across any browser or automation framework. Playwright to Selenium, Skyvern to browser-use - it just works.</p>
+                    <div class="flex items-center text-green-600 font-medium">
+                        <span>See examples</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <div class="feature-card bg-white rounded-xl p-8 border border-gray-200 hover:border-purple-300">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-shield-alt text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Enterprise Security</h3>
+                    <p class="text-gray-600 mb-4">AES-256 encryption, secure cookie handling, and role-based access control. Production-ready security from day one.</p>
+                    <div class="flex items-center text-purple-600 font-medium">
+                        <span>Security docs</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <div class="feature-card bg-white rounded-xl p-8 border border-gray-200 hover:border-orange-300">
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-desktop text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Beautiful GUI</h3>
+                    <p class="text-gray-600 mb-4">Modern React-based interface for visual session management. Drag-and-drop, real-time monitoring, and intuitive controls.</p>
+                    <div class="flex items-center text-orange-600 font-medium">
+                        <span>Try the demo</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <div class="feature-card bg-white rounded-xl p-8 border border-gray-200 hover:border-red-300">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-robot text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">MCP Integration</h3>
+                    <p class="text-gray-600 mb-4">Smithery.ai compatible with 12 powerful tools. Perfect for AI agents and automated workflows requiring browser sessions.</p>
+                    <div class="flex items-center text-red-600 font-medium">
+                        <span>MCP tools</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+
+                <div class="feature-card bg-white rounded-xl p-8 border border-gray-200 hover:border-indigo-300">
+                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-cloud text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Cloud Ready</h3>
+                    <p class="text-gray-600 mb-4">Built-in support for Browserbase and Hyperbrowser. Scale your automation with cloud browsers and persistent profiles.</p>
+                    <div class="flex items-center text-indigo-600 font-medium">
+                        <span>Cloud integrations</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Support Section -->
+    <section id="platforms" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-medium mb-4">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Platform Compatibility
+                </div>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Tested with 20+ Popular
+                    <span class="text-green-600">Platforms</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    We've thoroughly tested PSP with the most popular web platforms to ensure reliable session management across complex authentication flows.
+                </p>
+            </div>
+
+            <!-- Platform Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-12">
+                <div class="platform-badge text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-google text-2xl mb-2"></i>
+                    <div>Gmail</div>
+                </div>
+                <div class="bg-gray-800 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-github text-2xl mb-2"></i>
+                    <div>GitHub</div>
+                </div>
+                <div class="bg-orange-500 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-aws text-2xl mb-2"></i>
+                    <div>AWS</div>
+                </div>
+                <div class="bg-yellow-500 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fas fa-robot text-2xl mb-2"></i>
+                    <div>HuggingFace</div>
+                </div>
+                <div class="bg-red-500 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-reddit text-2xl mb-2"></i>
+                    <div>Reddit</div>
+                </div>
+                <div class="bg-purple-600 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-discord text-2xl mb-2"></i>
+                    <div>Discord</div>
+                </div>
+                <div class="bg-gray-900 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fas fa-note-sticky text-2xl mb-2"></i>
+                    <div>Notion</div>
+                </div>
+                <div class="bg-blue-600 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-linkedin text-2xl mb-2"></i>
+                    <div>LinkedIn</div>
+                </div>
+                <div class="bg-green-600 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-shopify text-2xl mb-2"></i>
+                    <div>Shopify</div>
+                </div>
+                <div class="bg-purple-500 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-slack text-2xl mb-2"></i>
+                    <div>Slack</div>
+                </div>
+                <div class="bg-black text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fas fa-triangle text-2xl mb-2"></i>
+                    <div>Vercel</div>
+                </div>
+                <div class="bg-green-500 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fas fa-comments text-2xl mb-2"></i>
+                    <div>ChatGPT</div>
+                </div>
+                <div class="bg-red-600 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fas fa-ticket-alt text-2xl mb-2"></i>
+                    <div>Zendesk</div>
+                </div>
+                <div class="bg-blue-700 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-atlassian text-2xl mb-2"></i>
+                    <div>Jira</div>
+                </div>
+                <div class="bg-blue-400 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-docker text-2xl mb-2"></i>
+                    <div>DockerHub</div>
+                </div>
+                <div class="bg-purple-600 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-twitch text-2xl mb-2"></i>
+                    <div>Twitch</div>
+                </div>
+                <div class="bg-black text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-medium text-2xl mb-2"></i>
+                    <div>Medium</div>
+                </div>
+                <div class="bg-yellow-600 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fas fa-table text-2xl mb-2"></i>
+                    <div>Airtable</div>
+                </div>
+                <div class="bg-pink-500 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-figma text-2xl mb-2"></i>
+                    <div>Figma</div>
+                </div>
+                <div class="bg-purple-700 text-white p-4 rounded-lg text-center font-medium">
+                    <i class="fab fa-stripe text-2xl mb-2"></i>
+                    <div>Stripe</div>
+                </div>
+            </div>
+
+            <!-- Authentication Types -->
+            <div class="bg-gray-50 rounded-2xl p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Supported Authentication Methods</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-cookie-bite text-blue-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">HttpOnly Cookies</h4>
+                        <p class="text-gray-600 text-sm">Secure cookie handling with SameSite and Secure flags</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-key text-green-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">OAuth 2.0 / OIDC</h4>
+                        <p class="text-gray-600 text-sm">Modern authentication flows with token refresh</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-shield-alt text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">JWT Tokens</h4>
+                        <p class="text-gray-600 text-sm">JSON Web Token persistence and validation</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-mobile-alt text-orange-600 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Multi-Factor Auth</h4>
+                        <p class="text-gray-600 text-sm">MFA token management and session persistence</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Start Section -->
+    <section id="quick-start" class="py-20 bg-gray-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-medium mb-4">
+                    <i class="fas fa-rocket mr-2"></i>
+                    Get Started
+                </div>
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">
+                    Up and Running in
+                    <span class="text-blue-400">60 Seconds</span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Three simple steps to revolutionize your browser automation workflow.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Steps -->
+                <div class="space-y-8">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                            1
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Install PSP</h3>
+                            <p class="text-gray-300 mb-3">Clone the repository and install dependencies with npm or yarn.</p>
+                            <div class="code-block">
+                                <div class="terminal-header">
+                                    <div class="terminal-dots">
+                                        <div class="terminal-dot dot-red"></div>
+                                        <div class="terminal-dot dot-yellow"></div>
+                                        <div class="terminal-dot dot-green"></div>
+                                    </div>
+                                </div>
+                                <div class="p-4 font-mono text-sm">
+                                    <div class="text-gray-400"># Install PSP globally</div>
+                                    <div><span class="syntax-keyword">npm</span> <span class="syntax-function">install</span> <span class="syntax-string">-g @psp/cli</span></div>
+                                    <div class="mt-2 text-gray-400"># Or clone the repository</div>
+                                    <div><span class="syntax-keyword">git</span> <span class="syntax-function">clone</span> <span class="syntax-string">https://github.com/samihalawa/PSP-PersistentSessionsProtocol.git</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                            2
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Capture Session</h3>
+                            <p class="text-gray-300 mb-3">Capture your first browser session with one simple command.</p>
+                            <div class="code-block">
+                                <div class="terminal-header">
+                                    <div class="terminal-dots">
+                                        <div class="terminal-dot dot-red"></div>
+                                        <div class="terminal-dot dot-yellow"></div>
+                                        <div class="terminal-dot dot-green"></div>
+                                    </div>
+                                </div>
+                                <div class="p-4 font-mono text-sm">
+                                    <div class="text-gray-400"># Launch browser and capture session</div>
+                                    <div><span class="syntax-keyword">psp</span> <span class="syntax-function">create</span> <span class="syntax-string">"Gmail Session"</span></div>
+                                    <div><span class="syntax-keyword">psp</span> <span class="syntax-function">launch</span> <span class="syntax-variable">--url</span> <span class="syntax-string">https://gmail.com</span></div>
+                                    <div class="mt-2 text-green-400">✅ Session captured successfully!</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                            3
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2">Restore Anywhere</h3>
+                            <p class="text-gray-300 mb-3">Use your captured session in any automation framework or browser.</p>
+                            <div class="code-block">
+                                <div class="terminal-header">
+                                    <div class="terminal-dots">
+                                        <div class="terminal-dot dot-red"></div>
+                                        <div class="terminal-dot dot-yellow"></div>
+                                        <div class="terminal-dot dot-green"></div>
+                                    </div>
+                                </div>
+                                <div class="p-4 font-mono text-sm">
+                                    <div class="text-gray-400">// In your Playwright/Selenium script</div>
+                                    <div><span class="syntax-keyword">import</span> { <span class="syntax-variable">Session</span> } <span class="syntax-keyword">from</span> <span class="syntax-string">'@psp/core'</span>;</div>
+                                    <div class="mt-2"><span class="syntax-keyword">const</span> <span class="syntax-variable">session</span> = <span class="syntax-keyword">await</span> <span class="syntax-function">Session.load</span>(<span class="syntax-string">'Gmail Session'</span>);</div>
+                                    <div><span class="syntax-keyword">await</span> <span class="syntax-variable">session</span>.<span class="syntax-function">restore</span>(<span class="syntax-variable">page</span>);</div>
+                                    <div class="mt-2 text-green-400">// ✨ Already logged in!</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Video/Image -->
+                <div class="relative">
+                    <div class="floating-card rounded-xl overflow-hidden bg-white">
+                        <div class="terminal-header bg-gray-100 border-b border-gray-200">
+                            <div class="flex items-center justify-between px-4">
+                                <div class="terminal-dots">
+                                    <div class="terminal-dot dot-red"></div>
+                                    <div class="terminal-dot dot-yellow"></div>
+                                    <div class="terminal-dot dot-green"></div>
+                                </div>
+                                <div class="text-gray-600 text-sm font-medium">
+                                    PSP Web Interface
+                                </div>
+                                <div class="text-gray-400 text-sm">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-white">
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-play text-white text-2xl"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-900 mb-2">Interactive Demo</h4>
+                                <p class="text-gray-600 mb-4">See PSP in action with our live demo interface</p>
+                                <button class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-play mr-2"></i>
+                                    Launch Demo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-purple-100 text-purple-800 text-sm font-medium mb-4">
+                    <i class="fas fa-book mr-2"></i>
+                    Documentation
+                </div>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Comprehensive
+                    <span class="text-purple-600">Documentation</span>
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Everything you need to master PSP, from basic usage to advanced integrations and custom adapters.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <a href="guide/getting-started.html" class="group block bg-white border border-gray-200 rounded-xl p-8 hover:border-blue-300 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-blue-200 transition-colors">
+                        <i class="fas fa-rocket text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Getting Started</h3>
+                    <p class="text-gray-600 mb-4">Quick setup guide and first steps with PSP. Get up and running in minutes.</p>
+                    <div class="flex items-center text-blue-600 font-medium group-hover:text-blue-700">
+                        <span>Read guide</span>
+                        <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+
+                <a href="api/index.html" class="group block bg-white border border-gray-200 rounded-xl p-8 hover:border-green-300 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-green-200 transition-colors">
+                        <i class="fas fa-code text-green-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">API Reference</h3>
+                    <p class="text-gray-600 mb-4">Complete API documentation for all PSP components and methods.</p>
+                    <div class="flex items-center text-green-600 font-medium group-hover:text-green-700">
+                        <span>View API</span>
+                        <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+
+                <a href="platforms/index.html" class="group block bg-white border border-gray-200 rounded-xl p-8 hover:border-purple-300 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-purple-200 transition-colors">
+                        <i class="fas fa-globe text-purple-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Platform Guide</h3>
+                    <p class="text-gray-600 mb-4">Integration guides for popular platforms like Gmail, GitHub, AWS Console.</p>
+                    <div class="flex items-center text-purple-600 font-medium group-hover:text-purple-700">
+                        <span>Browse platforms</span>
+                        <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+
+                <a href="examples/index.html" class="group block bg-white border border-gray-200 rounded-xl p-8 hover:border-orange-300 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-orange-200 transition-colors">
+                        <i class="fas fa-play-circle text-orange-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Examples</h3>
+                    <p class="text-gray-600 mb-4">Real-world examples and code samples for common automation scenarios.</p>
+                    <div class="flex items-center text-orange-600 font-medium group-hover:text-orange-700">
+                        <span>View examples</span>
+                        <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+
+                <a href="security/index.html" class="group block bg-white border border-gray-200 rounded-xl p-8 hover:border-red-300 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-red-200 transition-colors">
+                        <i class="fas fa-shield-alt text-red-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Security</h3>
+                    <p class="text-gray-600 mb-4">Security best practices and guidelines for production deployments.</p>
+                    <div class="flex items-center text-red-600 font-medium group-hover:text-red-700">
+                        <span>Security docs</span>
+                        <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+
+                <a href="adapters/index.html" class="group block bg-white border border-gray-200 rounded-xl p-8 hover:border-indigo-300 hover:shadow-lg transition-all">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-indigo-200 transition-colors">
+                        <i class="fas fa-puzzle-piece text-indigo-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Adapter Development</h3>
+                    <p class="text-gray-600 mb-4">Build custom adapters for your automation framework or browser tool.</p>
+                    <div class="flex items-center text-indigo-600 font-medium group-hover:text-indigo-700">
+                        <span>Create adapter</span>
+                        <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sync-alt text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">PSP</h3>
+                            <p class="text-gray-400 text-sm">Persistent Sessions Protocol</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 mb-6 max-w-md">
+                        The unified protocol for browser session persistence across automation frameworks. 
+                        Built for developers, by developers.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-discord text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Documentation</h4>
+                    <ul class="space-y-2">
+                        <li><a href="guide/getting-started.html" class="text-gray-400 hover:text-white transition-colors">Getting Started</a></li>
+                        <li><a href="api/index.html" class="text-gray-400 hover:text-white transition-colors">API Reference</a></li>
+                        <li><a href="examples/index.html" class="text-gray-400 hover:text-white transition-colors">Examples</a></li>
+                        <li><a href="security/index.html" class="text-gray-400 hover:text-white transition-colors">Security</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-white mb-4">Community</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol/discussions" class="text-gray-400 hover:text-white transition-colors">Discussions</a></li>
+                        <li><a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol/issues" class="text-gray-400 hover:text-white transition-colors">Issues</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Discord</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Roadmap</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 mt-8 text-center">
+                <p class="text-gray-400">
+                    © 2024 PSP Contributors. Released under the MIT License.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar background on scroll
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.classList.add('bg-white/90');
+                nav.classList.remove('bg-white/80');
+            } else {
+                nav.classList.add('bg-white/80');
+                nav.classList.remove('bg-white/90');
+            }
+        });
+
+        // Animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe feature cards
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</body>
+</html>
