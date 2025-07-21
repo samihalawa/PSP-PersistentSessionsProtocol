@@ -1,8 +1,19 @@
 import { StorageProvider } from '@psp/core';
 import { SessionMetadata, BrowserSessionState, SessionFilter } from '@psp/core';
 /**
- * Cloud storage provider implementation (placeholder)
- * TODO: Implement with actual cloud storage service (AWS S3, Google Cloud Storage, etc.)
+ * Cloud storage provider implementation (Future Feature)
+ *
+ * This is a placeholder implementation for future cloud storage integration.
+ * Currently supports logging operations for development/debugging purposes.
+ *
+ * Planned integrations:
+ * - AWS S3 with encryption and lifecycle policies
+ * - Google Cloud Storage with regional replication
+ * - Azure Blob Storage with access tiers
+ * - Cloudflare R2 with zero egress costs
+ * - Multi-cloud failover and data replication
+ *
+ * For production use, consider using LocalStorageProvider with encryption.
  */
 export declare class CloudStorageProvider implements StorageProvider {
     private bucketName;
