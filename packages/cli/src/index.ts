@@ -150,15 +150,34 @@ program
     
     const spinner = ora(`Starting server on port ${options.port}...`).start();
     
-    // Start a simple HTTP server to serve the static GUI
+    // Start a simple HTTP server to serve the built GUI
     const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
-      let filePath = path.join(__dirname, '../../gui/public/index.html');
+      let filePath = path.join(__dirname, '../../gui/dist/index.html');
       
-      // Simple static file serving
+      // Handle static assets
+      if (req.url && req.url.startsWith('/assets/')) {
+        const assetPath = path.join(__dirname, '../../gui/dist', req.url);
+        fs.readFile(assetPath, (err: NodeJS.ErrnoException | null, content: Buffer) => {
+          if (err) {
+            res.writeHead(404);
+            res.end('Asset not found');
+            return;
+          }
+          
+          // Set appropriate content type
+          const ext = path.extname(assetPath);
+          const contentType = ext === '.css' ? 'text/css' : ext === '.js' ? 'application/javascript' : 'application/octet-stream';
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(content);
+        });
+        return;
+      }
+      
+      // Serve main HTML file for all other routes (SPA)
       fs.readFile(filePath, (err: NodeJS.ErrnoException | null, content: Buffer) => {
         if (err) {
           res.writeHead(404, { 'Content-Type': 'text/plain' });
-          res.end('PSP GUI not found. Please build the GUI first.');
+          res.end('PSP GUI not found. Please build the GUI first with: npm run build');
           return;
         }
         

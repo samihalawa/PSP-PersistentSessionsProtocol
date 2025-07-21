@@ -11,12 +11,24 @@ interface BrowserbaseConfig {
   apiKey: string;
   projectId?: string;
   sessionId?: string;
+  // Context configuration for session persistence
+  context?: {
+    // Whether to save changes back to a persistent context
+    persistChanges?: boolean;
+    // Whether to use an existing context (if available)
+    useExisting?: boolean;
+  };
   fingerprint?: {
     locales?: string[];
     operatingSystems?: string[];
     devices?: string[];
   };
   enableProxy?: boolean;
+  // Recording configuration
+  recording?: {
+    enabled?: boolean;
+    enableVideo?: boolean;
+  };
 }
 
 export { BrowserbaseConfig };
@@ -87,23 +99,51 @@ export class BrowserbaseAdapter extends Adapter {
   }
 
   /**
-   * Create a new Browserbase session
+   * Create a new Browserbase session with context support
    */
   private async createBrowserbaseSession(): Promise<void> {
+    const sessionPayload: any = {
+      projectId: this.config.projectId,
+    };
+
+    // Add fingerprint if provided
+    if (this.config.fingerprint) {
+      sessionPayload.fingerprint = this.config.fingerprint;
+    }
+
+    // Add proxy configuration if enabled
+    if (this.config.enableProxy) {
+      sessionPayload.useProxy = true;
+    }
+
+    // Add recording configuration
+    if (this.config.recording?.enabled) {
+      sessionPayload.enableWebRecording = true;
+      if (this.config.recording.enableVideo) {
+        sessionPayload.enableVideoWebRecording = true;
+      }
+    }
+
+    // Add context configuration for session persistence
+    if (this.config.context) {
+      sessionPayload.context = {
+        persistChanges: this.config.context.persistChanges,
+        useExisting: this.config.context.useExisting,
+      };
+    }
+
     const response = await fetch('https://www.browserbase.com/v1/sessions', {
       method: 'POST',
       headers: {
         'x-bb-api-key': this.config.apiKey,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        projectId: this.config.projectId,
-        fingerprint: this.config.fingerprint,
-      }),
+      body: JSON.stringify(sessionPayload),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create Browserbase session: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to create Browserbase session: ${response.statusText} - ${errorText}`);
     }
 
     const session = await response.json();

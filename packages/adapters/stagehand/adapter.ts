@@ -205,10 +205,7 @@ export class StagehandAdapter extends Adapter {
       ),
     };
     
-    await this.page.evaluate((storageState: {
-      localStorage: Array<[string, Array<[string, string]>]>;
-      sessionStorage: Array<[string, Array<[string, string]>]>;
-    }) => {
+    await (this.page.evaluate as any)((storageState: any) => {
       // Clear existing storage
       localStorage.clear();
       sessionStorage.clear();
@@ -234,7 +231,7 @@ export class StagehandAdapter extends Adapter {
 
     // Restore scroll position
     if (state.dom?.scrollPosition) {
-      await this.page.evaluate((scrollPos: { x: number; y: number }) => {
+      await (this.page.evaluate as any)((scrollPos: any) => {
         window.scrollTo(scrollPos.x, scrollPos.y);
       }, state.dom.scrollPosition);
     }
@@ -253,7 +250,7 @@ export class StagehandAdapter extends Adapter {
     this.recordingStartTime = Date.now();
 
     // Set up event listeners on the page
-    await this.page.evaluate((startTime: number) => {
+    await (this.page.evaluate as any)((startTime: any) => {
       const events: Event[] = [];
 
       // Track clicks

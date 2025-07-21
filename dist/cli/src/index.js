@@ -111,14 +111,31 @@ program
     .action(async (options) => {
     console.log(chalk_1.default.blue('🌐 Starting PSP web interface...'));
     const spinner = (0, ora_1.default)(`Starting server on port ${options.port}...`).start();
-    // Start a simple HTTP server to serve the static GUI
+    // Start a simple HTTP server to serve the built GUI
     const server = http_1.default.createServer((req, res) => {
-        let filePath = path_1.default.join(__dirname, '../../gui/public/index.html');
-        // Simple static file serving
+        let filePath = path_1.default.join(__dirname, '../../gui/dist/index.html');
+        // Handle static assets
+        if (req.url && req.url.startsWith('/assets/')) {
+            const assetPath = path_1.default.join(__dirname, '../../gui/dist', req.url);
+            fs_1.default.readFile(assetPath, (err, content) => {
+                if (err) {
+                    res.writeHead(404);
+                    res.end('Asset not found');
+                    return;
+                }
+                // Set appropriate content type
+                const ext = path_1.default.extname(assetPath);
+                const contentType = ext === '.css' ? 'text/css' : ext === '.js' ? 'application/javascript' : 'application/octet-stream';
+                res.writeHead(200, { 'Content-Type': contentType });
+                res.end(content);
+            });
+            return;
+        }
+        // Serve main HTML file for all other routes (SPA)
         fs_1.default.readFile(filePath, (err, content) => {
             if (err) {
                 res.writeHead(404, { 'Content-Type': 'text/plain' });
-                res.end('PSP GUI not found. Please build the GUI first.');
+                res.end('PSP GUI not found. Please build the GUI first with: npm run build');
                 return;
             }
             res.writeHead(200, { 'Content-Type': 'text/html' });

@@ -17,6 +17,17 @@
   ],
   "author": "PSP Contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samihalawa/PSP-PersistentSessionsProtocol.git"
+  },
+  "homepage": "https://samihalawa.github.io/PSP-PersistentSessionsProtocol/",
+  "bugs": {
+    "url": "https://github.com/samihalawa/PSP-PersistentSessionsProtocol/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist",
     "README.md"

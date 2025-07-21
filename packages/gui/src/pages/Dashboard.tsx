@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import {
   DocumentTextIcon,
-  CookieIcon,
+  CakeIcon as CookieIcon,
   GlobeAltIcon,
   ClockIcon,
   UserGroupIcon,

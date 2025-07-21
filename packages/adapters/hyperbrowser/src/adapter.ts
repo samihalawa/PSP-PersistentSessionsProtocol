@@ -10,27 +10,43 @@ import { chromium, Browser, BrowserContext, Page } from 'playwright-core';
 interface HyperbrowserConfig {
   apiKey: string;
   teamId?: string;
-  profileId?: string;
-  persistChanges?: boolean;
+  // Profile management for persistent browser state
+  profile?: {
+    id?: string;
+    name?: string;
+    persistChanges?: boolean;
+    autoCreate?: boolean; // Create profile if it doesn't exist
+  };
+  // Session configuration
   useStealth?: boolean;
   useProxy?: boolean;
+  proxyServer?: string;
+  proxyServerUsername?: string;
+  proxyServerPassword?: string;
   proxyCountry?: string;
   proxyState?: string;
   proxyCity?: string;
-  operatingSystems?: string[];
+  // Device and browser settings
+  operatingSystems?: ('windows' | 'android' | 'macos' | 'linux' | 'ios')[];
   device?: ('desktop' | 'mobile')[];
-  platform?: string[];
+  platform?: ('chrome' | 'firefox' | 'safari' | 'edge')[];
   locales?: string[];
   screen?: {
     width: number;
     height: number;
   };
+  // Automation features
   solveCaptchas?: boolean;
   adblock?: boolean;
   trackers?: boolean;
   annoyances?: boolean;
-  acceptCookies?: boolean;
   enableWebRecording?: boolean;
+  enableVideoWebRecording?: boolean;
+  acceptCookies?: boolean;
+  extensionIds?: string[];
+  urlBlocklist?: string[];
+  browserArgs?: string[];
+  timeoutMinutes?: number;
 }
 
 export { HyperbrowserConfig };
@@ -74,12 +90,93 @@ export class HyperbrowserAdapter extends Adapter {
   }
 
   /**
-   * Connect to Hyperbrowser
+   * Create or get a Hyperbrowser profile for persistent sessions
+   */
+  private async ensureProfile(): Promise<string | undefined> {
+    if (!this.config.profile) {
+      return undefined;
+    }
+
+    // If profile ID is provided, verify it exists
+    if (this.config.profile.id) {
+      try {
+        const response = await fetch(`https://api.hyperbrowser.ai/api/profile/${this.config.profile.id}`, {
+          method: 'GET',
+          headers: {
+            'x-api-key': this.config.apiKey,
+          },
+        });
+
+        if (response.ok) {
+          const profile = await response.json();
+          console.log(`✅ Using existing Hyperbrowser profile: ${profile.name || profile.id}`);
+          return this.config.profile.id;
+        }
+      } catch (error) {
+        console.warn(`Profile ${this.config.profile.id} not found, will create new one`);
+      }
+    }
+
+    // Create new profile if needed
+    if (this.config.profile.autoCreate !== false) {
+      try {
+        const response = await fetch('https://api.hyperbrowser.ai/api/profile', {
+          method: 'POST',
+          headers: {
+            'x-api-key': this.config.apiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: this.config.profile.name || `PSP Profile ${Date.now()}`,
+          }),
+        });
+
+        if (response.ok) {
+          const profile = await response.json();
+          console.log(`✅ Created new Hyperbrowser profile: ${profile.id}`);
+          return profile.id;
+        }
+      } catch (error) {
+        console.warn('Failed to create Hyperbrowser profile:', error);
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * List available profiles
+   */
+  async listProfiles(): Promise<any[]> {
+    try {
+      const response = await fetch('https://api.hyperbrowser.ai/api/profiles', {
+        method: 'GET',
+        headers: {
+          'x-api-key': this.config.apiKey,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.profiles || [];
+      }
+    } catch (error) {
+      console.warn('Failed to list Hyperbrowser profiles:', error);
+    }
+
+    return [];
+  }
+
+  /**
+   * Connect to Hyperbrowser with profile support
    */
   async connect(): Promise<void> {
     try {
-      // Create session
-      await this.createHyperbrowserSession();
+      // Ensure profile exists if configured
+      const profileId = await this.ensureProfile();
+      
+      // Create session with profile
+      await this.createHyperbrowserSession(profileId);
 
       // Connect to Hyperbrowser via CDP
       if (!this.sessionId) {
@@ -107,9 +204,9 @@ export class HyperbrowserAdapter extends Adapter {
   }
 
   /**
-   * Create a new Hyperbrowser session
+   * Create a new Hyperbrowser session with profile support
    */
-  private async createHyperbrowserSession(): Promise<void> {
+  private async createHyperbrowserSession(profileId?: string): Promise<void> {
     const requestBody: any = {
       useStealth: this.config.useStealth,
       useProxy: this.config.useProxy,
@@ -125,15 +222,20 @@ export class HyperbrowserAdapter extends Adapter {
       adblock: this.config.adblock,
       trackers: this.config.trackers,
       annoyances: this.config.annoyances,
-      acceptCookies: this.config.acceptCookies,
       enableWebRecording: this.config.enableWebRecording,
+      enableVideoWebRecording: this.config.enableVideoWebRecording,
+      acceptCookies: this.config.acceptCookies,
+      extensionIds: this.config.extensionIds,
+      urlBlocklist: this.config.urlBlocklist,
+      browserArgs: this.config.browserArgs,
+      timeoutMinutes: this.config.timeoutMinutes,
     };
 
     // Add profile configuration if provided
-    if (this.config.profileId) {
+    if (profileId || this.config.profile?.id) {
       requestBody.profile = {
-        id: this.config.profileId,
-        persistChanges: this.config.persistChanges || false,
+        id: profileId || this.config.profile?.id,
+        persistChanges: this.config.profile?.persistChanges || false,
       };
     }
 
@@ -193,25 +295,6 @@ export class HyperbrowserAdapter extends Adapter {
     const profile = await response.json();
     console.log(`✅ Created Hyperbrowser profile: ${profile.id}`);
     return profile.id;
-  }
-
-  /**
-   * List available profiles
-   */
-  async listProfiles(): Promise<any[]> {
-    const response = await fetch('https://api.hyperbrowser.ai/api/profiles', {
-      method: 'GET',
-      headers: {
-        'x-api-key': this.config.apiKey,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to list profiles: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.profiles || [];
   }
 
   /**
@@ -281,7 +364,7 @@ export class HyperbrowserAdapter extends Adapter {
       } : undefined,
       extensions: {
         hyperbrowserSessionId: this.sessionId,
-        hyperbrowserProfileId: this.config.profileId,
+        hyperbrowserProfileId: this.config.profile?.id,
       },
     };
   }
@@ -559,7 +642,7 @@ export class HyperbrowserAdapter extends Adapter {
 
     return {
       sessionId: this.sessionId,
-      profileId: this.config.profileId,
+      profileId: this.config.profile?.id,
       liveUrl,
       recording,
       storageState,

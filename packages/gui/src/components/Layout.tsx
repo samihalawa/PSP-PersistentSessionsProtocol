@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   HomeIcon,
   DocumentTextIcon,
-  CookieIcon,
+  CakeIcon as CookieIcon,
   CogIcon,
   ChevronLeftIcon,
   ChevronRightIcon,

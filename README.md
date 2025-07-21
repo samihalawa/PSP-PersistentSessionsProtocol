@@ -26,7 +26,26 @@ The PersistentSessionsProtocol (PSP) transforms browser automation by providing 
 - **🎬 Session Recording** - Capture and replay user interactions across environments
 - **📊 Platform Testing** - Verified compatibility with 20+ popular services
 
-## 📸 Screenshots
+## 📸 Real PSP Interface Screenshots
+
+<div align="center">
+
+### 🎨 PSP Dashboard
+![PSP Dashboard](https://github.com/user-attachments/assets/ce885f24-7ac4-4de6-bef6-b324d8f0e211)
+
+*The PSP dashboard provides real-time session statistics, recent sessions overview, platform usage analytics, and quick actions for session management.*
+
+### 📋 Session Management
+![PSP Sessions](https://github.com/user-attachments/assets/0f94a593-1b82-4662-95a7-f55783b4c303)
+
+*Comprehensive session management interface for creating, editing, importing, and exporting browser sessions across platforms.*
+
+### 🍪 Cookie Manager
+![PSP Cookie Manager](https://github.com/user-attachments/assets/d8d20c70-15fe-4b4a-bd50-aeeae9cadfe5)
+
+*Visual cookie management with security settings, expiration dates, and detailed cookie analysis for all captured sessions.*
+
+</div>
 
 ### Dashboard Overview
 ![PSP Dashboard](https://github.com/user-attachments/assets/ca9f216d-4415-44cb-86b7-84d6753ff745)
@@ -58,17 +77,26 @@ npm run build
 PSP provides a comprehensive command-line interface for all operations:
 
 ```bash
-# Run the comprehensive demo
+# Run the comprehensive demo (shows all features)
 psp demo
 
-# List all sessions
-psp list
+# Launch the beautiful web interface
+psp ui
+
+# List all sessions with filtering
+psp list --status active
 
 # Create a new session interactively
-psp create
+psp create "Gmail Production" "Main Gmail session for automation"
 
 # Launch browser for session capture
-psp launch
+psp launch --profile gmail
+
+# Test platform compatibility
+psp test --platform Gmail
+
+# Export sessions to various formats
+psp export session-123 --format json --output ~/gmail-session.json
 
 # Test platform compatibility
 psp test
@@ -188,6 +216,105 @@ psp launch --adapter hyperbrowser
 # Create sessions with specific adapters
 psp create "Cloud Session" --adapter browserbase --tags cloud,production
 ```
+
+## 🌐 Enhanced Cloud Integrations
+
+### Browserbase Context API Integration
+
+PSP now includes **full Browserbase Context API support** for persistent session management:
+
+```typescript
+import { BrowserbaseAdapter } from '@psp/adapter-browserbase';
+
+const adapter = new BrowserbaseAdapter({
+  apiKey: process.env.BROWSERBASE_API_KEY,
+  projectId: process.env.BROWSERBASE_PROJECT_ID,
+  
+  // Context API for session persistence
+  context: {
+    persistChanges: true,    // Save changes back to persistent context
+    useExisting: true,       // Use existing context if available
+  },
+  
+  // Recording and debugging
+  recording: {
+    enabled: true,
+    enableVideo: true,       // Video recording support
+  },
+  
+  // Enhanced fingerprinting
+  fingerprint: {
+    locales: ['en-US', 'en'],
+    operatingSystems: ['windows', 'macos'],
+    devices: ['desktop'],
+  },
+  
+  enableProxy: true,
+});
+
+// Connect and get debug URL for live inspection
+await adapter.connect();
+const debugUrl = await adapter.getDebugUrl();
+console.log(`Live Debug: ${debugUrl}`);
+```
+
+### Hyperbrowser Profile Management
+
+PSP provides **comprehensive Hyperbrowser profile management** with AI automation features:
+
+```typescript
+import { HyperbrowserAdapter } from '@psp/adapter-hyperbrowser';
+
+const adapter = new HyperbrowserAdapter({
+  apiKey: process.env.HYPERBROWSER_API_KEY,
+  
+  // Enhanced profile management
+  profile: {
+    name: 'PSP Production Profile',
+    persistChanges: true,     // Save changes to profile
+    autoCreate: true,         // Create profile if doesn't exist
+  },
+  
+  // AI-powered features
+  useStealth: true,           // Advanced stealth mode
+  solveCaptchas: true,        // AI CAPTCHA solving
+  useProxy: true,
+  proxyCountry: 'US',
+  
+  // Automation enhancements
+  adblock: true,              // Block ads and trackers
+  trackers: true,
+  annoyances: true,
+  acceptCookies: true,        // Auto-accept cookies
+  enableWebRecording: true,   // Record interactions
+  enableVideoWebRecording: true,
+  
+  // Advanced configuration
+  browserArgs: [
+    '--disable-blink-features=AutomationControlled',
+    '--disable-features=VizDisplayCompositor'
+  ],
+  urlBlocklist: ['*analytics*', '*tracking*'],
+  timeoutMinutes: 30,
+});
+
+// List and manage profiles
+const profiles = await adapter.listProfiles();
+console.log(`Available profiles: ${profiles.length}`);
+
+// Export session data for external tools
+const exportData = await adapter.exportForHyperbrowser();
+```
+
+### Context & Profile Comparison
+
+| Feature | Browserbase Context API | Hyperbrowser Profiles |
+|---------|------------------------|----------------------|
+| **Persistence** | Context-based session storage | Profile-based state management |
+| **AI Features** | Basic automation | Advanced AI + CAPTCHA solving |
+| **Debugging** | Live WebSocket debugging | Video recording + analytics |
+| **Stealth** | Standard fingerprinting | Advanced anti-detection |
+| **Use Case** | High-performance automation | Complex auth flows + AI |
 ```
 
 ## 🎯 Real-World Usage Examples
