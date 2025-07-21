@@ -3,13 +3,12 @@
  * Compatible with Smithery.ai and other MCP clients
  */
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { Server } from '@modelcontextprotocol/sdk/dist/cjs/server/index';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool,
-  Transport,
-} from '@modelcontextprotocol/sdk/types.js';
+} from '@modelcontextprotocol/sdk/dist/cjs/types';
 import { z } from 'zod';
 
 // Import PSP components (these would need to be available)
@@ -236,7 +235,7 @@ export class PSPMCPServer {
     });
 
     // Handle tool calls
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    this.server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       const { name, arguments: args } = request.params;
 
       try {
@@ -642,7 +641,7 @@ export class PSPMCPServer {
    * Set up error handling
    */
   private setupErrorHandling() {
-    this.server.onerror = (error) => {
+    this.server.onerror = (error: any) => {
       console.error('[PSP MCP Server] Error:', error);
     };
 

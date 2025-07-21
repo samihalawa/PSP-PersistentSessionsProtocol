@@ -56,7 +56,7 @@ program
                 type: 'input',
                 name: 'name',
                 message: 'Session name:',
-                validate: input => input.trim() !== '' || 'Session name is required'
+                validate: (input) => input.trim() !== '' || 'Session name is required'
             },
             {
                 type: 'input',
@@ -125,7 +125,7 @@ program
             res.end(content);
         });
     });
-    server.listen(options.port, 'localhost', () => {
+    server.listen(parseInt(options.port || '3000'), 'localhost', () => {
         spinner.succeed(chalk_1.default.green(`✅ PSP web interface is running!`));
         console.log(chalk_1.default.cyan(`   🌐 Open: http://localhost:${options.port}`));
         console.log(chalk_1.default.gray('   Press Ctrl+C to stop the server'));

@@ -46,8 +46,31 @@ export class HyperbrowserAdapter extends Adapter {
   private recordingStartTime = 0;
 
   constructor(config: HyperbrowserConfig) {
-    super();
+    super({
+      type: 'hyperbrowser',
+      ...config
+    });
     this.config = config;
+  }
+
+  /**
+   * Helper method to convert storage arrays to Maps
+   */
+  private convertStorageToMap(storageArray: any[]): Map<string, Map<string, string>> {
+    const result = new Map<string, Map<string, string>>();
+    
+    for (const item of storageArray) {
+      if (item && typeof item === 'object' && item.name && item.value) {
+        // Use localhost as default origin for simplicity
+        const origin = 'localhost';
+        if (!result.has(origin)) {
+          result.set(origin, new Map());
+        }
+        result.get(origin)!.set(item.name, item.value);
+      }
+    }
+    
+    return result;
   }
 
   /**
@@ -228,7 +251,7 @@ export class HyperbrowserAdapter extends Adapter {
     return {
       version: '1.0',
       timestamp: Date.now(),
-      origin: url,
+      origin: url || 'unknown',
       storage: {
         cookies: storageState.cookies.map(cookie => ({
           name: cookie.name,
@@ -241,29 +264,32 @@ export class HyperbrowserAdapter extends Adapter {
           sameSite: cookie.sameSite as 'Strict' | 'Lax' | 'None',
           partitioned: false, // Hyperbrowser doesn't expose this yet
         })),
-        localStorage: storageState.origins?.[0]?.localStorage || [],
-        sessionStorage: [],
-        indexedDB: [],
+        localStorage: this.convertStorageToMap(storageState.origins?.[0]?.localStorage || []),
+        sessionStorage: this.convertStorageToMap([]),
+        indexedDB: {
+          databases: []
+        },
       },
       dom: {
         html: content,
-        title,
-        url,
         scrollPosition,
       },
       recording: this.recording ? {
         events: [...this.events],
+        startTime: this.recordingStartTime,
         duration: this.recording ? Date.now() - this.recordingStartTime : 0,
       } : undefined,
-      hyperbrowserSessionId: this.sessionId,
-      hyperbrowserProfileId: this.config.profileId,
+      extensions: {
+        hyperbrowserSessionId: this.sessionId,
+        hyperbrowserProfileId: this.config.profileId,
+      },
     };
   }
 
   /**
    * Restore browser state
    */
-  async restoreState(state: BrowserSessionState): Promise<void> {
+  async applyState(state: BrowserSessionState): Promise<void> {
     if (!this.page || !this.context) {
       throw new Error('Not connected to Hyperbrowser');
     }
@@ -282,22 +308,33 @@ export class HyperbrowserAdapter extends Adapter {
       })));
     }
 
-    // Navigate to the original URL
-    if (state.dom.url) {
-      await this.page.goto(state.dom.url);
+    // Navigate to the original URL (using origin field)
+    const targetUrl = state.origin !== 'unknown' ? state.origin : undefined;
+    if (targetUrl) {
+      await this.page.goto(targetUrl);
     }
 
     // Restore localStorage
-    if (state.storage.localStorage.length > 0) {
-      await this.page.evaluate((items) => {
-        for (const item of items) {
-          localStorage.setItem(item.name, item.value);
+    if (state.storage.localStorage.size > 0) {
+      const localStorageItems: Array<{name: string, value: string}> = [];
+      
+      for (const [origin, items] of state.storage.localStorage) {
+        for (const [name, value] of items) {
+          localStorageItems.push({ name, value });
         }
-      }, state.storage.localStorage);
+      }
+      
+      if (localStorageItems.length > 0) {
+        await this.page.evaluate((items) => {
+          for (const item of items) {
+            localStorage.setItem(item.name, item.value);
+          }
+        }, localStorageItems);
+      }
     }
 
     // Restore scroll position
-    if (state.dom.scrollPosition) {
+    if (state.dom?.scrollPosition) {
       await this.page.evaluate((pos) => {
         window.scrollTo(pos.x, pos.y);
       }, state.dom.scrollPosition);
@@ -389,9 +426,10 @@ export class HyperbrowserAdapter extends Adapter {
     }
 
     for (const event of events) {
-      // Add delay between events
-      if (options?.speed !== 'instant') {
-        await new Promise(resolve => setTimeout(resolve, 100));
+      // Add delay between events (based on speed multiplier)
+      if (options?.speed !== 0) {
+        const delay = (options?.speed || 1) * 100;
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
 
       switch (event.type) {

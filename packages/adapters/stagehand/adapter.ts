@@ -205,7 +205,10 @@ export class StagehandAdapter extends Adapter {
       ),
     };
     
-    await this.page.evaluate((storageState: any) => {
+    await this.page.evaluate((storageState: {
+      localStorage: Array<[string, Array<[string, string]>]>;
+      sessionStorage: Array<[string, Array<[string, string]>]>;
+    }) => {
       // Clear existing storage
       localStorage.clear();
       sessionStorage.clear();
@@ -227,14 +230,13 @@ export class StagehandAdapter extends Adapter {
           }
         }
       }
-    }, JSON.stringify(storageData));
+    }, storageData);
 
     // Restore scroll position
     if (state.dom?.scrollPosition) {
-      await this.page.evaluate((scrollPosStr: string) => {
-        const scrollPos = JSON.parse(scrollPosStr);
+      await this.page.evaluate((scrollPos: { x: number; y: number }) => {
         window.scrollTo(scrollPos.x, scrollPos.y);
-      }, JSON.stringify(state.dom.scrollPosition));
+      }, state.dom.scrollPosition);
     }
   }
 

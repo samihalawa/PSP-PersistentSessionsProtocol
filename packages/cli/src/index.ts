@@ -23,13 +23,35 @@ program
   .version('0.1.0')
   .helpOption('-h, --help', 'display help for command');
 
+// Types for CLI options
+interface ListOptions {
+  status?: string;
+  tags?: string;
+}
+
+interface CreateOptions {
+  tags?: string;
+}
+
+interface UIOptions {
+  port?: string;
+}
+
+interface DemoOptions {
+  // No specific options for demo
+}
+
+interface DeleteOptions {
+  confirm?: boolean;
+}
+
 // List sessions command
 program
   .command('list')
   .description('List all PSP sessions')
   .option('-s, --status <status>', 'Filter by status (active, inactive, expired)')
   .option('-t, --tags <tags>', 'Filter by tags (comma separated)')
-  .action(async (options) => {
+  .action(async (options: ListOptions) => {
     console.log(chalk.blue('🔍 Listing PSP sessions...'));
     
     // Mock data for now
@@ -53,14 +75,14 @@ program
   .argument('[name]', 'Session name')
   .argument('[description]', 'Session description')
   .option('-t, --tags <tags>', 'Tags (comma separated)')
-  .action(async (name, description, options) => {
+  .action(async (name: string, description: string, options: CreateOptions) => {
     if (!name) {
       const answers = await inquirer.prompt([
         {
           type: 'input',
           name: 'name',
           message: 'Session name:',
-          validate: input => input.trim() !== '' || 'Session name is required'
+          validate: (input: string) => input.trim() !== '' || 'Session name is required'
         },
         {
           type: 'input',
@@ -89,13 +111,18 @@ program
     }, 1000);
   });
 
+interface LaunchOptions {
+  session?: string;
+  profile?: string;
+}
+
 // Launch browser command
 program
   .command('launch')
   .description('Launch a browser for session capture')
   .option('-s, --session <id>', 'Existing session ID to continue')
   .option('-p, --profile <profile>', 'Browser profile to use')
-  .action(async (options) => {
+  .action(async (options: LaunchOptions) => {
     console.log(chalk.blue('🚀 Launching browser for session capture...'));
     
     if (options.session) {
@@ -118,7 +145,7 @@ program
   .command('ui')
   .description('Launch the PSP web interface')
   .option('-p, --port <port>', 'Port to run on', '3000')
-  .action(async (options) => {
+  .action(async (options: UIOptions) => {
     console.log(chalk.blue('🌐 Starting PSP web interface...'));
     
     const spinner = ora(`Starting server on port ${options.port}...`).start();
@@ -140,7 +167,7 @@ program
       });
     });
     
-    server.listen(options.port, 'localhost', () => {
+    server.listen(parseInt(options.port || '3000'), 'localhost', () => {
       spinner.succeed(chalk.green(`✅ PSP web interface is running!`));
       console.log(chalk.cyan(`   🌐 Open: http://localhost:${options.port}`));
       console.log(chalk.gray('   Press Ctrl+C to stop the server'));
@@ -165,6 +192,11 @@ program
     });
   });
 
+interface ExportOptions {
+  format?: string;
+  output?: string;
+}
+
 // Export session command
 program
   .command('export')
@@ -172,7 +204,7 @@ program
   .argument('<sessionId>', 'Session ID to export')
   .option('-f, --format <format>', 'Export format (json, har, csv)', 'json')
   .option('-o, --output <file>', 'Output file path')
-  .action(async (sessionId, options) => {
+  .action(async (sessionId: string, options: ExportOptions) => {
     const spinner = ora(`Exporting session ${sessionId} as ${options.format}...`).start();
     
     setTimeout(() => {
@@ -181,12 +213,16 @@ program
     }, 1500);
   });
 
+interface TestOptions {
+  platform?: string;
+}
+
 // Test platform command
 program
   .command('test')
   .description('Test PSP compatibility with popular platforms')
   .option('-p, --platform <platform>', 'Specific platform to test')
-  .action(async (options) => {
+  .action(async (options: TestOptions) => {
     console.log(chalk.blue('🧪 Testing PSP platform compatibility...'));
     
     const platforms = options.platform ? [options.platform] : [
