@@ -64,9 +64,8 @@ interface CreateOptions {
   tags?: string;
 }
 
-interface UIOptions {
-  port?: string;
-}
+// Remove duplicate interface - already defined above
+// interface UIOptions moved to top
 
 interface DemoOptions {
   // No specific options for demo
