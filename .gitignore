@@ -61,4 +61,4 @@ temp/
 # Editor backup files
 *~
 *.bak
-*.backup
+*.backuplogs/

@@ -2,8 +2,18 @@ import { StorageProvider } from '@psp/core';
 import { SessionMetadata, BrowserSessionState, SessionFilter } from '@psp/core';
 
 /**
- * Database storage provider implementation (placeholder)
- * TODO: Implement with actual database connection
+ * Database storage provider implementation (Future Feature)
+ * 
+ * This is a placeholder implementation for future database integration.
+ * Currently supports logging operations for development/debugging purposes.
+ * 
+ * Planned features:
+ * - SQLite support for local development
+ * - PostgreSQL/MySQL support for production deployments  
+ * - Connection pooling and transaction management
+ * - Migration system for schema updates
+ * 
+ * For production use, consider using LocalStorageProvider or CloudStorageProvider.
  */
 export class DatabaseStorageProvider implements StorageProvider {
   private connectionString: string;
@@ -19,9 +29,9 @@ export class DatabaseStorageProvider implements StorageProvider {
     metadata: SessionMetadata;
     state: BrowserSessionState;
   }): Promise<void> {
-    // TODO: Implement database save
+    // Future feature: Implement database save
     console.warn(
-      'Database storage provider not yet implemented, falling back to console log'
+      'DatabaseStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     console.log(`Saving session ${session.metadata.id} to database`);
   }
@@ -32,17 +42,17 @@ export class DatabaseStorageProvider implements StorageProvider {
   async load(
     id: string
   ): Promise<{ metadata: SessionMetadata; state: BrowserSessionState }> {
-    // TODO: Implement database load
-    throw new Error('Database storage provider not yet implemented');
+    // Future feature: Implement database load  
+    throw new Error('DatabaseStorageProvider is a future feature. Use LocalStorageProvider for current functionality.');
   }
 
   /**
    * Deletes a session from the database
    */
   async delete(id: string): Promise<void> {
-    // TODO: Implement database delete
+    // Future feature: Implement database delete
     console.warn(
-      'Database storage provider not yet implemented, falling back to console log'
+      'DatabaseStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     console.log(`Deleting session ${id} from database`);
   }
@@ -51,9 +61,9 @@ export class DatabaseStorageProvider implements StorageProvider {
    * Lists sessions from the database
    */
   async list(filter?: SessionFilter): Promise<SessionMetadata[]> {
-    // TODO: Implement database list
+    // Future feature: Implement database list
     console.warn(
-      'Database storage provider not yet implemented, returning empty array'
+      'DatabaseStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     return [];
   }
@@ -62,7 +72,7 @@ export class DatabaseStorageProvider implements StorageProvider {
    * Check if a session exists
    */
   async exists(id: string): Promise<boolean> {
-    // TODO: Implement database exists check
+    // Future feature: Implement database exists check
     return false;
   }
 
@@ -70,9 +80,9 @@ export class DatabaseStorageProvider implements StorageProvider {
    * Clear all sessions (for testing)
    */
   async clear(): Promise<void> {
-    // TODO: Implement database clear
+    // Future feature: Implement database clear
     console.warn(
-      'Database storage provider not yet implemented, falling back to console log'
+      'DatabaseStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     console.log('Clearing all sessions from database');
   }

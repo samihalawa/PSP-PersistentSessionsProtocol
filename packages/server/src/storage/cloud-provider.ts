@@ -2,8 +2,19 @@ import { StorageProvider } from '@psp/core';
 import { SessionMetadata, BrowserSessionState, SessionFilter } from '@psp/core';
 
 /**
- * Cloud storage provider implementation (placeholder)
- * TODO: Implement with actual cloud storage service (AWS S3, Google Cloud Storage, etc.)
+ * Cloud storage provider implementation (Future Feature)
+ * 
+ * This is a placeholder implementation for future cloud storage integration.
+ * Currently supports logging operations for development/debugging purposes.
+ * 
+ * Planned integrations:
+ * - AWS S3 with encryption and lifecycle policies
+ * - Google Cloud Storage with regional replication
+ * - Azure Blob Storage with access tiers
+ * - Cloudflare R2 with zero egress costs
+ * - Multi-cloud failover and data replication
+ * 
+ * For production use, consider using LocalStorageProvider with encryption.
  */
 export class CloudStorageProvider implements StorageProvider {
   private bucketName: string;
@@ -27,9 +38,9 @@ export class CloudStorageProvider implements StorageProvider {
     metadata: SessionMetadata;
     state: BrowserSessionState;
   }): Promise<void> {
-    // TODO: Implement cloud storage save
+    // Future feature: Implement cloud storage save
     console.warn(
-      'Cloud storage provider not yet implemented, falling back to console log'
+      'CloudStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     console.log(
       `Saving session ${session.metadata.id} to cloud storage bucket: ${this.bucketName}`
@@ -42,17 +53,17 @@ export class CloudStorageProvider implements StorageProvider {
   async load(
     id: string
   ): Promise<{ metadata: SessionMetadata; state: BrowserSessionState }> {
-    // TODO: Implement cloud storage load
-    throw new Error('Cloud storage provider not yet implemented');
+    // Future feature: Implement cloud storage load
+    throw new Error('CloudStorageProvider is a future feature. Use LocalStorageProvider for current functionality.');
   }
 
   /**
    * Deletes a session from cloud storage
    */
   async delete(id: string): Promise<void> {
-    // TODO: Implement cloud storage delete
+    // Future feature: Implement cloud storage delete
     console.warn(
-      'Cloud storage provider not yet implemented, falling back to console log'
+      'CloudStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     console.log(
       `Deleting session ${id} from cloud storage bucket: ${this.bucketName}`
@@ -63,9 +74,9 @@ export class CloudStorageProvider implements StorageProvider {
    * Lists sessions from cloud storage
    */
   async list(filter?: SessionFilter): Promise<SessionMetadata[]> {
-    // TODO: Implement cloud storage list
+    // Future feature: Implement cloud storage list
     console.warn(
-      'Cloud storage provider not yet implemented, returning empty array'
+      'CloudStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     return [];
   }
@@ -74,7 +85,7 @@ export class CloudStorageProvider implements StorageProvider {
    * Check if a session exists
    */
   async exists(id: string): Promise<boolean> {
-    // TODO: Implement cloud storage exists check
+    // Future feature: Implement cloud storage exists check
     return false;
   }
 
@@ -82,9 +93,9 @@ export class CloudStorageProvider implements StorageProvider {
    * Clear all sessions (for testing)
    */
   async clear(): Promise<void> {
-    // TODO: Implement cloud storage clear
+    // Future feature: Implement cloud storage clear
     console.warn(
-      'Cloud storage provider not yet implemented, falling back to console log'
+      'CloudStorageProvider is a future feature. Use LocalStorageProvider for current functionality.'
     );
     console.log(
       `Clearing all sessions from cloud storage bucket: ${this.bucketName}`
