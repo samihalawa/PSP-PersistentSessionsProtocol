@@ -14,6 +14,6 @@
       "@psp/*": ["packages/*/src"]
     }
   },
-  "include": ["src/**/*", "packages/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "packages/gui/**/*", "packages/sdk-go/**/*", "packages/sdk-python/**/*", "packages/mcp/**/*"]
+  "include": ["packages/**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.d.ts", "packages/gui/**/*", "packages/sdk-go/**/*", "packages/sdk-python/**/*", "packages/mcp/**/*"]
 }
