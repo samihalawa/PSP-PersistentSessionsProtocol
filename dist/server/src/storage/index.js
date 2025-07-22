@@ -15,7 +15,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupStorageProvider = setupStorageProvider;
-const src_1 = require("../../../dist/core/src");
+const src_1 = require("../../core/src");
 const redis_provider_1 = require("./redis-provider");
 const database_provider_1 = require("./database-provider");
 const cloud_provider_1 = require("./cloud-provider");

@@ -1,1 +1,2 @@
-// Puppeteer adapter main entry point
+export { PuppeteerAdapter } from './adapter';
+export type { PuppeteerConfig } from './adapter';

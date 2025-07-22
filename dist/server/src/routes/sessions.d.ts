@@ -1,5 +1,5 @@
 import { Application } from 'express';
-import { StorageProvider } from '../../../dist/core/src';
+import { StorageProvider } from '../../core/src';
 /**
  * Sets up session routes
  */

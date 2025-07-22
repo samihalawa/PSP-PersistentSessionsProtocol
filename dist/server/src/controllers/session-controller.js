@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionController = void 0;
-const src_1 = require("../../../dist/core/src");
+const src_1 = require("../../core/src");
 const logger_1 = require("../utils/logger");
 const errors_1 = require("../utils/errors");
 const websockets_1 = require("../websockets");

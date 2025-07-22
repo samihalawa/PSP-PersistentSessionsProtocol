@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Demo - PSP Interactive Playground</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient': 'gradient 6s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #f093fb);
+            background-size: 400% 400%;
+        }
+        .glass-effect {
+            backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+        .glass-dark {
+            backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+        .terminal-bg {
+            background: #1a202c;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-ok { background-color: #10b981; }
+        .status-warning { background-color: #f59e0b; }
+        .status-error { background-color: #ef4444; }
+        .demo-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .demo-card.active {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+    </style>
+</head>
+<body class="font-inter antialiased bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center animate-gradient">
+                            <i class="fas fa-sync-alt text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">PSP</h1>
+                            <p class="text-xs text-gray-500">Interactive Demo</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">← Back to Home</a>
+                    <a href="docs.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">Documentation</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-12 gradient-bg animate-gradient text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">
+                Interactive PSP Demo
+            </h1>
+            <p class="text-xl md:text-2xl text-white text-opacity-90 mb-8 max-w-3xl mx-auto">
+                Experience the power of PSP with our live, interactive playground. 
+                Test session capture and restore across multiple platforms in real-time.
+            </p>
+            
+            <!-- Live Status -->
+            <div class="glass-dark rounded-2xl p-6 max-w-2xl mx-auto">
+                <div class="flex items-center justify-center space-x-6">
+                    <div class="flex items-center">
+                        <span class="status-indicator status-ok"></span>
+                        <span class="text-white text-sm">Demo Environment Active</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="status-indicator status-ok"></span>
+                        <span class="text-white text-sm">5 Browsers Available</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="status-indicator status-ok"></span>
+                        <span class="text-white text-sm">Cloud Storage Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Interface -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Demo Controls -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect rounded-2xl p-6 sticky top-24">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6">Demo Controls</h3>
+                        
+                        <!-- Platform Selection -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Choose Platform</label>
+                            <div class="space-y-2">
+                                <div class="demo-card p-4 rounded-lg border-2 cursor-pointer hover:border-blue-300" onclick="selectPlatform('gmail')">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-envelope text-red-500 mr-3"></i>
+                                        <div>
+                                            <div class="font-medium">Gmail</div>
+                                            <div class="text-sm text-gray-500">Google Email</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="demo-card p-4 rounded-lg border-2 cursor-pointer hover:border-blue-300" onclick="selectPlatform('github')">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-github text-gray-800 mr-3"></i>
+                                        <div>
+                                            <div class="font-medium">GitHub</div>
+                                            <div class="text-sm text-gray-500">Code Repository</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="demo-card p-4 rounded-lg border-2 cursor-pointer hover:border-blue-300" onclick="selectPlatform('aws')">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-aws text-orange-500 mr-3"></i>
+                                        <div>
+                                            <div class="font-medium">AWS Console</div>
+                                            <div class="text-sm text-gray-500">Cloud Management</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="demo-card p-4 rounded-lg border-2 cursor-pointer hover:border-blue-300" onclick="selectPlatform('slack')">
+                                    <div class="flex items-center">
+                                        <i class="fab fa-slack text-purple-500 mr-3"></i>
+                                        <div>
+                                            <div class="font-medium">Slack</div>
+                                            <div class="text-sm text-gray-500">Team Communication</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Framework Selection -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Automation Framework</label>
+                            <select id="frameworkSelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="playwright">Playwright</option>
+                                <option value="selenium">Selenium WebDriver</option>
+                                <option value="puppeteer">Puppeteer</option>
+                                <option value="skyvern">Skyvern (AI)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Demo Actions -->
+                        <div class="space-y-3">
+                            <button onclick="startDemo()" class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-play mr-2"></i>Start Demo
+                            </button>
+                            <button onclick="captureSession()" class="w-full bg-green-600 text-white p-3 rounded-lg font-medium hover:bg-green-700 transition-colors" disabled>
+                                <i class="fas fa-camera mr-2"></i>Capture Session
+                            </button>
+                            <button onclick="restoreSession()" class="w-full bg-purple-600 text-white p-3 rounded-lg font-medium hover:bg-purple-700 transition-colors" disabled>
+                                <i class="fas fa-undo mr-2"></i>Restore Session
+                            </button>
+                            <button onclick="resetDemo()" class="w-full bg-gray-600 text-white p-3 rounded-lg font-medium hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-refresh mr-2"></i>Reset Demo
+                            </button>
+                        </div>
+                        
+                        <!-- Current Session Info -->
+                        <div class="mt-8 p-4 bg-gray-100 rounded-lg">
+                            <h4 class="font-medium text-gray-900 mb-2">Current Session</h4>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <div>Platform: <span id="currentPlatform">None</span></div>
+                                <div>Framework: <span id="currentFramework">None</span></div>
+                                <div>Status: <span id="sessionStatus">Idle</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Demo Display Area -->
+                <div class="lg:col-span-2">
+                    <!-- Browser Simulation -->
+                    <div class="glass-effect rounded-2xl overflow-hidden mb-8">
+                        <div class="bg-gray-800 px-6 py-4 flex items-center space-x-4">
+                            <div class="flex space-x-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div class="flex-1 bg-gray-700 rounded px-3 py-1 text-white text-sm">
+                                <span id="browserUrl">https://demo.psp.ai</span>
+                            </div>
+                        </div>
+                        
+                        <div id="browserContent" class="bg-white p-8 min-h-96 flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-globe text-gray-400 text-3xl"></i>
+                                </div>
+                                <h3 class="text-xl font-medium text-gray-900 mb-2">Select a Platform to Begin</h3>
+                                <p class="text-gray-600">Choose a platform from the controls on the left to start the interactive demo</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Terminal Output -->
+                    <div class="terminal-bg rounded-2xl p-6 text-green-400 text-sm font-mono">
+                        <div class="flex items-center mb-4">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                            <span class="text-white">PSP Demo Terminal</span>
+                        </div>
+                        
+                        <div id="terminalOutput" class="space-y-1 max-h-64 overflow-y-auto">
+                            <div>PSP Interactive Demo v1.0.0</div>
+                            <div class="text-gray-400">Ready to demonstrate session capture and restore...</div>
+                            <div class="text-yellow-400">$ Waiting for platform selection...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Demo Scenarios -->
+            <div class="mt-16">
+                <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Popular Demo Scenarios</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="glass-effect rounded-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-envelope text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Gmail Authentication</h3>
+                        <p class="text-gray-600 mb-6">
+                            Capture a fully authenticated Gmail session and restore it in a different browser instance.
+                        </p>
+                        <button onclick="loadScenario('gmail')" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                            Try Scenario
+                        </button>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fab fa-github text-gray-800 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">GitHub Workflow</h3>
+                        <p class="text-gray-600 mb-6">
+                            Maintain GitHub authentication across development environments and CI/CD pipelines.
+                        </p>
+                        <button onclick="loadScenario('github')" class="bg-gray-800 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-700 transition-colors">
+                            Try Scenario
+                        </button>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8 text-center transform hover:scale-105 transition-all duration-300">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fab fa-aws text-orange-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Cloud Console Access</h3>
+                        <p class="text-gray-600 mb-6">
+                            Persist complex AWS Console sessions across multiple automation scripts.
+                        </p>
+                        <button onclick="loadScenario('aws')" class="bg-orange-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                            Try Scenario
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center animate-gradient">
+                    <i class="fas fa-sync-alt text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">PSP</h1>
+                    <p class="text-sm text-gray-400">Persistent Sessions Protocol</p>
+                </div>
+            </div>
+            <p class="text-gray-300 mb-6">
+                This is a simulated demo environment. Real PSP implementation provides actual browser automation capabilities.
+            </p>
+            <div class="flex justify-center space-x-6">
+                <a href="index.html" class="text-gray-400 hover:text-white transition-colors">Home</a>
+                <a href="docs.html" class="text-gray-400 hover:text-white transition-colors">Documentation</a>
+                <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="text-gray-400 hover:text-white transition-colors">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let selectedPlatform = null;
+        let demoRunning = false;
+        let sessionCaptured = false;
+
+        // Platform data
+        const platforms = {
+            gmail: {
+                name: 'Gmail',
+                url: 'https://mail.google.com',
+                icon: 'fas fa-envelope',
+                color: 'text-red-500',
+                content: `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-envelope text-red-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Gmail Demo Environment</h3>
+                        <p class="text-gray-600 mb-4">Simulating Gmail authentication and session capture</p>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
+                            <div class="text-sm text-red-800">
+                                <div class="font-medium mb-2">Demo Features:</div>
+                                <ul class="text-left space-y-1">
+                                    <li>• OAuth2 token capture</li>
+                                    <li>• Cookie persistence</li>
+                                    <li>• Session state management</li>
+                                    <li>• Multi-account support</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            github: {
+                name: 'GitHub',
+                url: 'https://github.com',
+                icon: 'fab fa-github',
+                color: 'text-gray-800',
+                content: `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fab fa-github text-gray-800 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">GitHub Demo Environment</h3>
+                        <p class="text-gray-600 mb-4">Simulating GitHub authentication and API tokens</p>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 max-w-md mx-auto">
+                            <div class="text-sm text-gray-800">
+                                <div class="font-medium mb-2">Demo Features:</div>
+                                <ul class="text-left space-y-1">
+                                    <li>• Personal access tokens</li>
+                                    <li>• SSH key management</li>
+                                    <li>• Repository access</li>
+                                    <li>• Workflow persistence</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            aws: {
+                name: 'AWS Console',
+                url: 'https://console.aws.amazon.com',
+                icon: 'fab fa-aws',
+                color: 'text-orange-500',
+                content: `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fab fa-aws text-orange-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">AWS Console Demo Environment</h3>
+                        <p class="text-gray-600 mb-4">Simulating complex AWS Console sessions</p>
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 max-w-md mx-auto">
+                            <div class="text-sm text-orange-800">
+                                <div class="font-medium mb-2">Demo Features:</div>
+                                <ul class="text-left space-y-1">
+                                    <li>• Multi-region support</li>
+                                    <li>• IAM role switching</li>
+                                    <li>• Service state capture</li>
+                                    <li>• CloudFormation sessions</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            slack: {
+                name: 'Slack',
+                url: 'https://slack.com',
+                icon: 'fab fa-slack',
+                color: 'text-purple-500',
+                content: `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fab fa-slack text-purple-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Slack Demo Environment</h3>
+                        <p class="text-gray-600 mb-4">Simulating Slack workspace authentication</p>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 max-w-md mx-auto">
+                            <div class="text-sm text-purple-800">
+                                <div class="font-medium mb-2">Demo Features:</div>
+                                <ul class="text-left space-y-1">
+                                    <li>• Workspace switching</li>
+                                    <li>• Bot token management</li>
+                                    <li>• Channel access</li>
+                                    <li>• App permissions</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        function addTerminalLine(text, color = 'text-green-400') {
+            const output = document.getElementById('terminalOutput');
+            const line = document.createElement('div');
+            line.className = color;
+            line.textContent = text;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function selectPlatform(platform) {
+            // Clear previous selection
+            document.querySelectorAll('.demo-card').forEach(card => card.classList.remove('active'));
+            
+            // Set new selection
+            event.target.closest('.demo-card').classList.add('active');
+            selectedPlatform = platform;
+            
+            // Update UI
+            document.getElementById('currentPlatform').textContent = platforms[platform].name;
+            document.getElementById('browserUrl').textContent = platforms[platform].url;
+            document.getElementById('browserContent').innerHTML = platforms[platform].content;
+            
+            addTerminalLine(`Selected platform: ${platforms[platform].name}`, 'text-blue-400');
+            addTerminalLine('Platform ready for automation...', 'text-gray-400');
+        }
+
+        function startDemo() {
+            if (!selectedPlatform) {
+                addTerminalLine('Error: Please select a platform first', 'text-red-400');
+                return;
+            }
+            
+            demoRunning = true;
+            document.getElementById('sessionStatus').textContent = 'Running';
+            document.getElementById('currentFramework').textContent = document.getElementById('frameworkSelect').value;
+            
+            addTerminalLine('$ psp demo start', 'text-yellow-400');
+            addTerminalLine('Starting PSP demo environment...', 'text-green-400');
+            
+            setTimeout(() => {
+                addTerminalLine(`Launching ${document.getElementById('frameworkSelect').value} browser...`, 'text-green-400');
+            }, 1000);
+            
+            setTimeout(() => {
+                addTerminalLine(`Navigating to ${platforms[selectedPlatform].url}...`, 'text-green-400');
+            }, 2000);
+            
+            setTimeout(() => {
+                addTerminalLine('Browser ready for session capture', 'text-green-400');
+                document.querySelector('button[onclick="captureSession()"]').disabled = false;
+            }, 3000);
+        }
+
+        function captureSession() {
+            if (!demoRunning) {
+                addTerminalLine('Error: Demo not running', 'text-red-400');
+                return;
+            }
+            
+            addTerminalLine('$ psp capture --platform ' + selectedPlatform, 'text-yellow-400');
+            addTerminalLine('Capturing session state...', 'text-green-400');
+            
+            setTimeout(() => {
+                addTerminalLine('✓ Cookies captured (12 items)', 'text-green-400');
+            }, 500);
+            
+            setTimeout(() => {
+                addTerminalLine('✓ LocalStorage captured (8 items)', 'text-green-400');
+            }, 1000);
+            
+            setTimeout(() => {
+                addTerminalLine('✓ Authentication tokens captured', 'text-green-400');
+            }, 1500);
+            
+            setTimeout(() => {
+                addTerminalLine('✓ Session saved to cloud storage', 'text-green-400');
+                addTerminalLine(`Session ID: sess_${Date.now()}`, 'text-blue-400');
+                sessionCaptured = true;
+                document.querySelector('button[onclick="restoreSession()"]').disabled = false;
+            }, 2000);
+        }
+
+        function restoreSession() {
+            if (!sessionCaptured) {
+                addTerminalLine('Error: No session captured yet', 'text-red-400');
+                return;
+            }
+            
+            addTerminalLine('$ psp restore --session sess_' + Date.now(), 'text-yellow-400');
+            addTerminalLine('Restoring session in new browser instance...', 'text-green-400');
+            
+            setTimeout(() => {
+                addTerminalLine('✓ Cookies restored', 'text-green-400');
+            }, 500);
+            
+            setTimeout(() => {
+                addTerminalLine('✓ Authentication state applied', 'text-green-400');
+            }, 1000);
+            
+            setTimeout(() => {
+                addTerminalLine('✓ Session successfully restored!', 'text-green-400');
+                addTerminalLine('Browser is now authenticated and ready to use', 'text-blue-400');
+            }, 1500);
+        }
+
+        function resetDemo() {
+            demoRunning = false;
+            sessionCaptured = false;
+            selectedPlatform = null;
+            
+            document.getElementById('sessionStatus').textContent = 'Idle';
+            document.getElementById('currentPlatform').textContent = 'None';
+            document.getElementById('currentFramework').textContent = 'None';
+            document.getElementById('browserUrl').textContent = 'https://demo.psp.ai';
+            
+            document.getElementById('browserContent').innerHTML = `
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-globe text-gray-400 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-gray-900 mb-2">Select a Platform to Begin</h3>
+                    <p class="text-gray-600">Choose a platform from the controls on the left to start the interactive demo</p>
+                </div>
+            `;
+            
+            document.getElementById('terminalOutput').innerHTML = `
+                <div>PSP Interactive Demo v1.0.0</div>
+                <div class="text-gray-400">Ready to demonstrate session capture and restore...</div>
+                <div class="text-yellow-400">$ Waiting for platform selection...</div>
+            `;
+            
+            document.querySelectorAll('.demo-card').forEach(card => card.classList.remove('active'));
+            document.querySelector('button[onclick="captureSession()"]').disabled = true;
+            document.querySelector('button[onclick="restoreSession()"]').disabled = true;
+            
+            addTerminalLine('Demo environment reset', 'text-blue-400');
+        }
+
+        function loadScenario(platform) {
+            selectPlatform(platform);
+            setTimeout(() => startDemo(), 500);
+        }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@ import {
   StoredSession,
   SessionFilter,
   SessionMetadata,
-} from '../../../dist/core/src';
+} from '../../core/src/types';
 import { createClient, RedisClientType } from 'redis';
 import { createLogger } from '../utils/logger';
 

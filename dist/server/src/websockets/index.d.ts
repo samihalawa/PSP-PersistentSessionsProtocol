@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { StorageProvider } from '../../../dist/core/src';
+import { StorageProvider } from '../../core/src';
 /**
  * Sets up WebSocket handlers
  */
