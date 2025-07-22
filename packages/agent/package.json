@@ -1,0 +1,27 @@
+{
+  "name": "@psp/agent",
+  "version": "0.1.0",
+  "description": "Autonomous agent for PSP session management and automation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": ["psp", "agent", "automation", "sessions"],
+  "author": "PSP Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@psp/core": "^0.1.0",
+    "openai": "^4.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}

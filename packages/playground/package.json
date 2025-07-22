@@ -1,0 +1,35 @@
+{
+  "name": "@psp/playground",
+  "version": "0.1.0",
+  "description": "Interactive playground for PSP API exploration and testing",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && npm run build:static",
+    "build:static": "webpack --mode production",
+    "dev": "webpack serve --mode development",
+    "test": "jest"
+  },
+  "keywords": ["psp", "playground", "api", "testing", "interactive"],
+  "author": "PSP Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@psp/sdk-js": "^0.1.0",
+    "monaco-editor": "^0.44.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/styled-components": "^5.1.0",
+    "typescript": "^5.0.0",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.0",
+    "webpack-dev-server": "^4.15.0",
+    "html-webpack-plugin": "^5.5.0",
+    "css-loader": "^6.8.0",
+    "style-loader": "^3.3.0",
+    "ts-loader": "^9.4.0"
+  }
+}
