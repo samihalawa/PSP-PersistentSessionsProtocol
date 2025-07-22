@@ -3,7 +3,7 @@ import {
   StoredSession,
   SessionFilter,
   SessionMetadata,
-} from '@psp/core';
+} from '../../../dist/core/src';
 import { createClient, RedisClientType } from 'redis';
 import { createLogger } from '../utils/logger';
 

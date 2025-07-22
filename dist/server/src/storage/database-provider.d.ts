@@ -1,5 +1,5 @@
-import { StorageProvider } from '@psp/core';
-import { SessionMetadata, BrowserSessionState, SessionFilter } from '@psp/core';
+import { StorageProvider } from '../../../dist/core/src';
+import { SessionMetadata, BrowserSessionState, SessionFilter } from '../../../dist/core/src';
 /**
  * Database storage provider implementation (Future Feature)
  *
