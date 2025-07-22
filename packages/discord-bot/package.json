@@ -1,0 +1,29 @@
+{
+  "name": "@psp/discord-bot",
+  "version": "0.1.0",
+  "description": "PSP Discord community bot for engagement and support",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest"
+  },
+  "keywords": ["psp", "discord", "bot", "community"],
+  "author": "PSP Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.14.0",
+    "@psp/analytics": "^0.1.0",
+    "dotenv": "^16.0.0",
+    "cron": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/cron": "^2.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}
