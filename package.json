@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "A unified protocol for browser session persistence across automation frameworks",
   "main": "index.js",
+  "bin": {
+    "psp": "./bin/psp.js"
+  },
   "scripts": {
     "test": "jest",
     "lint": "eslint . --ext .ts,.tsx --config .eslintrc.json",
@@ -13,7 +16,8 @@
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
     "demo": "node bin/psp-demo.js",
-    "example:core": "npx ts-node examples/core-example.ts"
+    "example:core": "npx ts-node examples/core-example.ts",
+    "simulate-users": "node simulate-users.js"
   },
   "keywords": [
     "browser",

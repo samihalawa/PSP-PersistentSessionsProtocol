@@ -1,5 +1,5 @@
-import { StorageProvider } from '../../core/src';
-import { SessionMetadata, BrowserSessionState, SessionFilter } from '../../core/src';
+import { StorageProvider } from '../../core/src/types';
+import { SessionMetadata, BrowserSessionState, SessionFilter } from '../../core/src/types';
 /**
  * Cloud storage provider implementation (Future Feature)
  *

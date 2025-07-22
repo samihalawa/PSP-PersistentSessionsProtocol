@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { StorageProvider } from '../../core/src';
+import { StorageProvider } from '../../core/src/types';
 /**
  * Controller for session-related endpoints
  */
