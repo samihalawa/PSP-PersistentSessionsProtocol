@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionController = void 0;
-const src_1 = require("../../../dist/core/src");
+const types_1 = require("../../core/src/types");
 const logger_1 = require("../utils/logger");
 const errors_1 = require("../utils/errors");
 const websockets_1 = require("../websockets");
@@ -66,7 +66,7 @@ class SessionController {
             try {
                 const { name, description, tags, state } = req.body;
                 // Generate a new session ID
-                const id = (0, src_1.generateId)();
+                const id = (0, types_1.generateId)();
                 const now = Date.now();
                 // Create the session
                 const session = {
@@ -300,7 +300,7 @@ class SessionController {
                 else {
                     // Add new participant
                     participant = {
-                        id: participantId || (0, src_1.generateId)(),
+                        id: participantId || (0, types_1.generateId)(),
                         name: participantName,
                         joinedAt: Date.now(),
                         isActive: true,
@@ -316,7 +316,7 @@ class SessionController {
                     session.metadata.messages = [];
                 }
                 const joinMessage = {
-                    id: (0, src_1.generateId)(),
+                    id: (0, types_1.generateId)(),
                     senderId: 'system',
                     senderName: 'System',
                     message: `${participantName} joined the session`,
@@ -413,7 +413,7 @@ class SessionController {
                 }
                 // Create the message
                 const newMessage = {
-                    id: (0, src_1.generateId)(),
+                    id: (0, types_1.generateId)(),
                     senderId,
                     senderName: senderName || 'Unknown',
                     message,
@@ -465,7 +465,7 @@ class SessionController {
                     session.metadata.messages = [];
                 }
                 const terminationMessage = {
-                    id: (0, src_1.generateId)(),
+                    id: (0, types_1.generateId)(),
                     senderId: 'system',
                     senderName: 'System',
                     message: 'Session has been terminated',

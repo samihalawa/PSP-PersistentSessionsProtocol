@@ -1,4 +1,4 @@
-import { StorageProvider } from '../../../dist/core/src';
+import { StorageProvider } from '../../core/src/types';
 /**
  * Sets up the appropriate storage provider based on configuration
  */

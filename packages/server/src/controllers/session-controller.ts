@@ -6,7 +6,7 @@ import {
   generateId,
   SessionParticipant,
   SessionMessage
-} from '../../../dist/core/src';
+} from '../../core/src/types';
 import { createLogger } from '../utils/logger';
 import { BadRequestError, NotFoundError } from '../utils/errors';
 import { broadcastSessionUpdate, broadcastSessionEvent } from '../websockets';

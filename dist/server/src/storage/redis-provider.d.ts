@@ -1,4 +1,4 @@
-import { StorageProvider, StoredSession, SessionFilter, SessionMetadata } from '../../../dist/core/src';
+import { StorageProvider, StoredSession, SessionFilter, SessionMetadata } from '../../core/src/types';
 /**
  * Redis storage provider for PSP
  */

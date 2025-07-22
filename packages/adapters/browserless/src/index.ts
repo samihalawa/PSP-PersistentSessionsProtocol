@@ -1,1 +1,2 @@
-// Browserless adapter main entry point
+export { BrowserlessAdapter } from './adapter';
+export type { BrowserlessConfig } from './adapter';

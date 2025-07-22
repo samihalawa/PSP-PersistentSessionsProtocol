@@ -1,5 +1,5 @@
-import { StorageProvider } from '../../../dist/core/src';
-import { SessionMetadata, BrowserSessionState, SessionFilter } from '../../../dist/core/src';
+import { StorageProvider } from '../../core/src/types';
+import { SessionMetadata, BrowserSessionState, SessionFilter } from '../../core/src/types';
 
 /**
  * Database storage provider implementation (Future Feature)

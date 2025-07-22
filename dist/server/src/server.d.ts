@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-import { StorageProvider } from '../../../dist/core/src';
+import { StorageProvider } from '../../core/src/storage/provider';
 export interface ServerConfig {
     port: number;
     host: string;

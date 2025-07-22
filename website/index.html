@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP - Persistent Sessions Protocol | The Future of Browser Automation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient': 'gradient 6s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': { 'background-position': '0% 50%' },
+                            '50%': { 'background-position': '100% 50%' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #f093fb);
+            background-size: 400% 400%;
+        }
+        .glass-effect {
+            backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+        .glass-dark {
+            backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 12px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+    </style>
+</head>
+<body class="font-inter antialiased">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center animate-gradient">
+                            <i class="fas fa-sync-alt text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">PSP</h1>
+                            <p class="text-xs text-gray-500">Persistent Sessions Protocol</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Features</a>
+                    <a href="#integrations" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Integrations</a>
+                    <a href="docs.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Documentation</a>
+                    <a href="examples.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Examples</a>
+                    <a href="api.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">API</a>
+                    <a href="pricing.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Pricing</a>
+                    <a href="demo.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">Live Demo</a>
+                </div>
+                
+                <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobileMenu" class="hidden md:hidden glass-effect">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#features" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Features</a>
+                <a href="#integrations" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Integrations</a>
+                <a href="docs.html" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Documentation</a>
+                <a href="examples.html" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Examples</a>
+                <a href="api.html" class="block px-3 py-2 text-gray-700 hover:text-blue-600">API</a>
+                <a href="pricing.html" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Pricing</a>
+                <a href="demo.html" class="block px-3 py-2 bg-blue-600 text-white rounded-lg">Live Demo</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen gradient-bg animate-gradient flex items-center justify-center relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-white bg-opacity-10 rounded-full animate-float"></div>
+            <div class="absolute top-3/4 right-1/4 w-48 h-48 bg-white bg-opacity-10 rounded-full animate-float" style="animation-delay: -2s;"></div>
+            <div class="absolute top-1/2 left-3/4 w-32 h-32 bg-white bg-opacity-10 rounded-full animate-float" style="animation-delay: -4s;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                    The Future of
+                    <span class="block bg-gradient-to-r from-yellow-200 to-pink-200 bg-clip-text text-transparent">
+                        Browser Automation
+                    </span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-white text-opacity-90 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    PSP transforms browser automation by providing a unified, framework-agnostic approach to session management. 
+                    Capture, store, and restore complete browser sessions seamlessly across different tools and environments.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                    <a href="docs.html" class="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl">
+                        <i class="fas fa-rocket mr-2"></i>Get Started
+                    </a>
+                    <a href="demo.html" class="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:text-gray-900 transition-all transform hover:scale-105">
+                        <i class="fas fa-play mr-2"></i>Live Demo
+                    </a>
+                    <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fab fa-github text-2xl"></i>
+                    </a>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 glass-dark rounded-2xl p-8">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-white">20+</div>
+                        <div class="text-white text-opacity-75">Platforms Tested</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-white">9</div>
+                        <div class="text-white text-opacity-75">Framework Adapters</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-white">12</div>
+                        <div class="text-white text-opacity-75">MCP Tools</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-white">∞</div>
+                        <div class="text-white text-opacity-75">Possibilities</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Why Choose PSP?
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    PSP provides the most comprehensive solution for browser session management, 
+                    with enterprise-grade security and seamless integration across all major automation frameworks.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Framework Agnostic -->
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                        <i class="fas fa-layer-group text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Framework Agnostic</h3>
+                    <p class="text-gray-600 mb-4">
+                        Works seamlessly with Playwright, Selenium, Puppeteer, and 6+ other automation frameworks. 
+                        One protocol, infinite possibilities.
+                    </p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ Playwright Integration</li>
+                        <li>✓ Selenium WebDriver</li>
+                        <li>✓ Puppeteer Support</li>
+                        <li>✓ Cloud Browser APIs</li>
+                    </ul>
+                </div>
+
+                <!-- Enterprise Security -->
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Enterprise Security</h3>
+                    <p class="text-gray-600 mb-4">
+                        AES-256 encryption, secure cookie handling, and role-based access control. 
+                        Your sessions are protected by military-grade security.
+                    </p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ AES-256 Encryption</li>
+                        <li>✓ Secure Cookie Storage</li>
+                        <li>✓ Role-Based Access</li>
+                        <li>✓ Audit Logging</li>
+                    </ul>
+                </div>
+
+                <!-- Cloud Integration -->
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                        <i class="fas fa-cloud text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Cloud Native</h3>
+                    <p class="text-gray-600 mb-4">
+                        Built-in support for Browserbase, Hyperbrowser, and major cloud browser providers. 
+                        Scale infinitely with cloud automation.
+                    </p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ Browserbase Integration</li>
+                        <li>✓ Hyperbrowser Support</li>
+                        <li>✓ AWS/GCP Compatible</li>
+                        <li>✓ Auto Scaling</li>
+                    </ul>
+                </div>
+
+                <!-- AI Integration -->
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">AI Agent Ready</h3>
+                    <p class="text-gray-600 mb-4">
+                        MCP integration for Smithery.ai, Skyvern, and Stagehand. 
+                        12 powerful tools for AI-driven automation.
+                    </p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ 12 MCP Tools</li>
+                        <li>✓ Smithery.ai Compatible</li>
+                        <li>✓ Skyvern Integration</li>
+                        <li>✓ Stagehand Support</li>
+                    </ul>
+                </div>
+
+                <!-- Real-time Monitoring -->
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Real-time Monitoring</h3>
+                    <p class="text-gray-600 mb-4">
+                        Beautiful web interface with real-time session monitoring, drag & drop management, 
+                        and comprehensive analytics dashboard.
+                    </p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ Live Session Tracking</li>
+                        <li>✓ Performance Analytics</li>
+                        <li>✓ Usage Statistics</li>
+                        <li>✓ Health Monitoring</li>
+                    </ul>
+                </div>
+
+                <!-- Developer Experience -->
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-105 transition-all duration-300">
+                    <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center mb-6 animate-pulse-slow">
+                        <i class="fas fa-code text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Developer First</h3>
+                    <p class="text-gray-600 mb-4">
+                        Comprehensive CLI, beautiful GUI, extensive documentation, and SDKs in multiple languages. 
+                        Built by developers, for developers.
+                    </p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ Full-featured CLI</li>
+                        <li>✓ TypeScript/JavaScript SDK</li>
+                        <li>✓ Python & Go SDKs</li>
+                        <li>✓ Interactive Demos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Example Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Simple Yet Powerful
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Get started with PSP in just a few lines of code
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Create & Capture Sessions</h3>
+                    <div class="code-block p-6 text-green-400 text-sm overflow-x-auto">
+                        <pre><code><span class="text-gray-500">// Install PSP globally</span>
+<span class="text-blue-400">npm install -g @psp/cli</span>
+
+<span class="text-gray-500">// Create a new session</span>
+<span class="text-yellow-400">const</span> session = <span class="text-blue-400">await</span> <span class="text-purple-400">Session</span>.<span class="text-blue-400">create</span>({
+  <span class="text-red-400">name</span>: <span class="text-green-300">'Gmail Production'</span>,
+  <span class="text-red-400">tags</span>: [<span class="text-green-300">'gmail'</span>, <span class="text-green-300">'production'</span>],
+  <span class="text-red-400">storage</span>: <span class="text-green-300">'cloud'</span>
+});
+
+<span class="text-gray-500">// Capture after authentication</span>
+<span class="text-blue-400">await</span> session.<span class="text-blue-400">capture</span>(page);
+</code></pre>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Restore Anywhere</h3>
+                    <div class="code-block p-6 text-green-400 text-sm overflow-x-auto">
+                        <pre><code><span class="text-gray-500">// Later, restore in any framework</span>
+<span class="text-yellow-400">const</span> session = <span class="text-blue-400">await</span> <span class="text-purple-400">Session</span>.<span class="text-blue-400">load</span>(<span class="text-green-300">'session-id'</span>);
+<span class="text-blue-400">await</span> session.<span class="text-blue-400">restore</span>(newPage);
+
+<span class="text-gray-500">// 🎉 Already authenticated!</span>
+<span class="text-blue-400">await</span> newPage.<span class="text-blue-400">goto</span>(<span class="text-green-300">'https://gmail.com'</span>);
+<span class="text-gray-500">// No login required - session restored</span>
+</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                            <i class="fas fa-download text-blue-600 text-xl"></i>
+                        </div>
+                        <div class="text-sm font-medium text-gray-900">Install</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                            <i class="fas fa-capture text-green-600 text-xl"></i>
+                        </div>
+                        <div class="text-sm font-medium text-gray-900">Capture</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-3">
+                            <i class="fas fa-cloud-upload-alt text-purple-600 text-xl"></i>
+                        </div>
+                        <div class="text-sm font-medium text-gray-900">Store</div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                            <i class="fas fa-undo text-orange-600 text-xl"></i>
+                        </div>
+                        <div class="text-sm font-medium text-gray-900">Restore</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations Section -->
+    <section id="integrations" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Works with Everything
+                </h2>
+                <p class="text-xl text-gray-600">
+                    PSP integrates seamlessly with all major automation frameworks and platforms
+                </p>
+            </div>
+
+            <!-- Framework Logos -->
+            <div class="mb-16">
+                <h3 class="text-2xl font-bold text-center text-gray-900 mb-8">Automation Frameworks</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+                    <div class="flex flex-col items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-play text-white text-2xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900">Playwright</div>
+                        <div class="text-sm text-gray-500">Microsoft</div>
+                    </div>
+                    <div class="flex flex-col items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-spider text-white text-2xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900">Selenium</div>
+                        <div class="text-sm text-gray-500">WebDriver</div>
+                    </div>
+                    <div class="flex flex-col items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-robot text-white text-2xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900">Puppeteer</div>
+                        <div class="text-sm text-gray-500">Google</div>
+                    </div>
+                    <div class="flex flex-col items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-eye text-white text-2xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900">Skyvern</div>
+                        <div class="text-sm text-gray-500">AI Automation</div>
+                    </div>
+                    <div class="flex flex-col items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-theater-masks text-white text-2xl"></i>
+                        </div>
+                        <div class="font-semibold text-gray-900">Stagehand</div>
+                        <div class="text-sm text-gray-500">AI Agents</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cloud Providers -->
+            <div class="mb-16">
+                <h3 class="text-2xl font-bold text-center text-gray-900 mb-8">Cloud Browser Providers</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="flex items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-cloud text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900">Browserbase</div>
+                            <div class="text-sm text-gray-500">Cloud browser infrastructure</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-rocket text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900">Hyperbrowser</div>
+                            <div class="text-sm text-gray-500">High-performance browsers</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-6 glass-effect rounded-xl transform hover:scale-105 transition-all">
+                        <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-server text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900">Browserless</div>
+                            <div class="text-sm text-gray-500">Scalable browser APIs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Platforms -->
+            <div>
+                <h3 class="text-2xl font-bold text-center text-gray-900 mb-8">Tested Platforms (20+)</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
+                    <div class="p-4 glass-effect rounded-lg">Gmail</div>
+                    <div class="p-4 glass-effect rounded-lg">GitHub</div>
+                    <div class="p-4 glass-effect rounded-lg">AWS Console</div>
+                    <div class="p-4 glass-effect rounded-lg">Slack</div>
+                    <div class="p-4 glass-effect rounded-lg">Discord</div>
+                    <div class="p-4 glass-effect rounded-lg">Notion</div>
+                    <div class="p-4 glass-effect rounded-lg">LinkedIn</div>
+                    <div class="p-4 glass-effect rounded-lg">Twitter/X</div>
+                    <div class="p-4 glass-effect rounded-lg">Facebook</div>
+                    <div class="p-4 glass-effect rounded-lg">Instagram</div>
+                    <div class="p-4 glass-effect rounded-lg">YouTube</div>
+                    <div class="p-4 glass-effect rounded-lg">Shopify</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 gradient-bg animate-gradient text-white text-center">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Transform Your Automation?
+            </h2>
+            <p class="text-xl mb-8 text-opacity-90">
+                Join thousands of developers who are already using PSP to streamline their browser automation workflows.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="docs.html" class="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105">
+                    Get Started Free
+                </a>
+                <a href="demo.html" class="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:text-gray-900 transition-all transform hover:scale-105">
+                    Try Live Demo
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center animate-gradient">
+                            <i class="fas fa-sync-alt text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold">PSP</h1>
+                            <p class="text-sm text-gray-400">Persistent Sessions Protocol</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 mb-6 max-w-md">
+                        The unified protocol for browser session persistence across automation frameworks. 
+                        Built for developers, trusted by enterprises.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/samihalawa/PSP-PersistentSessionsProtocol" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-github text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter text-2xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-discord text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Documentation</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="docs.html" class="hover:text-white transition-colors">Getting Started</a></li>
+                        <li><a href="api.html" class="hover:text-white transition-colors">API Reference</a></li>
+                        <li><a href="examples.html" class="hover:text-white transition-colors">Examples</a></li>
+                        <li><a href="integrations.html" class="hover:text-white transition-colors">Integrations</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Resources</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="demo.html" class="hover:text-white transition-colors">Live Demo</a></li>
+                        <li><a href="pricing.html" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="support.html" class="hover:text-white transition-colors">Support</a></li>
+                        <li><a href="blog.html" class="hover:text-white transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 mt-8 text-center text-gray-400">
+                <p>&copy; 2024 PSP - Persistent Sessions Protocol. MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('glass-effect');
+            } else {
+                navbar.classList.remove('glass-effect');
+            }
+        });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

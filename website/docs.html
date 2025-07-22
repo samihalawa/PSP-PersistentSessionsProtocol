@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - PSP Getting Started Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'inter': ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #f093fb);
+            background-size: 400% 400%;
+        }
+        .glass-effect {
+            backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 12px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        .sidebar { position: sticky; top: 2rem; height: fit-content; }
+        .sidebar a.active { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body class="font-inter antialiased bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center">
+                            <i class="fas fa-sync-alt text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">PSP</h1>
+                            <p class="text-xs text-gray-500">Documentation</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">← Back to Home</a>
+                    <a href="demo.html" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">Live Demo</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex gap-8">
+                <!-- Sidebar -->
+                <div class="w-64 sidebar">
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="font-bold text-gray-900 mb-4">Documentation</h3>
+                        <nav class="space-y-2">
+                            <a href="#getting-started" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 active" onclick="showSection('getting-started')">Getting Started</a>
+                            <a href="#installation" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('installation')">Installation</a>
+                            <a href="#quick-start" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('quick-start')">Quick Start</a>
+                            <a href="#core-concepts" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('core-concepts')">Core Concepts</a>
+                            <a href="#adapters" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('adapters')">Adapters</a>
+                            <a href="#storage" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('storage')">Storage Providers</a>
+                            <a href="#cli-reference" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('cli-reference')">CLI Reference</a>
+                            <a href="#api-reference" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('api-reference')">API Reference</a>
+                            <a href="#mcp-integration" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('mcp-integration')">MCP Integration</a>
+                            <a href="#troubleshooting" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600" onclick="showSection('troubleshooting')">Troubleshooting</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="flex-1 max-w-4xl">
+                    <!-- Getting Started Section -->
+                    <div id="getting-started" class="doc-section">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">Getting Started with PSP</h1>
+                            <p class="text-xl text-gray-600 mb-8">
+                                PSP (Persistent Sessions Protocol) is a unified approach to browser session management across automation frameworks. 
+                                This guide will help you get up and running with PSP in minutes.
+                            </p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div class="bg-blue-50 rounded-xl p-6 text-center">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-download text-blue-600 text-xl"></i>
+                                    </div>
+                                    <h3 class="font-bold text-gray-900 mb-2">1. Install</h3>
+                                    <p class="text-sm text-gray-600">Quick installation via npm or direct download</p>
+                                </div>
+                                <div class="bg-green-50 rounded-xl p-6 text-center">
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-cog text-green-600 text-xl"></i>
+                                    </div>
+                                    <h3 class="font-bold text-gray-900 mb-2">2. Configure</h3>
+                                    <p class="text-sm text-gray-600">Set up your preferred storage and adapters</p>
+                                </div>
+                                <div class="bg-purple-50 rounded-xl p-6 text-center">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-play text-purple-600 text-xl"></i>
+                                    </div>
+                                    <h3 class="font-bold text-gray-900 mb-2">3. Automate</h3>
+                                    <p class="text-sm text-gray-600">Start capturing and restoring sessions</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                                <div class="flex items-start space-x-3">
+                                    <i class="fas fa-lightbulb text-yellow-600 text-xl mt-1"></i>
+                                    <div>
+                                        <h4 class="font-bold text-yellow-800 mb-2">What makes PSP special?</h4>
+                                        <p class="text-yellow-700">
+                                            Unlike other session management tools, PSP is framework-agnostic and works across 
+                                            Playwright, Selenium, Puppeteer, and cloud browser providers. One session can be 
+                                            captured in Playwright and restored in Selenium seamlessly.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Installation Section -->
+                    <div id="installation" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">Installation</h1>
+                            
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">NPM Installation (Recommended)</h2>
+                            <div class="code-block p-6 text-green-400 text-sm overflow-x-auto mb-6">
+                                <pre><code><span class="text-gray-500"># Install PSP CLI globally</span>
+<span class="text-blue-400">npm install -g @psp/cli</span>
+
+<span class="text-gray-500"># Install core library for your project</span>
+<span class="text-blue-400">npm install @psp/core</span>
+
+<span class="text-gray-500"># Install framework-specific adapters</span>
+<span class="text-blue-400">npm install @psp/adapter-playwright</span>
+<span class="text-blue-400">npm install @psp/adapter-selenium</span></code></pre>
+                            </div>
+
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">From Source</h2>
+                            <div class="code-block p-6 text-green-400 text-sm overflow-x-auto mb-6">
+                                <pre><code><span class="text-gray-500"># Clone the repository</span>
+<span class="text-blue-400">git clone https://github.com/samihalawa/PSP-PersistentSessionsProtocol.git</span>
+<span class="text-blue-400">cd PSP-PersistentSessionsProtocol</span>
+
+<span class="text-gray-500"># Install dependencies and build</span>
+<span class="text-blue-400">npm install</span>
+<span class="text-blue-400">npm run build</span>
+
+<span class="text-gray-500"># Link CLI globally</span>
+<span class="text-blue-400">npm link</span></code></pre>
+                            </div>
+
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">Docker Installation</h2>
+                            <div class="code-block p-6 text-green-400 text-sm overflow-x-auto mb-6">
+                                <pre><code><span class="text-gray-500"># Pull PSP server image</span>
+<span class="text-blue-400">docker pull psp/server:latest</span>
+
+<span class="text-gray-500"># Run PSP server</span>
+<span class="text-blue-400">docker run -p 3000:3000 -v psp-data:/data psp/server:latest</span></code></pre>
+                            </div>
+
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">System Requirements</h2>
+                            <div class="bg-gray-50 rounded-xl p-6">
+                                <ul class="space-y-2 text-gray-700">
+                                    <li><strong>Node.js:</strong> Version 16.0 or higher</li>
+                                    <li><strong>Operating System:</strong> Windows, macOS, or Linux</li>
+                                    <li><strong>Memory:</strong> Minimum 512MB RAM</li>
+                                    <li><strong>Storage:</strong> 100MB free space</li>
+                                    <li><strong>Browser:</strong> Chrome, Firefox, Safari, or Edge (for web UI)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Start Section -->
+                    <div id="quick-start" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">Quick Start</h1>
+                            
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">60-Second Demo</h2>
+                            <div class="code-block p-6 text-green-400 text-sm overflow-x-auto mb-6">
+                                <pre><code><span class="text-gray-500"># Run interactive demo</span>
+<span class="text-blue-400">psp demo</span>
+
+<span class="text-gray-500"># Launch web interface</span>
+<span class="text-blue-400">psp ui</span>
+
+<span class="text-gray-500"># Create your first session</span>
+<span class="text-blue-400">psp create "Gmail Session" "My production Gmail automation"</span></code></pre>
+                            </div>
+
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">Basic Usage Example</h2>
+                            <div class="code-block p-6 text-green-400 text-sm overflow-x-auto mb-6">
+                                <pre><code><span class="text-purple-400">import</span> { <span class="text-blue-400">Session</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'@psp/core'</span>;
+<span class="text-purple-400">import</span> { <span class="text-blue-400">PlaywrightAdapter</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'@psp/adapter-playwright'</span>;
+<span class="text-purple-400">import</span> { <span class="text-blue-400">chromium</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'playwright'</span>;
+
+<span class="text-gray-500">// Create a new session</span>
+<span class="text-yellow-400">const</span> browser = <span class="text-blue-400">await</span> chromium.<span class="text-blue-400">launch</span>();
+<span class="text-yellow-400">const</span> page = <span class="text-blue-400">await</span> browser.<span class="text-blue-400">newPage</span>();
+<span class="text-yellow-400">const</span> adapter = <span class="text-purple-400">new</span> <span class="text-blue-400">PlaywrightAdapter</span>(page);
+
+<span class="text-yellow-400">const</span> session = <span class="text-blue-400">await</span> <span class="text-purple-400">Session</span>.<span class="text-blue-400">create</span>({
+  <span class="text-red-400">name</span>: <span class="text-green-300">'Gmail Session'</span>,
+  <span class="text-red-400">tags</span>: [<span class="text-green-300">'gmail'</span>, <span class="text-green-300">'production'</span>],
+  <span class="text-red-400">storage</span>: <span class="text-green-300">'local'</span>
+}, adapter);
+
+<span class="text-gray-500">// Navigate and authenticate</span>
+<span class="text-blue-400">await</span> page.<span class="text-blue-400">goto</span>(<span class="text-green-300">'https://gmail.com'</span>);
+<span class="text-gray-500">// ... perform login ...</span>
+
+<span class="text-gray-500">// Capture session after authentication</span>
+<span class="text-blue-400">await</span> session.<span class="text-blue-400">capture</span>();
+
+<span class="text-blue-400">await</span> browser.<span class="text-blue-400">close</span>();</code></pre>
+                            </div>
+
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4">Restore Session Later</h2>
+                            <div class="code-block p-6 text-green-400 text-sm overflow-x-auto mb-6">
+                                <pre><code><span class="text-gray-500">// Later, in a different script or framework</span>
+<span class="text-yellow-400">const</span> browser = <span class="text-blue-400">await</span> chromium.<span class="text-blue-400">launch</span>();
+<span class="text-yellow-400">const</span> page = <span class="text-blue-400">await</span> browser.<span class="text-blue-400">newPage</span>();
+<span class="text-yellow-400">const</span> adapter = <span class="text-purple-400">new</span> <span class="text-blue-400">PlaywrightAdapter</span>(page);
+
+<span class="text-gray-500">// Load and restore the session</span>
+<span class="text-yellow-400">const</span> session = <span class="text-blue-400">await</span> <span class="text-purple-400">Session</span>.<span class="text-blue-400">load</span>(<span class="text-green-300">'session-id'</span>);
+<span class="text-blue-400">await</span> session.<span class="text-blue-400">restore</span>(page);
+
+<span class="text-gray-500">// Navigate to Gmail - already authenticated!</span>
+<span class="text-blue-400">await</span> page.<span class="text-blue-400">goto</span>(<span class="text-green-300">'https://gmail.com'</span>);</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Core Concepts Section -->
+                    <div id="core-concepts" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">Core Concepts</h1>
+                            
+                            <div class="space-y-8">
+                                <div class="border-l-4 border-blue-500 pl-6">
+                                    <h2 class="text-2xl font-bold text-gray-900 mb-3">Sessions</h2>
+                                    <p class="text-gray-600 mb-4">
+                                        A session represents the complete state of a browser at a specific point in time. 
+                                        It includes cookies, localStorage, sessionStorage, authentication tokens, and optionally recorded user interactions.
+                                    </p>
+                                    <div class="bg-blue-50 rounded-lg p-4">
+                                        <strong>Session Components:</strong>
+                                        <ul class="mt-2 space-y-1 text-sm">
+                                            <li>• <strong>Metadata:</strong> Name, description, tags, timestamps</li>
+                                            <li>• <strong>Storage State:</strong> Cookies, localStorage, sessionStorage</li>
+                                            <li>• <strong>Authentication:</strong> OAuth tokens, JWT tokens, API keys</li>
+                                            <li>• <strong>Navigation:</strong> Current URL, history</li>
+                                            <li>• <strong>Recording:</strong> User interactions (optional)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-6">
+                                    <h2 class="text-2xl font-bold text-gray-900 mb-3">Adapters</h2>
+                                    <p class="text-gray-600 mb-4">
+                                        Adapters provide framework-specific implementations for capturing and restoring browser state. 
+                                        Each adapter knows how to interact with its specific automation framework.
+                                    </p>
+                                    <div class="bg-green-50 rounded-lg p-4">
+                                        <strong>Available Adapters:</strong>
+                                        <ul class="mt-2 space-y-1 text-sm">
+                                            <li>• <strong>PlaywrightAdapter:</strong> For Microsoft Playwright</li>
+                                            <li>• <strong>SeleniumAdapter:</strong> For Selenium WebDriver</li>
+                                            <li>• <strong>PuppeteerAdapter:</strong> For Google Puppeteer</li>
+                                            <li>• <strong>BrowserbaseAdapter:</strong> For Browserbase cloud</li>
+                                            <li>• <strong>SkyveriAdapter:</strong> For AI automation</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-6">
+                                    <h2 class="text-2xl font-bold text-gray-900 mb-3">Storage Providers</h2>
+                                    <p class="text-gray-600 mb-4">
+                                        Storage providers handle where and how sessions are persisted. PSP supports multiple storage backends 
+                                        for different use cases and scales.
+                                    </p>
+                                    <div class="bg-purple-50 rounded-lg p-4">
+                                        <strong>Storage Options:</strong>
+                                        <ul class="mt-2 space-y-1 text-sm">
+                                            <li>• <strong>Local:</strong> File system storage (default)</li>
+                                            <li>• <strong>Redis:</strong> In-memory cache with persistence</li>
+                                            <li>• <strong>Database:</strong> PostgreSQL, MySQL, MongoDB</li>
+                                            <li>• <strong>Cloud:</strong> AWS S3, Google Cloud Storage, Azure</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="border-l-4 border-orange-500 pl-6">
+                                    <h2 class="text-2xl font-bold text-gray-900 mb-3">MCP Integration</h2>
+                                    <p class="text-gray-600 mb-4">
+                                        Model Context Protocol (MCP) integration allows AI agents and tools to interact with PSP 
+                                        through standardized interfaces. Perfect for AI-driven automation workflows.
+                                    </p>
+                                    <div class="bg-orange-50 rounded-lg p-4">
+                                        <strong>MCP Tools (12 available):</strong>
+                                        <ul class="mt-2 space-y-1 text-sm">
+                                            <li>• <code>psp_list_sessions</code> - List all available sessions</li>
+                                            <li>• <code>psp_create_session</code> - Create new session</li>
+                                            <li>• <code>psp_capture_session</code> - Capture browser state</li>
+                                            <li>• <code>psp_restore_session</code> - Restore session</li>
+                                            <li>• <code>psp_delete_session</code> - Delete session</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add more sections here... -->
+                    <div id="adapters" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">Framework Adapters</h1>
+                            <p class="text-xl text-gray-600 mb-8">
+                                PSP adapters provide seamless integration with popular browser automation frameworks.
+                                Each adapter handles framework-specific implementation details while providing a unified interface.
+                            </p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="border border-gray-200 rounded-xl p-6">
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-play text-green-600"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold">Playwright Adapter</h3>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">Microsoft's Playwright automation library</p>
+                                    <div class="code-block p-4 text-sm mb-4">
+                                        <pre><code><span class="text-purple-400">import</span> { <span class="text-blue-400">PlaywrightAdapter</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'@psp/adapter-playwright'</span>;</code></pre>
+                                    </div>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>✓ Multi-browser support (Chrome, Firefox, Safari)</li>
+                                        <li>✓ Mobile device emulation</li>
+                                        <li>✓ Network interception</li>
+                                        <li>✓ Auto-wait and retry logic</li>
+                                    </ul>
+                                </div>
+
+                                <div class="border border-gray-200 rounded-xl p-6">
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-spider text-orange-600"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold">Selenium Adapter</h3>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">Industry standard WebDriver protocol</p>
+                                    <div class="code-block p-4 text-sm mb-4">
+                                        <pre><code><span class="text-purple-400">import</span> { <span class="text-blue-400">SeleniumAdapter</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'@psp/adapter-selenium'</span>;</code></pre>
+                                    </div>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>✓ Cross-browser compatibility</li>
+                                        <li>✓ Grid and remote execution</li>
+                                        <li>✓ Language binding support</li>
+                                        <li>✓ Legacy system integration</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- More adapters... -->
+                            <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Cloud Browser Adapters</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="border border-gray-200 rounded-xl p-6">
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-cloud text-blue-600"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold">Browserbase Adapter</h3>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">Scalable cloud browser infrastructure</p>
+                                    <div class="code-block p-4 text-sm mb-4">
+                                        <pre><code><span class="text-purple-400">import</span> { <span class="text-blue-400">BrowserbaseAdapter</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'@psp/adapter-browserbase'</span>;</code></pre>
+                                    </div>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>✓ Serverless browser execution</li>
+                                        <li>✓ Global edge locations</li>
+                                        <li>✓ Auto-scaling</li>
+                                        <li>✓ Built-in session persistence</li>
+                                    </ul>
+                                </div>
+
+                                <div class="border border-gray-200 rounded-xl p-6">
+                                    <div class="flex items-center mb-4">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                            <i class="fas fa-brain text-purple-600"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold">Skyvern Adapter</h3>
+                                    </div>
+                                    <p class="text-gray-600 mb-4">AI-powered browser automation</p>
+                                    <div class="code-block p-4 text-sm mb-4">
+                                        <pre><code><span class="text-purple-400">import</span> { <span class="text-blue-400">SkyverdAdapter</span> } <span class="text-purple-400">from</span> <span class="text-green-300">'@psp/adapter-skyvern'</span>;</code></pre>
+                                    </div>
+                                    <ul class="text-sm text-gray-600 space-y-1">
+                                        <li>✓ Computer vision navigation</li>
+                                        <li>✓ Natural language commands</li>
+                                        <li>✓ Adaptive element detection</li>
+                                        <li>✓ Self-healing scripts</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add more hidden sections as needed -->
+                    <div id="storage" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">Storage Providers</h1>
+                            <p class="text-gray-600 mb-8">Choose the right storage backend for your PSP sessions based on your scale, performance, and durability requirements.</p>
+                            
+                            <!-- Storage provider details -->
+                            <div class="space-y-8">
+                                <div class="border border-gray-200 rounded-xl p-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-3">Local File Storage (Default)</h3>
+                                    <p class="text-gray-600 mb-4">Simple file-based storage for development and small-scale deployments.</p>
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <strong>Use Cases:</strong> Development, testing, single-machine deployments
+                                    </div>
+                                    <div class="code-block p-4 text-sm">
+                                        <pre><code><span class="text-yellow-400">const</span> session = <span class="text-blue-400">await</span> <span class="text-purple-400">Session</span>.<span class="text-blue-400">create</span>({
+  <span class="text-red-400">storage</span>: <span class="text-green-300">'local'</span>,  <span class="text-gray-500">// Default</span>
+  <span class="text-red-400">name</span>: <span class="text-green-300">'My Session'</span>
+});</code></pre>
+                                    </div>
+                                </div>
+
+                                <div class="border border-gray-200 rounded-xl p-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-3">Redis Storage</h3>
+                                    <p class="text-gray-600 mb-4">High-performance in-memory storage with optional persistence.</p>
+                                    <div class="bg-red-50 p-4 rounded-lg mb-4">
+                                        <strong>Use Cases:</strong> High-throughput applications, distributed systems, caching
+                                    </div>
+                                    <div class="code-block p-4 text-sm">
+                                        <pre><code><span class="text-yellow-400">const</span> session = <span class="text-blue-400">await</span> <span class="text-purple-400">Session</span>.<span class="text-blue-400">create</span>({
+  <span class="text-red-400">storage</span>: <span class="text-green-300">'redis'</span>,
+  <span class="text-red-400">storageOptions</span>: {
+    <span class="text-red-400">host</span>: <span class="text-green-300">'localhost'</span>,
+    <span class="text-red-400">port</span>: <span class="text-yellow-400">6379</span>,
+    <span class="text-red-400">password</span>: <span class="text-green-300">'your-password'</span>
+  }
+});</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Continue with other sections... -->
+                    <div id="cli-reference" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">CLI Reference</h1>
+                            <p class="text-gray-600 mb-8">Complete reference for the PSP command-line interface.</p>
+                            
+                            <div class="space-y-6">
+                                <div class="border-l-4 border-blue-500 pl-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2"><code>psp list</code></h3>
+                                    <p class="text-gray-600 mb-3">List all available sessions with filtering options.</p>
+                                    <div class="code-block p-4 text-sm">
+                                        <pre><code><span class="text-green-400">psp list</span>                     <span class="text-gray-400"># List all sessions</span>
+<span class="text-green-400">psp list --captured</span>          <span class="text-gray-400"># Show captured browser sessions</span>
+<span class="text-green-400">psp list --tags gmail,prod</span>   <span class="text-gray-400"># Filter by tags</span>
+<span class="text-green-400">psp list --status active</span>     <span class="text-gray-400"># Filter by status</span></code></pre>
+                                    </div>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2"><code>psp create</code></h3>
+                                    <p class="text-gray-600 mb-3">Create a new PSP session.</p>
+                                    <div class="code-block p-4 text-sm">
+                                        <pre><code><span class="text-green-400">psp create "Session Name"</span>               <span class="text-gray-400"># Basic creation</span>
+<span class="text-green-400">psp create "Gmail" "Description" -t gmail,prod</span>  <span class="text-gray-400"># With tags</span>
+<span class="text-green-400">psp create --storage redis</span>                     <span class="text-gray-400"># Specify storage</span></code></pre>
+                                    </div>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2"><code>psp launch</code></h3>
+                                    <p class="text-gray-600 mb-3">Launch interactive browser for session capture.</p>
+                                    <div class="code-block p-4 text-sm">
+                                        <pre><code><span class="text-green-400">psp launch</span>                              <span class="text-gray-400"># Launch browser</span>
+<span class="text-green-400">psp launch --platform gmail</span>               <span class="text-gray-400"># Target specific platform</span>
+<span class="text-green-400">psp launch --url https://github.com</span>        <span class="text-gray-400"># Navigate to URL</span>
+<span class="text-green-400">psp launch --profile production</span>           <span class="text-gray-400"># Use specific profile</span></code></pre>
+                                    </div>
+                                </div>
+
+                                <div class="border-l-4 border-orange-500 pl-6">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2"><code>psp ui</code></h3>
+                                    <p class="text-gray-600 mb-3">Launch the PSP web interface.</p>
+                                    <div class="code-block p-4 text-sm">
+                                        <pre><code><span class="text-green-400">psp ui</span>                       <span class="text-gray-400"># Start on default port 3000</span>
+<span class="text-green-400">psp ui --port 8080</span>           <span class="text-gray-400"># Custom port</span>
+<span class="text-green-400">psp ui --host 0.0.0.0</span>        <span class="text-gray-400"># Bind to all interfaces</span></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add the remaining sections with similar structure... -->
+                    <div id="api-reference" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">API Reference</h1>
+                            <p class="text-gray-600 mb-8">Complete API documentation for PSP core library and server endpoints.</p>
+                            <div class="bg-blue-50 p-6 rounded-xl">
+                                <h3 class="font-bold text-blue-900 mb-2">Coming Soon</h3>
+                                <p class="text-blue-800">Full API documentation is being prepared. Check back soon or visit our GitHub repository for the latest updates.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mcp-integration" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">MCP Integration</h1>
+                            <p class="text-gray-600 mb-8">Learn how to use PSP with Model Context Protocol for AI-driven automation.</p>
+                            <div class="bg-purple-50 p-6 rounded-xl">
+                                <h3 class="font-bold text-purple-900 mb-2">AI Agent Ready</h3>
+                                <p class="text-purple-800">PSP provides 12 MCP tools for seamless integration with AI agents like Smithery.ai, Claude, and custom LLM applications.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="troubleshooting" class="doc-section hidden">
+                        <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                            <h1 class="text-4xl font-bold text-gray-900 mb-6">Troubleshooting</h1>
+                            <p class="text-gray-600 mb-8">Common issues and their solutions when working with PSP.</p>
+                            
+                            <div class="space-y-6">
+                                <div class="border border-yellow-200 bg-yellow-50 rounded-xl p-6">
+                                    <h3 class="font-bold text-yellow-800 mb-2">Build Errors</h3>
+                                    <p class="text-yellow-700 mb-3">If you encounter TypeScript compilation errors:</p>
+                                    <div class="code-block p-4 text-sm">
+                                        <pre><code><span class="text-blue-400">npm run build:clean</span>  <span class="text-gray-400"># Clean build artifacts</span>
+<span class="text-blue-400">npm install</span>           <span class="text-gray-400"># Reinstall dependencies</span>
+<span class="text-blue-400">npm run build</span>         <span class="text-gray-400"># Rebuild project</span></code></pre>
+                                    </div>
+                                </div>
+
+                                <div class="border border-red-200 bg-red-50 rounded-xl p-6">
+                                    <h3 class="font-bold text-red-800 mb-2">Session Capture Issues</h3>
+                                    <p class="text-red-700 mb-3">If session capture fails:</p>
+                                    <ul class="text-red-700 space-y-1 text-sm">
+                                        <li>• Ensure browser has completed authentication</li>
+                                        <li>• Check that cookies are not expired</li>
+                                        <li>• Verify storage provider is accessible</li>
+                                        <li>• Try increasing capture timeout</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.doc-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden');
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`.sidebar a[href="#${sectionId}"]`).classList.add('active');
+        }
+
+        // Handle hash navigation
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.slice(1);
+            if (hash && document.getElementById(hash)) {
+                showSection(hash);
+            }
+        });
+
+        // Show section based on initial hash
+        window.addEventListener('load', () => {
+            const hash = window.location.hash.slice(1);
+            if (hash && document.getElementById(hash)) {
+                showSection(hash);
+            }
+        });
+    </script>
+</body>
+</html>
