@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../dist/core/src';
 /**
  * Controller for session-related endpoints
  */
@@ -39,4 +39,28 @@ export declare class SessionController {
      * Add events to a session
      */
     addSessionEvents: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    /**
+     * Join a session
+     */
+    joinSession: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    /**
+     * Get session participants
+     */
+    getSessionParticipants: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    /**
+     * Get session messages
+     */
+    getSessionMessages: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    /**
+     * Send a message to session
+     */
+    sendSessionMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    /**
+     * Terminate a session
+     */
+    terminateSession: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    /**
+     * Export session data
+     */
+    exportSession: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }

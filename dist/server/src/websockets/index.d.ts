@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../dist/core/src';
 /**
  * Sets up WebSocket handlers
  */

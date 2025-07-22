@@ -1,7 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { StorageProvider, SessionFilter, Event, generateId } from '@psp/core';
+import { 
+  StorageProvider, 
+  SessionFilter, 
+  Event, 
+  generateId,
+  SessionParticipant,
+  SessionMessage
+} from '../../../dist/core/src';
 import { createLogger } from '../utils/logger';
 import { BadRequestError, NotFoundError } from '../utils/errors';
+import { broadcastSessionUpdate, broadcastSessionEvent } from '../websockets';
 
 /**
  * Controller for session-related endpoints
@@ -104,6 +112,10 @@ export class SessionController {
           createdAt: now,
           updatedAt: now,
           createdWith: 'psp-server',
+          status: 'inactive' as const,
+          participants: [],
+          messages: [],
+          participantCount: 0,
         },
         state: state || {
           version: '1.0.0',
@@ -339,6 +351,392 @@ export class SessionController {
       await this.storageProvider.save(session);
 
       res.json(session.state.recording.events);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Join a session
+   */
+  joinSession = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { participantName, participantId } = req.body;
+
+      if (!participantName) {
+        throw new BadRequestError('Participant name is required');
+      }
+
+      // Check if session exists
+      const exists = await this.storageProvider.exists(id);
+      if (!exists) {
+        throw new NotFoundError(`Session with ID ${id} not found`);
+      }
+
+      // Get the session
+      const session = await this.storageProvider.load(id);
+      
+      // Initialize participants array if it doesn't exist
+      if (!session.metadata.participants) {
+        session.metadata.participants = [];
+      }
+
+      // Check if participant already exists
+      const existingParticipant = session.metadata.participants.find(
+        (p: SessionParticipant) => p.id === participantId || p.name === participantName
+      );
+
+      let participant: SessionParticipant;
+      if (existingParticipant) {
+        // Reactivate existing participant
+        existingParticipant.isActive = true;
+        existingParticipant.joinedAt = Date.now();
+        participant = existingParticipant;
+      } else {
+        // Add new participant
+        participant = {
+          id: participantId || generateId(),
+          name: participantName,
+          joinedAt: Date.now(),
+          isActive: true,
+        };
+        session.metadata.participants.push(participant);
+      }
+
+      // Update session status and participant count
+      session.metadata.status = 'active';
+      session.metadata.participantCount = session.metadata.participants.filter(
+        (p: SessionParticipant) => p.isActive
+      ).length;
+      session.metadata.updatedAt = Date.now();
+
+      // Add system message
+      if (!session.metadata.messages) {
+        session.metadata.messages = [];
+      }
+
+      const joinMessage: SessionMessage = {
+        id: generateId(),
+        senderId: 'system',
+        senderName: 'System',
+        message: `${participantName} joined the session`,
+        timestamp: Date.now(),
+        type: 'system',
+      };
+      session.metadata.messages.push(joinMessage);
+
+      // Save the session
+      await this.storageProvider.save(session);
+
+      // Broadcast the update to all connected clients
+      broadcastSessionUpdate(id, {
+        type: 'participant_joined',
+        participant,
+        session: session.metadata,
+        message: joinMessage,
+      });
+
+      res.json({
+        success: true,
+        participant,
+        session: session.metadata,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Get session participants
+   */
+  getSessionParticipants = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      // Check if session exists
+      const exists = await this.storageProvider.exists(id);
+      if (!exists) {
+        throw new NotFoundError(`Session with ID ${id} not found`);
+      }
+
+      // Get the session
+      const session = await this.storageProvider.load(id);
+
+      const participants = session.metadata.participants || [];
+
+      res.json({
+        participants,
+        activeCount: participants.filter((p: SessionParticipant) => p.isActive).length,
+        totalCount: participants.length,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Get session messages
+   */
+  getSessionMessages = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      // Check if session exists
+      const exists = await this.storageProvider.exists(id);
+      if (!exists) {
+        throw new NotFoundError(`Session with ID ${id} not found`);
+      }
+
+      // Get the session
+      const session = await this.storageProvider.load(id);
+
+      const messages = session.metadata.messages || [];
+
+      res.json({
+        messages,
+        count: messages.length,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Send a message to session
+   */
+  sendSessionMessage = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { message, senderId, senderName } = req.body;
+
+      if (!message || !senderId) {
+        throw new BadRequestError('Message and senderId are required');
+      }
+
+      // Check if session exists
+      const exists = await this.storageProvider.exists(id);
+      if (!exists) {
+        throw new NotFoundError(`Session with ID ${id} not found`);
+      }
+
+      // Get the session
+      const session = await this.storageProvider.load(id);
+
+      // Initialize messages array if it doesn't exist
+      if (!session.metadata.messages) {
+        session.metadata.messages = [];
+      }
+
+      // Create the message
+      const newMessage: SessionMessage = {
+        id: generateId(),
+        senderId,
+        senderName: senderName || 'Unknown',
+        message,
+        timestamp: Date.now(),
+        type: 'message',
+      };
+
+      session.metadata.messages.push(newMessage);
+      session.metadata.updatedAt = Date.now();
+
+      // Save the session
+      await this.storageProvider.save(session);
+
+      // Broadcast the message to all connected clients
+      broadcastSessionEvent(id, {
+        type: 'message',
+        message: newMessage,
+      });
+
+      res.status(201).json({
+        success: true,
+        message: newMessage,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Terminate a session
+   */
+  terminateSession = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      // Check if session exists
+      const exists = await this.storageProvider.exists(id);
+      if (!exists) {
+        throw new NotFoundError(`Session with ID ${id} not found`);
+      }
+
+      // Get the session
+      const session = await this.storageProvider.load(id);
+
+      // Update session status
+      session.metadata.status = 'terminated';
+      session.metadata.updatedAt = Date.now();
+
+      // Deactivate all participants
+      if (session.metadata.participants) {
+        session.metadata.participants.forEach((p: SessionParticipant) => {
+          p.isActive = false;
+        });
+      }
+
+      // Add termination message
+      if (!session.metadata.messages) {
+        session.metadata.messages = [];
+      }
+
+      const terminationMessage: SessionMessage = {
+        id: generateId(),
+        senderId: 'system',
+        senderName: 'System',
+        message: 'Session has been terminated',
+        timestamp: Date.now(),
+        type: 'system',
+      };
+      session.metadata.messages.push(terminationMessage);
+
+      // Save the session
+      await this.storageProvider.save(session);
+
+      // Broadcast the termination to all connected clients
+      broadcastSessionUpdate(id, {
+        type: 'session_terminated',
+        session: session.metadata,
+        message: terminationMessage,
+      });
+
+      res.json({
+        success: true,
+        message: 'Session terminated successfully',
+        session: session.metadata,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Export session data
+   */
+  exportSession = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const format = (req.query.format as string) || 'json';
+
+      // Check if session exists
+      const exists = await this.storageProvider.exists(id);
+      if (!exists) {
+        throw new NotFoundError(`Session with ID ${id} not found`);
+      }
+
+      // Get the session
+      const session = await this.storageProvider.load(id);
+
+      // Prepare export data
+      const exportData = {
+        metadata: session.metadata,
+        state: session.state,
+        exportedAt: Date.now(),
+        exportFormat: format,
+      };
+
+      switch (format) {
+        case 'json':
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="session-${id}.json"`
+          );
+          res.json(exportData);
+          break;
+
+        case 'yaml':
+          // Simple YAML-like format for basic compatibility
+          const yamlContent = `
+# PSP Session Export
+# Session ID: ${id}
+# Exported: ${new Date().toISOString()}
+
+metadata:
+  id: "${session.metadata.id}"
+  name: "${session.metadata.name}"
+  description: "${session.metadata.description || ''}"
+  createdAt: ${session.metadata.createdAt}
+  updatedAt: ${session.metadata.updatedAt}
+  status: "${session.metadata.status || 'inactive'}"
+  participants: ${JSON.stringify(session.metadata.participants || [], null, 2)}
+  messages: ${JSON.stringify(session.metadata.messages || [], null, 2)}
+
+state:
+  version: "${session.state.version}"
+  timestamp: ${session.state.timestamp}
+  origin: "${session.state.origin}"
+  # Storage and other state data...
+          `.trim();
+
+          res.setHeader('Content-Type', 'application/x-yaml');
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="session-${id}.yaml"`
+          );
+          res.send(yamlContent);
+          break;
+
+        case 'csv':
+          // CSV format for metadata and basic info
+          const csvContent = [
+            'Field,Value',
+            `ID,${session.metadata.id}`,
+            `Name,"${session.metadata.name}"`,
+            `Description,"${session.metadata.description || ''}"`,
+            `Created,${new Date(session.metadata.createdAt).toISOString()}`,
+            `Updated,${new Date(session.metadata.updatedAt).toISOString()}`,
+            `Status,${session.metadata.status || 'inactive'}`,
+            `Participants,${session.metadata.participantCount || 0}`,
+            `Messages,${(session.metadata.messages || []).length}`,
+          ].join('\n');
+
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="session-${id}.csv"`
+          );
+          res.send(csvContent);
+          break;
+
+        default:
+          throw new BadRequestError(`Unsupported export format: ${format}`);
+      }
     } catch (error) {
       next(error);
     }

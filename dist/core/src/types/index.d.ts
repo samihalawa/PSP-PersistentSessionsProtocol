@@ -268,6 +268,50 @@ export interface SessionMetadata {
         readAccess: string[];
         writeAccess: string[];
     };
+    /** Session status for lifecycle management */
+    status?: 'active' | 'inactive' | 'terminated';
+    /** Current participants in the session */
+    participants?: SessionParticipant[];
+    /** Session messages and chat history */
+    messages?: SessionMessage[];
+    /** Count of active participants */
+    participantCount?: number;
+}
+/**
+ * Session participant information
+ */
+export interface SessionParticipant {
+    /** Unique participant identifier */
+    id: string;
+    /** Participant display name */
+    name: string;
+    /** When the participant joined */
+    joinedAt: number;
+    /** Whether the participant is currently active */
+    isActive: boolean;
+    /** Optional participant role */
+    role?: 'owner' | 'participant' | 'observer';
+    /** Participant-specific metadata */
+    metadata?: Record<string, any>;
+}
+/**
+ * Session message for communication
+ */
+export interface SessionMessage {
+    /** Message unique identifier */
+    id: string;
+    /** ID of the sender */
+    senderId: string;
+    /** Display name of the sender */
+    senderName: string;
+    /** Message content */
+    message: string;
+    /** Message timestamp */
+    timestamp: number;
+    /** Message type */
+    type: 'message' | 'system' | 'event';
+    /** Optional message metadata */
+    metadata?: Record<string, any>;
 }
 /**
  * Options for session creation

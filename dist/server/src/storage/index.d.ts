@@ -1,4 +1,4 @@
-import { StorageProvider } from '@psp/core';
+import { StorageProvider } from '../../../dist/core/src';
 /**
  * Sets up the appropriate storage provider based on configuration
  */

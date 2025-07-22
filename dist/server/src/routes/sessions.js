@@ -224,6 +224,161 @@ function setupSessionRoutes(app, storageProvider) {
      *         description: Session not found
      */
     router.post('/:id/events', controller.addSessionEvents);
+    /**
+     * @swagger
+     * /sessions/{id}/join:
+     *   post:
+     *     summary: Join a session
+     *     description: Join an existing session as a participant
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Session ID
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - participantName
+     *             properties:
+     *               participantName:
+     *                 type: string
+     *               participantId:
+     *                 type: string
+     *     responses:
+     *       200:
+     *         description: Successfully joined session
+     *       404:
+     *         description: Session not found
+     */
+    router.post('/:id/join', controller.joinSession);
+    /**
+     * @swagger
+     * /sessions/{id}/participants:
+     *   get:
+     *     summary: Get session participants
+     *     description: Get list of all participants in a session
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Session ID
+     *     responses:
+     *       200:
+     *         description: List of participants
+     *       404:
+     *         description: Session not found
+     */
+    router.get('/:id/participants', controller.getSessionParticipants);
+    /**
+     * @swagger
+     * /sessions/{id}/messages:
+     *   get:
+     *     summary: Get session messages
+     *     description: Get all messages in a session
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Session ID
+     *     responses:
+     *       200:
+     *         description: List of session messages
+     *       404:
+     *         description: Session not found
+     */
+    router.get('/:id/messages', controller.getSessionMessages);
+    /**
+     * @swagger
+     * /sessions/{id}/messages:
+     *   post:
+     *     summary: Send a message to session
+     *     description: Send a message to all participants in a session
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Session ID
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - message
+     *               - senderId
+     *             properties:
+     *               message:
+     *                 type: string
+     *               senderId:
+     *                 type: string
+     *               senderName:
+     *                 type: string
+     *     responses:
+     *       201:
+     *         description: Message sent
+     *       404:
+     *         description: Session not found
+     */
+    router.post('/:id/messages', controller.sendSessionMessage);
+    /**
+     * @swagger
+     * /sessions/{id}/terminate:
+     *   post:
+     *     summary: Terminate a session
+     *     description: Terminates an active session and notifies all participants
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Session ID
+     *     responses:
+     *       200:
+     *         description: Session terminated
+     *       404:
+     *         description: Session not found
+     */
+    router.post('/:id/terminate', controller.terminateSession);
+    /**
+     * @swagger
+     * /sessions/{id}/export:
+     *   get:
+     *     summary: Export session data
+     *     description: Export session data in multiple formats
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Session ID
+     *       - in: query
+     *         name: format
+     *         schema:
+     *           type: string
+     *           enum: [json, yaml, csv]
+     *         description: Export format
+     *     responses:
+     *       200:
+     *         description: Session data export
+     *       404:
+     *         description: Session not found
+     */
+    router.get('/:id/export', controller.exportSession);
     // Mount the router
     app.use('/sessions', router);
 }
