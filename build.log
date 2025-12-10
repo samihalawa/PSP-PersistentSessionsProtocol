@@ -1,0 +1,22 @@
+
+> build
+> npm run build --workspaces
+
+
+> @psp/cli@1.0.0 build
+> tsc
+
+src/index.tsx(69,26): error TS2322: Type '{ children: string; dimColor: true; marginTop: number; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'marginTop' does not exist on type 'IntrinsicAttributes & Props'.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path /Users/samihalawa/git/PROJECTS_MISCELLANEOUS/PSP-PersistentSessionsProtocol/packages/cli
+npm error workspace @psp/cli@1.0.0
+npm error location /Users/samihalawa/git/PROJECTS_MISCELLANEOUS/PSP-PersistentSessionsProtocol/packages/cli
+npm error command failed
+npm error command sh -c tsc
+
+
+> @psp/server@1.0.0 build
+> tsc
+

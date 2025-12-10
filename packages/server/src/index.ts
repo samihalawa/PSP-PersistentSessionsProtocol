@@ -1,77 +1,158 @@
-import dotenv from 'dotenv';
-import { Server } from './server';
-import { createLogger } from './utils/logger';
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import puppeteer from 'puppeteer';
+import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs-extra';
+import path from 'path';
+import { SessionProfile } from '@samihalawa/psp-types';
 
-// Load environment variables
-dotenv.config();
+const app = express();
+const PORT = process.env.PORT || 3000;
+const DATA_DIR = process.env.DATA_DIR || './data';
 
-// Create logger
-const logger = createLogger('main');
+app.use(cors());
+app.use(bodyParser.json({ limit: '50mb' }));
 
-// Get environment variables
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-const HOST = process.env.HOST || '127.0.0.1';
+// Ensure data directory exists
+fs.ensureDirSync(DATA_DIR);
+const SESSIONS_DIR = path.join(DATA_DIR, 'sessions');
+fs.ensureDirSync(SESSIONS_DIR);
 
-// Create and start the server
-async function startServer() {
-  try {
-    const server = new Server({
-      port: PORT,
-      host: HOST,
-      storageType:
-        (process.env.STORAGE_TYPE as
-          | 'local'
-          | 'redis'
-          | 'database'
-          | 'cloud') || 'local',
-      storageOptions: {
-        // Redis options
-        redisUrl: process.env.REDIS_URL,
-        redisPassword: process.env.REDIS_PASSWORD,
+// In-memory cache of active browsers
+const activeBrowsers = new Map<string, puppeteer.Browser>();
 
-        // Local storage options
-        storagePath: process.env.STORAGE_PATH,
+app.get('/', (req, res) => {
+  res.send('PSP Cloud Server v2 (Protocol Ready)');
+});
 
-        // DB options
-        dbUrl: process.env.DB_URL,
-      },
-    });
+// --- Session Management ---
 
-    // Initialize the server
-    await server.initialize();
+// 1. Create/Sync Session
+app.post('/api/v1/sessions', async (req, res) => {
+  const { name, cookies, localStorage, userAgent, viewport } = req.body;
+  const id = uuidv4();
+  
+  const session: SessionProfile = {
+    id,
+    name,
+    cookies: cookies || [],
+    localStorage: localStorage || [],
+    userAgent,
+    viewport,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
 
-    // Start the server
-    await server.start();
+  await fs.writeJson(path.join(SESSIONS_DIR, `${id}.json`), session);
 
-    logger.info(`Server running on ${HOST}:${PORT}`);
+  console.log(`[Session Created] ${name} (${id})`);
+  res.json({ id, status: 'synced', session });
+});
 
-    // Handle graceful shutdown
-    process.on('SIGINT', async () => {
-      logger.info('Shutting down...');
-      await server.stop();
-      process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-      logger.info('Shutting down...');
-      await server.stop();
-      process.exit(0);
-    });
-  } catch (error) {
-    logger.error('Failed to start server:', error);
-    process.exit(1);
+// 2. Get Session Data (Raw)
+app.get('/api/v1/sessions/:id', async (req, res) => {
+  const { id } = req.params;
+  const filePath = path.join(SESSIONS_DIR, `${id}.json`);
+  
+  if (!await fs.pathExists(filePath)) {
+    return res.status(404).json({ error: 'Session not found' });
   }
-}
 
-// Start the server if this file is run directly
-if (require.main === module) {
-  startServer();
-}
+  const session = await fs.readJson(filePath);
+  res.json(session);
+});
 
-// Export for use as a module
-export { Server };
-export * from './types';
-export * from './storage';
-export * from './controllers';
-export * from './middleware';
-export * from './utils';
+// 3. Connect/Launch (The "Universal Protocol" Endpoint)
+// Returns a CDP Endpoint that *any* driver can connect to.
+app.post('/api/v1/sessions/:id/connect', async (req, res) => {
+  const { id } = req.params;
+  const filePath = path.join(SESSIONS_DIR, `${id}.json`);
+
+  if (!await fs.pathExists(filePath)) {
+    return res.status(404).json({ error: 'Session not found' });
+  }
+
+  const session: SessionProfile = await fs.readJson(filePath);
+
+  try {
+    // Check if we already have a running browser for this session?
+    // For now, let's spawn a NEW one every time for isolation, or reuse if requested.
+    // Simpler: Spawn new.
+    
+    console.log(`[Launching] Starting browser for ${session.name}...`);
+    
+    const browser = await puppeteer.launch({
+      headless: true, // "new"
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--remote-debugging-address=0.0.0.0',
+        '--remote-debugging-port=0' // Random port
+      ]
+    });
+
+    const browserId = uuidv4();
+    activeBrowsers.set(browserId, browser);
+
+    // Hydrate Session
+    const page = await browser.newPage();
+    
+    if (session.cookies.length > 0) {
+      await page.setCookie(...session.cookies.map(c => ({
+        ...c,
+        // Puppeteer strictness fixes
+        expires: c.expires || undefined,
+        sameSite: c.sameSite as any
+      })));
+    }
+    
+    // Set User Agent
+    if (session.userAgent) {
+      await page.setUserAgent(session.userAgent);
+    }
+
+    if (session.viewport) {
+      await page.setViewport(session.viewport);
+    }
+
+    // TODO: LocalStorage injection requires domain navigation.
+    // We can expose a helper script that clients can run.
+
+    const wsEndpoint = browser.wsEndpoint();
+    
+    // If running in Docker, we need to replace 127.0.0.1 with the public IP/Host
+    // But since we are tunneling or exposing ports, we might need a proxy.
+    // For local dev, 127.0.0.1 is fine.
+    
+    console.log(`[Launched] ${session.name} -> ${wsEndpoint}`);
+
+    res.json({
+      browserId,
+      browserWSEndpoint: wsEndpoint,
+      session // Return session meta so client knows what it connected to
+    });
+
+  } catch (error: any) {
+    console.error('Failed to launch browser:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. Stop Browser
+app.delete('/api/v1/browsers/:id', async (req, res) => {
+  const { id } = req.params;
+  const browser = activeBrowsers.get(id);
+  if (browser) {
+    await browser.close();
+    activeBrowsers.delete(id);
+    res.json({ status: 'closed' });
+  } else {
+    res.status(404).json({ error: 'Browser not found' });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`PSP Server listening on port ${PORT}`);
+  console.log(`Data directory: ${DATA_DIR}`);
+});

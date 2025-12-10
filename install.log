@@ -1,0 +1,16 @@
+npm warn deprecated puppeteer@21.11.0: < 24.15.0 is no longer supported
+
+changed 124 packages, and audited 291 packages in 7s
+
+48 packages are looking for funding
+  run `npm fund` for details
+
+6 vulnerabilities (1 moderate, 5 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.

@@ -1,19 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
-    "declaration": true,
-    "outDir": "./dist",
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@psp/*": ["packages/*/src"]
-    }
-  },
-  "include": ["src/**/*", "packages/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "packages/gui/**/*", "packages/sdk-go/**/*", "packages/sdk-python/**/*", "packages/mcp/**/*"]
+    "forceConsistentCasingInFileNames": true
+  }
 }

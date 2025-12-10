@@ -1,0 +1,12 @@
+
+> build
+> npm run build --workspaces
+
+
+> @psp/cli@1.0.0 build
+> tsc
+
+
+> @psp/server@1.0.0 build
+> tsc
+
