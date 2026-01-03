@@ -50,34 +50,46 @@ const App = () => {
   return (
     <Box flexDirection="column" padding={1}>
       <Box borderStyle="double" borderColor="cyan" paddingX={1}>
-        <Text bold color="cyan">PSP - Browser Profile Sync</Text>
+        <Text bold color="cyan">PSP v2.0 - Persistent Sessions Protocol</Text>
+      </Box>
+      <Box marginLeft={1}>
+        <Text dimColor>Universal browser session management</Text>
       </Box>
 
-      {step === 'scanning' && <Text>Scanning for Chrome profiles...</Text>}
+      {step === 'scanning' && (
+        <Box marginTop={1}>
+          <Text>Scanning for Chrome profiles...</Text>
+        </Box>
+      )}
 
       {step === 'selecting' && (
         <Box flexDirection="column" marginTop={1}>
-          <Text underline>Step 1: Select profile to sync</Text>
+          <Text underline>Step 1: Select profile to extract</Text>
           <Box flexDirection="column" marginTop={1}>
             {profiles.map((p, i) => (
               <Text key={p.directory} color={i === selectedIndex ? 'green' : 'white'}>
-                {i === selectedIndex ? '> ' : '  '} {p.name}
+                {i === selectedIndex ? '▸ ' : '  '} {p.name}
               </Text>
             ))}
-             {profiles.length === 0 && <Text color="red">No profiles found.</Text>}
+            {profiles.length === 0 && <Text color="red">No Chrome profiles found.</Text>}
           </Box>
           <Box marginTop={1}>
-            <Text dimColor>↑/↓ Navigate · Enter to Select</Text>
+            <Text dimColor>↑/↓ Navigate · Enter to Select · Esc to Exit</Text>
           </Box>
         </Box>
       )}
 
       {(step === 'syncing' || step === 'done') && (
         <Box flexDirection="column" marginTop={1}>
-          <Text underline>Step 2: Syncing to Cloud</Text>
+          <Text underline>Step 2: Extracting & Syncing</Text>
           <Box flexDirection="column" marginTop={1}>
             {log.map((l, i) => <Text key={i}>{l}</Text>)}
           </Box>
+          {step === 'done' && (
+            <Box marginTop={1}>
+              <Text dimColor>Press Esc or Ctrl+C to exit</Text>
+            </Box>
+          )}
         </Box>
       )}
     </Box>

@@ -1,0 +1,45 @@
+{
+  "name": "@samihalawa/psp-adapters",
+  "version": "2.0.0",
+  "description": "PSP framework adapters for Playwright, Puppeteer, and CDP",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest"
+  },
+  "type": "module",
+  "dependencies": {
+    "@samihalawa/psp-types": "file:../types",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.40.0",
+    "puppeteer": ">=21.0.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright": {
+      "optional": true
+    },
+    "puppeteer": {
+      "optional": true
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "psp",
+    "playwright",
+    "puppeteer",
+    "browser",
+    "session",
+    "cookies"
+  ],
+  "author": "samihalawa",
+  "license": "MIT"
+}

@@ -1,11 +1,11 @@
 {
-  "name": "@samihalawa/psp-cli",
+  "name": "@samihalawa/psp-mcp-server",
   "version": "2.0.0",
-  "description": "PSP CLI - Browser session extraction and management",
+  "description": "PSP MCP Server - Model Context Protocol integration for browser sessions",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "psp": "dist/index.js"
+    "psp-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -13,19 +13,23 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "ink": "^4.4.1",
-    "react": "^18.2.0",
-    "puppeteer-core": "^21.5.0",
-    "chrome-launcher": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^0.6.0",
     "axios": "^1.6.2",
-    "commander": "^11.1.0",
     "fs-extra": "^11.2.0",
+    "uuid": "^9.0.1",
     "@samihalawa/psp-types": "file:../types",
     "@samihalawa/psp-adapters": "file:../adapters"
   },
   "devDependencies": {
-    "@types/react": "^18.2.45",
     "@types/fs-extra": "^11.0.4",
+    "@types/uuid": "^9.0.7",
     "typescript": "^5.3.3"
-  }
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "browser-automation",
+    "session-management",
+    "psp"
+  ]
 }
