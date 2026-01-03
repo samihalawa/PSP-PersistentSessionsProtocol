@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP Cloud - Browser Session Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i data-lucide="globe" class="w-8 h-8"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">PSP Cloud</h1>
+                        <p class="text-purple-200 text-sm">Persistent Sessions Protocol</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="status-indicator" class="flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full">
+                        <span class="w-2 h-2 bg-green-400 rounded-full pulse-dot"></span>
+                        <span class="text-sm">Connected</span>
+                    </span>
+                    <button onclick="showSettings()" class="p-2 hover:bg-white/20 rounded-lg">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Sessions</p>
+                        <p id="stat-sessions" class="text-3xl font-bold text-gray-800">0</p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-lg">
+                        <i data-lucide="database" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Active Browsers</p>
+                        <p id="stat-browsers" class="text-3xl font-bold text-gray-800">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <i data-lucide="chrome" class="w-6 h-6 text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Cookies</p>
+                        <p id="stat-cookies" class="text-3xl font-bold text-gray-800">0</p>
+                    </div>
+                    <div class="bg-orange-100 p-3 rounded-lg">
+                        <i data-lucide="cookie" class="w-6 h-6 text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">API Uptime</p>
+                        <p id="stat-uptime" class="text-3xl font-bold text-gray-800">-</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i data-lucide="activity" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Bar -->
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-4">
+                <button onclick="showCreateModal()" class="gradient-bg text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 hover:opacity-90 transition">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    <span>New Session</span>
+                </button>
+                <button onclick="importSession()" class="bg-white text-gray-700 px-4 py-3 rounded-lg font-medium flex items-center space-x-2 border hover:bg-gray-50">
+                    <i data-lucide="upload" class="w-5 h-5"></i>
+                    <span>Import</span>
+                </button>
+            </div>
+            <div class="flex items-center space-x-2">
+                <input type="text" id="search-input" placeholder="Search sessions..." 
+                    class="px-4 py-2 border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <button onclick="refreshSessions()" class="p-2 bg-white border rounded-lg hover:bg-gray-50">
+                    <i data-lucide="refresh-cw" class="w-5 h-5 text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sessions Grid -->
+        <div id="sessions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Sessions will be loaded here -->
+            <div class="col-span-full text-center py-12 text-gray-500">
+                <i data-lucide="loader" class="w-8 h-8 mx-auto mb-4 animate-spin"></i>
+                <p>Loading sessions...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Session Modal -->
+    <div id="create-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            <div class="gradient-bg text-white px-6 py-4">
+                <h2 class="text-xl font-bold">Create New Session</h2>
+            </div>
+            <form id="create-form" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Session Name</label>
+                    <input type="text" name="name" required placeholder="e.g., Production Auth" 
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" rows="2" placeholder="Optional description..."
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+                    <input type="text" name="tags" placeholder="e.g., production, auth, google"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div class="flex space-x-3 pt-4">
+                    <button type="button" onclick="hideCreateModal()" 
+                        class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                    <button type="submit" 
+                        class="flex-1 gradient-bg text-white px-4 py-2 rounded-lg hover:opacity-90">Create Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Session Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden">
+            <div class="gradient-bg text-white px-6 py-4 flex items-center justify-between">
+                <h2 id="detail-title" class="text-xl font-bold">Session Details</h2>
+                <button onclick="hideDetailModal()" class="p-1 hover:bg-white/20 rounded">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="detail-content" class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
+            <div class="gradient-bg text-white px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold">Settings</h2>
+                <button onclick="hideSettings()" class="p-1 hover:bg-white/20 rounded">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">API Endpoint</label>
+                    <input type="url" id="api-endpoint" 
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+                <button onclick="saveSettings()" class="w-full gradient-bg text-white px-4 py-2 rounded-lg hover:opacity-90">
+                    Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // API Configuration
+        let API_URL = localStorage.getItem('psp-api-url') || '';
+        
+        // Auto-detect API URL if not set
+        if (!API_URL) {
+            // Check if running on same domain or use default
+            const hostname = window.location.hostname;
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                API_URL = 'http://localhost:8080';
+            } else {
+                // Assume API is at api subdomain or same origin
+                API_URL = window.location.origin;
+            }
+            localStorage.setItem('psp-api-url', API_URL);
+        }
+        document.getElementById('api-endpoint').value = API_URL;
+
+        // State
+        let sessions = [];
+        let currentSession = null;
+
+        // API Functions
+        async function fetchAPI(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                updateStatus(false);
+                throw error;
+            }
+        }
+
+        function updateStatus(connected) {
+            const indicator = document.getElementById('status-indicator');
+            const dot = indicator.querySelector('span:first-child');
+            const text = indicator.querySelector('span:last-child');
+            
+            if (connected) {
+                dot.className = 'w-2 h-2 bg-green-400 rounded-full pulse-dot';
+                text.textContent = 'Connected';
+            } else {
+                dot.className = 'w-2 h-2 bg-red-400 rounded-full';
+                text.textContent = 'Disconnected';
+            }
+        }
+
+        // Load sessions
+        async function loadSessions() {
+            try {
+                const data = await fetchAPI('/api/v2/sessions');
+                sessions = data.sessions || [];
+                document.getElementById('stat-sessions').textContent = sessions.length;
+                
+                // Calculate total cookies
+                let totalCookies = 0;
+                sessions.forEach(s => totalCookies += (s.cookieCount || 0));
+                document.getElementById('stat-cookies').textContent = totalCookies;
+                
+                renderSessions();
+                updateStatus(true);
+            } catch (error) {
+                renderError('Failed to load sessions. Check API connection.');
+            }
+        }
+
+        // Load health/browsers
+        async function loadHealth() {
+            try {
+                const health = await fetchAPI('/health');
+                document.getElementById('stat-browsers').textContent = health.activeBrowsers || 0;
+                
+                const uptime = health.uptime || 0;
+                const hours = Math.floor(uptime / 3600);
+                const mins = Math.floor((uptime % 3600) / 60);
+                document.getElementById('stat-uptime').textContent = `${hours}h ${mins}m`;
+                
+                updateStatus(true);
+            } catch (error) {
+                document.getElementById('stat-uptime').textContent = 'N/A';
+            }
+        }
+
+        function renderSessions() {
+            const grid = document.getElementById('sessions-grid');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            
+            const filtered = sessions.filter(s => 
+                s.name.toLowerCase().includes(search) ||
+                (s.tags || []).some(t => t.toLowerCase().includes(search))
+            );
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 text-gray-300"></i>
+                        <p class="text-gray-500">No sessions found</p>
+                        <button onclick="showCreateModal()" class="mt-4 text-purple-600 hover:underline">Create your first session</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+            
+            grid.innerHTML = filtered.map(session => `
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border border-gray-100">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-purple-100 p-2 rounded-lg">
+                                <i data-lucide="user" class="w-5 h-5 text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">${escapeHtml(session.name)}</h3>
+                                <p class="text-sm text-gray-500">${session.domainCount || 0} domains</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button onclick="viewSession('${session.id}')" class="p-2 hover:bg-gray-100 rounded-lg" title="View">
+                                <i data-lucide="eye" class="w-4 h-4 text-gray-500"></i>
+                            </button>
+                            <button onclick="launchSession('${session.id}')" class="p-2 hover:bg-gray-100 rounded-lg" title="Launch">
+                                <i data-lucide="play" class="w-4 h-4 text-green-500"></i>
+                            </button>
+                            <button onclick="exportSession('${session.id}')" class="p-2 hover:bg-gray-100 rounded-lg" title="Export">
+                                <i data-lucide="download" class="w-4 h-4 text-blue-500"></i>
+                            </button>
+                            <button onclick="deleteSession('${session.id}')" class="p-2 hover:bg-gray-100 rounded-lg" title="Delete">
+                                <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                        <span class="flex items-center"><i data-lucide="cookie" class="w-4 h-4 mr-1"></i>${session.cookieCount || 0}</span>
+                        <span class="flex items-center"><i data-lucide="database" class="w-4 h-4 mr-1"></i>${session.originCount || 0}</span>
+                    </div>
+                    ${(session.tags || []).length > 0 ? `
+                        <div class="flex flex-wrap gap-2">
+                            ${session.tags.map(tag => `<span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <p class="text-xs text-gray-400 mt-3">Updated: ${formatDate(session.updated)}</p>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function renderError(message) {
+            const grid = document.getElementById('sessions-grid');
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4 text-red-400"></i>
+                    <p class="text-red-600">${message}</p>
+                    <button onclick="refreshSessions()" class="mt-4 text-purple-600 hover:underline">Retry</button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Session Actions
+        async function viewSession(id) {
+            try {
+                const session = await fetchAPI(`/api/v2/sessions/${id}`);
+                currentSession = session;
+                
+                document.getElementById('detail-title').textContent = session.name;
+                document.getElementById('detail-content').innerHTML = `
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-2">Session Info</h4>
+                            <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                                <p><span class="text-gray-500">ID:</span> <code class="bg-gray-200 px-2 py-1 rounded">${session.id}</code></p>
+                                <p><span class="text-gray-500">Protocol:</span> ${session.protocolVersion}</p>
+                                <p><span class="text-gray-500">Created:</span> ${formatDate(session.timestamps?.created)}</p>
+                                <p><span class="text-gray-500">Updated:</span> ${formatDate(session.timestamps?.updated)}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-2">Browser Context</h4>
+                            <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                                <p><span class="text-gray-500">User Agent:</span> <span class="text-xs">${escapeHtml(session.browserContext?.userAgent || 'N/A')}</span></p>
+                                <p><span class="text-gray-500">Viewport:</span> ${session.browserContext?.viewport?.width || 0}x${session.browserContext?.viewport?.height || 0}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-700 mb-2">Cookies (${session.cookies?.length || 0})</h4>
+                            <div class="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto">
+                                <table class="w-full text-xs">
+                                    <thead class="text-left text-gray-500">
+                                        <tr><th>Domain</th><th>Name</th><th>Secure</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${(session.cookies || []).slice(0, 20).map(c => `
+                                            <tr class="border-t">
+                                                <td class="py-1">${escapeHtml(c.domain)}</td>
+                                                <td>${escapeHtml(c.name)}</td>
+                                                <td>${c.secure ? '✓' : ''}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                                ${(session.cookies || []).length > 20 ? '<p class="text-gray-500 mt-2">...and more</p>' : ''}
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 pt-4">
+                            <button onclick="launchSession('${session.id}')" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2">
+                                <i data-lucide="play" class="w-4 h-4"></i>
+                                <span>Launch Browser</span>
+                            </button>
+                            <button onclick="exportSession('${session.id}')" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center space-x-2">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span>Export JSON</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                showDetailModal();
+                lucide.createIcons();
+            } catch (error) {
+                alert('Failed to load session details');
+            }
+        }
+
+        async function launchSession(id) {
+            try {
+                const result = await fetchAPI(`/api/v2/sessions/${id}/connect`, {
+                    method: 'POST',
+                    body: JSON.stringify({ headless: false })
+                });
+                
+                alert(`Browser launched!\n\nBrowser ID: ${result.browserId}\nWebSocket: ${result.browserWSEndpoint}\n\nDomains: ${(result.domains || []).join(', ')}`);
+                loadHealth();
+            } catch (error) {
+                alert('Failed to launch browser. Make sure the server supports browser launching.');
+            }
+        }
+
+        async function exportSession(id) {
+            try {
+                const session = await fetchAPI(`/api/v2/sessions/${id}`);
+                const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `psp-session-${session.name.replace(/[^a-z0-9]/gi, '-')}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Failed to export session');
+            }
+        }
+
+        async function deleteSession(id) {
+            if (!confirm('Are you sure you want to delete this session?')) return;
+            
+            try {
+                await fetchAPI(`/api/v2/sessions/${id}`, { method: 'DELETE' });
+                loadSessions();
+            } catch (error) {
+                alert('Failed to delete session');
+            }
+        }
+
+        async function createSession(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                description: form.description.value,
+                tags: form.tags.value.split(',').map(t => t.trim()).filter(t => t)
+            };
+            
+            try {
+                await fetchAPI('/api/v2/sessions', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                hideCreateModal();
+                form.reset();
+                loadSessions();
+            } catch (error) {
+                alert('Failed to create session');
+            }
+        }
+
+        function importSession() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const text = await file.text();
+                    const session = JSON.parse(text);
+                    
+                    await fetchAPI('/api/v2/sessions', {
+                        method: 'POST',
+                        body: JSON.stringify(session)
+                    });
+                    
+                    loadSessions();
+                } catch (error) {
+                    alert('Failed to import session. Make sure the file is valid PSP JSON.');
+                }
+            };
+            input.click();
+        }
+
+        function refreshSessions() {
+            loadSessions();
+            loadHealth();
+        }
+
+        // Modal Functions
+        function showCreateModal() {
+            document.getElementById('create-modal').classList.remove('hidden');
+            document.getElementById('create-modal').classList.add('flex');
+        }
+        function hideCreateModal() {
+            document.getElementById('create-modal').classList.add('hidden');
+            document.getElementById('create-modal').classList.remove('flex');
+        }
+        function showDetailModal() {
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.getElementById('detail-modal').classList.add('flex');
+        }
+        function hideDetailModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.getElementById('detail-modal').classList.remove('flex');
+        }
+        function showSettings() {
+            document.getElementById('api-endpoint').value = API_URL;
+            document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('settings-modal').classList.add('flex');
+        }
+        function hideSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('flex');
+        }
+        function saveSettings() {
+            API_URL = document.getElementById('api-endpoint').value;
+            localStorage.setItem('psp-api-url', API_URL);
+            hideSettings();
+            refreshSessions();
+        }
+
+        // Utilities
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            return new Date(dateStr).toLocaleString();
+        }
+
+        // Event Listeners
+        document.getElementById('create-form').addEventListener('submit', createSession);
+        document.getElementById('search-input').addEventListener('input', renderSessions);
+        
+        // Close modals on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideCreateModal();
+                hideDetailModal();
+                hideSettings();
+            }
+        });
+
+        // Initialize
+        loadSessions();
+        loadHealth();
+        setInterval(loadHealth, 30000); // Refresh health every 30s
+    </script>
+</body>
+</html>
