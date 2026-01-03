@@ -1,6 +1,0 @@
-Metadata-Version: 2.4
-Name: psp-python
-Version: 0.1.0
-Summary: Python SDK for PSP - Persistent Sessions Protocol
-Requires-Dist: requests
-Requires-Dist: playwright
